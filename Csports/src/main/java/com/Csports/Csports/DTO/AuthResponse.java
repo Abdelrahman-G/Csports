@@ -1,6 +1,10 @@
 package com.Csports.Csports.DTO;
 
+import com.Csports.Csports.model.Role;
+
 public record AuthResponse(
         String accessToken,
-        String refreshToken
+        String refreshToken,
+        Role role
+
 ) {}

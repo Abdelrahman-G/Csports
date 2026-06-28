@@ -1,7 +1,7 @@
 package com.Csports.Csports.security;
 
 import java.security.Key;
-import java.sql.Date;
+import java.util.Date;
 
 import javax.crypto.SecretKey;
 
@@ -37,7 +37,7 @@ public class JwtService {
     public String generateAccessToken(User user) {
 
         return Jwts.builder()
-                .subject(user.getEmail())
+                .subject(String.valueOf(user.getId()))
                 .issuedAt(new Date(accessExpiration))
                 .expiration(new Date(
                         System.currentTimeMillis() + accessExpiration))
@@ -47,7 +47,7 @@ public class JwtService {
     public String generateRefreshToken(User user) {
 
         return Jwts.builder()
-                .subject(user.getEmail())
+                .subject(String.valueOf(user.getId()))
                 .issuedAt(new Date(refreshExpiration))
                 .expiration(new Date(
                         System.currentTimeMillis() + refreshExpiration))
@@ -55,7 +55,7 @@ public class JwtService {
                 .compact();
     }
 
-    public String extractUsername(String token) {
+    public String extractUserId(String token) {
         return Jwts.parser()
                 .verifyWith((SecretKey) getSigningKey())
                 .build()
@@ -63,21 +63,21 @@ public class JwtService {
                 .getPayload()
                 .getSubject();
     }
-    public boolean isTokenValid(String token, User user) {
+    public boolean isTokenValid(String token, User userDetails) {
 
-        String username = extractUsername(token);
+        String userId = extractUserId(token);
 
-        return username.equals(user.getEmail()) && !isTokenExpired(token);
+        return userId.equals(String.valueOf(userDetails.getId())) && !isTokenExpired(token);
     }
     
     private boolean isTokenExpired(String token) {
-        Date expiration = (Date) Jwts.parser()
+        Date expiration = Jwts.parser()
                 .verifyWith((SecretKey) getSigningKey())
                 .build()
                 .parseSignedClaims(token)
                 .getPayload()
                 .getExpiration();
 
-        return expiration.before(new Date(System.currentTimeMillis()));
+        return expiration.before(new Date());
     }
 }
