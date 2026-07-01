@@ -1,9 +1,15 @@
 package com.Csports.Csports.service;
 
+import java.time.LocalDate;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
-
 import com.Csports.Csports.DTO.CreateTrainingSessionRequest;
+import com.Csports.Csports.DTO.TrainingSessionResponse;
 import com.Csports.Csports.exception.TrainerProfileNotFoundException;
+import com.Csports.Csports.mapper.TrainingSessionMapper;
 import com.Csports.Csports.model.Sport;
 import com.Csports.Csports.model.TrainerProfile;
 import com.Csports.Csports.model.TrainingSession;
@@ -38,6 +44,8 @@ public class TrainingSessionService {
                 .trainer(trainer)
                 .sport(sport)
                 .description(request.description())
+                .latitude(request.latitude())
+                .longitude(request.longitude())
                 .title(request.title())
                 .locationName(request.locationName())
                 .price(request.price())
@@ -49,5 +57,13 @@ public class TrainingSessionService {
                 .days(request.days())
                 .build();
         trainingSessionRepository.save(session);
+    }
+
+    public Page<TrainingSessionResponse> getAllUpcomingSessions(int page,int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by("startDate").ascending());
+
+        TrainingSessionMapper mapper = new TrainingSessionMapper();
+        return trainingSessionRepository.findByStartDateGreaterThanEqual(LocalDate.now(), pageable)
+                .map(mapper::toResponse);
     }
 }
