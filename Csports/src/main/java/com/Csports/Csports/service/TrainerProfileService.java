@@ -1,11 +1,6 @@
 package com.Csports.Csports.service;
 
-
-import java.util.HashSet;
-import java.util.Set;
-
 import org.springframework.stereotype.Service;
-
 import com.Csports.Csports.DTO.CreateTrainerProfileRequest;
 import com.Csports.Csports.exception.InvalidCredentialsException;
 import com.Csports.Csports.model.Role;
@@ -44,13 +39,14 @@ public class TrainerProfileService {
             throw new RuntimeException("Trainer profile already exists.");
         }
 
-        Set<Sport> sports = new HashSet<>(sportRepository.findAllById(request.sportIds()));
+        Sport sport = sportRepository.findById(request.sportId())
+                .orElseThrow(() -> new RuntimeException("Sport not found"));
 
         TrainerProfile profile = TrainerProfile.builder()
                 .user(user)
                 .bio(request.bio())
                 .experienceYears(request.experienceYears())
-                .sports(sports)
+                .sport(sport)
                 .build();
 
         trainerProfileRepository.save(profile);

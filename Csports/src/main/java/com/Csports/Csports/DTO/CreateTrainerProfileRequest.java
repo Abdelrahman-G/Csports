@@ -1,6 +1,6 @@
 package com.Csports.Csports.DTO;
 
-import java.util.Set;
+
 
 public record CreateTrainerProfileRequest(
 
@@ -8,6 +8,6 @@ public record CreateTrainerProfileRequest(
 
         Integer experienceYears,
 
-        Set<Long> sportIds
+        Long sportId
 
 ) {}

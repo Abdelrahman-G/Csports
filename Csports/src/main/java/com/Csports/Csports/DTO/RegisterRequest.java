@@ -1,7 +1,5 @@
 package com.Csports.Csports.DTO;
 
-import java.util.Set;
-
 import com.Csports.Csports.model.Role;
 
 public record RegisterRequest(
@@ -22,6 +20,6 @@ public record RegisterRequest(
 
         Integer experienceYears,
 
-        Set<Long> sportIds
+        Long sportId
 
 ) {}

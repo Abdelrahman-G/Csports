@@ -1,7 +1,5 @@
 package com.Csports.Csports.service;
 import java.time.LocalDateTime;
-import java.util.HashSet;
-import java.util.Set;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -15,6 +13,7 @@ import com.Csports.Csports.exception.InvalidCredentialsException;
 import com.Csports.Csports.exception.PhoneNumberAlreadyExistsException;
 import com.Csports.Csports.model.RefreshToken;
 import com.Csports.Csports.model.Sport;
+import com.Csports.Csports.model.Role;
 import com.Csports.Csports.model.TrainerProfile;
 import com.Csports.Csports.model.User;
 import com.Csports.Csports.repository.RefreshTokenRepository;
@@ -63,18 +62,18 @@ public class AuthService {
         userRepository.save(user);
         if (user.getRole() == Role.TRAINER) {
 
-        Set<Sport> sports =
-                new HashSet<>(sportRepository.findAllById(request.sportIds()));
+            Sport sport = sportRepository.findById(request.sportId())
+            .orElseThrow(() -> new RuntimeException("Sport not found"));
 
-        TrainerProfile profile = TrainerProfile.builder()
+            TrainerProfile profile = TrainerProfile.builder()
                 .user(user)
                 .bio(request.bio())
                 .experienceYears(request.experienceYears())
-                .sports(sports)
+                .sport(sport)
                 .build();
 
-        trainerProfileRepository.save(profile);
-    }
+            trainerProfileRepository.save(profile);
+        }
     }
     public AuthResponse  login(LoginRequest request) {
 

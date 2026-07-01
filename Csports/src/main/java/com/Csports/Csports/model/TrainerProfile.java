@@ -1,6 +1,5 @@
 package com.Csports.Csports.model;
 
-import java.util.HashSet;
 
 import jakarta.persistence.*;
 import lombok.*;
@@ -25,13 +24,8 @@ private Long id;
 
     private Integer experienceYears;
 
-    @ManyToMany
-    @JoinTable(
-            name = "trainer_sports",
-            joinColumns = @JoinColumn(name = "trainer_id"),
-            inverseJoinColumns = @JoinColumn(name = "sport_id")
-    )
-    private final HashSet<Sport> sports = new HashSet<>();
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "sport_id", nullable = false)
+    private Sport sport;
 
-    // private String location;
 }

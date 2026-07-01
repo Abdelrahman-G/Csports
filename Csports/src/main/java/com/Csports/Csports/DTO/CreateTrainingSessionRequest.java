@@ -11,8 +11,6 @@ public record CreateTrainingSessionRequest(
 
         String description,
 
-        Long sportId,
-
         String locationName,
 
         Double latitude,
