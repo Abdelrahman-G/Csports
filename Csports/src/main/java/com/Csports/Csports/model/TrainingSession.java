@@ -39,6 +39,11 @@ public class TrainingSession {
     @Column(length = 2000)
     private String description;
 
+    // versioning the booking to avoid concurrent updates (optimistic locking)
+    @Version
+    @Column(nullable = false)
+    private Long version;
+
     @Column(nullable = false)
     private String locationName;
 

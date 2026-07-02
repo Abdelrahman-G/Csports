@@ -11,6 +11,7 @@ import com.Csports.Csports.DTO.RegisterRequest;
 import com.Csports.Csports.exception.EmailAlreadyExistsException;
 import com.Csports.Csports.exception.InvalidCredentialsException;
 import com.Csports.Csports.exception.PhoneNumberAlreadyExistsException;
+import com.Csports.Csports.exception.SportNotFoundException;
 import com.Csports.Csports.model.RefreshToken;
 import com.Csports.Csports.model.Sport;
 import com.Csports.Csports.model.Role;
@@ -63,7 +64,7 @@ public class AuthService {
         if (user.getRole() == Role.TRAINER) {
 
             Sport sport = sportRepository.findById(request.sportId())
-            .orElseThrow(() -> new RuntimeException("Sport not found"));
+            .orElseThrow(SportNotFoundException::new);
 
             TrainerProfile profile = TrainerProfile.builder()
                 .user(user)

@@ -3,6 +3,8 @@ package com.Csports.Csports.service;
 import org.springframework.stereotype.Service;
 import com.Csports.Csports.DTO.CreateTrainerProfileRequest;
 import com.Csports.Csports.exception.InvalidCredentialsException;
+import com.Csports.Csports.exception.SportNotFoundException;
+import com.Csports.Csports.exception.TrainerProfileAlreadyExistsException;
 import com.Csports.Csports.model.Role;
 import com.Csports.Csports.model.Sport;
 import com.Csports.Csports.model.TrainerProfile;
@@ -36,11 +38,11 @@ public class TrainerProfileService {
         }
 
         if (trainerProfileRepository.findByUser(user).isPresent()) {
-            throw new RuntimeException("Trainer profile already exists.");
+            throw new TrainerProfileAlreadyExistsException();
         }
 
         Sport sport = sportRepository.findById(request.sportId())
-                .orElseThrow(() -> new RuntimeException("Sport not found"));
+                .orElseThrow(SportNotFoundException::new);
 
         TrainerProfile profile = TrainerProfile.builder()
                 .user(user)
