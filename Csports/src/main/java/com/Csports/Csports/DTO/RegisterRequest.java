@@ -20,6 +20,12 @@ public record RegisterRequest(
 
         Integer experienceYears,
 
-        Long sportId
+        Long sportId,
+        
+        Long regionId,
+
+        Double latitude,
+
+        Double longitude
 
 ) {}

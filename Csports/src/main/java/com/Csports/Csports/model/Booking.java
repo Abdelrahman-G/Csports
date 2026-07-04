@@ -22,10 +22,14 @@ public class Booking {
     @JoinColumn(name = "session_id", nullable = false)
     private TrainingSession session;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private BookingStatus status;
+    // @Enumerated(EnumType.STRING)
+    // @Column(nullable = false)
+    // private BookingStatus status;
 
     @CreationTimestamp
     private LocalDateTime bookedAt;
+
+    // versioning the booking to avoid concurrent updates (optimistic locking)
+    @Version
+    private Long version;   
 }

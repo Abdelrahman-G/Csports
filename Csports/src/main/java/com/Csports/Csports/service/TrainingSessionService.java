@@ -7,6 +7,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import com.Csports.Csports.DTO.CreateTrainingSessionRequest;
+import com.Csports.Csports.DTO.PageResponse;
 import com.Csports.Csports.DTO.TrainingSessionResponse;
 import com.Csports.Csports.exception.TrainerProfileNotFoundException;
 import com.Csports.Csports.mapper.TrainingSessionMapper;
@@ -23,15 +24,18 @@ public class TrainingSessionService {
     private final TrainingSessionRepository trainingSessionRepository;
     private final TrainerProfileRepository trainerProfileRepository;
     private final UserService userService;
+    private final TrainingSessionMapper trainingSessionMapper;
+
 
     public TrainingSessionService(
             TrainingSessionRepository trainingSessionRepository,
             TrainerProfileRepository trainerProfileRepository,
-            UserService userService) {
+            UserService userService, TrainingSessionMapper trainingSessionMapper) {
 
         this.trainingSessionRepository = trainingSessionRepository;
         this.trainerProfileRepository = trainerProfileRepository;
         this.userService = userService;
+        this.trainingSessionMapper = trainingSessionMapper;
     }
 
     public void createSession(CreateTrainingSessionRequest request) {
@@ -59,11 +63,31 @@ public class TrainingSessionService {
         trainingSessionRepository.save(session);
     }
 
-    public Page<TrainingSessionResponse> getAllUpcomingSessions(int page,int size) {
-        Pageable pageable = PageRequest.of(page, size, Sort.by("startDate").ascending());
+    public PageResponse<TrainingSessionResponse> getAllUpcomingSessions(int page, int size) {
 
-        TrainingSessionMapper mapper = new TrainingSessionMapper();
-        return trainingSessionRepository.findByStartDateGreaterThanEqual(LocalDate.now(), pageable)
-                .map(mapper::toResponse);
+        Pageable pageable = PageRequest.of(
+                page,
+                size,
+                Sort.by("startDate").ascending()
+        );
+
+        Page<TrainingSession> sessions =
+                trainingSessionRepository.findByStartDateGreaterThanEqual(
+                        LocalDate.now(),
+                        pageable
+                );
+
+        Page<TrainingSessionResponse> responsePage =
+                sessions.map(trainingSessionMapper::toResponse);
+
+        return new PageResponse<>(
+                responsePage.getContent(),
+                responsePage.getNumber(),
+                responsePage.getSize(),
+                responsePage.getTotalElements(),
+                responsePage.getTotalPages(),
+                responsePage.isFirst(),
+                responsePage.isLast()
+        );
     }
 }

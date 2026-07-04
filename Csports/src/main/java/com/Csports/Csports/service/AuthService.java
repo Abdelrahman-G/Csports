@@ -11,15 +11,20 @@ import com.Csports.Csports.DTO.RegisterRequest;
 import com.Csports.Csports.exception.EmailAlreadyExistsException;
 import com.Csports.Csports.exception.InvalidCredentialsException;
 import com.Csports.Csports.exception.PhoneNumberAlreadyExistsException;
+import com.Csports.Csports.exception.ResourceNotFoundException;
 import com.Csports.Csports.exception.SportNotFoundException;
 import com.Csports.Csports.model.RefreshToken;
+import com.Csports.Csports.model.Region;
 import com.Csports.Csports.model.Sport;
 import com.Csports.Csports.model.Role;
 import com.Csports.Csports.model.TrainerProfile;
 import com.Csports.Csports.model.User;
+import com.Csports.Csports.model.UserLocation;
 import com.Csports.Csports.repository.RefreshTokenRepository;
+import com.Csports.Csports.repository.RegionRepository;
 import com.Csports.Csports.repository.SportRepository;
 import com.Csports.Csports.repository.TrainerProfileRepository;
+import com.Csports.Csports.repository.UserLocationRepository;
 import com.Csports.Csports.repository.UserRepository;
 import com.Csports.Csports.security.JwtService;
 
@@ -33,14 +38,18 @@ public class AuthService {
     private final RefreshTokenRepository refreshTokenRepository;
     private final SportRepository sportRepository;
     private final TrainerProfileRepository trainerProfileRepository;
+    private final RegionRepository regionRepository;
+    private final UserLocationRepository userLocationRepository;
 
-    public AuthService(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtService jwtService, RefreshTokenRepository refreshTokenRepository, SportRepository sportRepository, TrainerProfileRepository trainerProfileRepository) {
+    public AuthService(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtService jwtService, RefreshTokenRepository refreshTokenRepository, SportRepository sportRepository, TrainerProfileRepository trainerProfileRepository, RegionRepository regionRepository, UserLocationRepository userLocationRepository) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
         this.refreshTokenRepository = refreshTokenRepository;
         this.sportRepository = sportRepository;
         this.trainerProfileRepository = trainerProfileRepository;
+        this.regionRepository = regionRepository;
+        this.userLocationRepository = userLocationRepository;
     }
 
     public void register(RegisterRequest request) {
@@ -61,6 +70,20 @@ public class AuthService {
                 .build();
 
         userRepository.save(user);
+
+
+        Region region = regionRepository.findById(request.regionId())
+            .orElseThrow(() -> new ResourceNotFoundException("Region not found"));  
+        
+        UserLocation location = UserLocation.builder()
+            .user(user)
+            .region(region)
+            .latitude(request.latitude())
+            .longitude(request.longitude())
+            .build();
+        userLocationRepository.save(location);
+
+
         if (user.getRole() == Role.TRAINER) {
 
             Sport sport = sportRepository.findById(request.sportId())
@@ -76,6 +99,7 @@ public class AuthService {
             trainerProfileRepository.save(profile);
         }
     }
+
     public AuthResponse  login(LoginRequest request) {
 
         User user = userRepository.findByEmail(request.identifier())
@@ -119,6 +143,7 @@ public class AuthService {
 
         return new AuthResponse(accessToken, refreshToken.getToken(), user.getRole());
     }
+    
     public void logout(RefreshRequest request) {
 
         RefreshToken refreshToken = refreshTokenRepository

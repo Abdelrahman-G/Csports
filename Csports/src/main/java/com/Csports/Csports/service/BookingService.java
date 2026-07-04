@@ -7,7 +7,6 @@ import com.Csports.Csports.exception.CannotBookOwnSessionException;
 import com.Csports.Csports.exception.ResourceNotFoundException;
 import com.Csports.Csports.exception.SessionFullException;
 import com.Csports.Csports.model.Booking;
-import com.Csports.Csports.model.BookingStatus;
 import com.Csports.Csports.model.TrainingSession;
 import com.Csports.Csports.model.User;
 import com.Csports.Csports.repository.BookingRepository;
@@ -60,7 +59,7 @@ public class BookingService {
         Booking booking = Booking.builder()
                 .user(user)
                 .session(session)
-                .status(BookingStatus.CONFIRMED)
+                // .status(BookingStatus.CONFIRMED)
                 .build();
 
         bookingRepository.save(booking);
