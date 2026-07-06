@@ -40,10 +40,9 @@ public class UserService {
         Pageable pageable = PageRequest.of(
                 page,
                 size,
-                Sort.by("bookedAt").descending()
-        );
+                Sort.by("bookedAt").descending());
 
-        Page<Booking> bookings =bookingRepository.findByUser(currentUser, pageable);
+        Page<Booking> bookings = bookingRepository.findByUser(currentUser, pageable);
 
         Page<BookedSessionResponse> response = bookings.map(bookingMapper::toResponse);
 
@@ -54,8 +53,7 @@ public class UserService {
                 response.getTotalElements(),
                 response.getTotalPages(),
                 response.isFirst(),
-                response.isLast()
-        );
+                response.isLast());
     }
 
 }
