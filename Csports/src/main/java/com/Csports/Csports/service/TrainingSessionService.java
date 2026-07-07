@@ -100,4 +100,32 @@ public class TrainingSessionService {
                                 .orElseThrow(TrainerProfileNotFoundException::new);
                 return mapper.toDetailsResponse(session, trainerProfile);
         }
+
+        @Transactional
+        public PageResponse<TrainingSessionResponse> getTrainerSessions(int page, int size) {
+                TrainingSessionMapper mapper = new TrainingSessionMapper();
+                User trainer = userService.getCurrentUser();
+
+                Pageable pageable = PageRequest.of(page, size, Sort.by("startDate").ascending());
+
+                Page<TrainingSession> sessions = trainingSessionRepository.findByTrainer(trainer, pageable);
+
+                Page<TrainingSessionResponse> response = sessions.map(mapper::toResponse);
+
+                return new PageResponse<>(
+
+                                response.getContent(),
+
+                                response.getNumber(),
+
+                                response.getSize(),
+
+                                response.getTotalElements(),
+
+                                response.getTotalPages(),
+
+                                response.isFirst(),
+
+                                response.isLast());
+        }
 }

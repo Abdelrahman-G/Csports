@@ -1,5 +1,6 @@
 package com.Csports.Csports.service;
 
+
 import org.springframework.stereotype.Service;
 import com.Csports.Csports.DTO.CreateTrainerProfileRequest;
 import com.Csports.Csports.exception.InvalidCredentialsException;
@@ -11,6 +12,7 @@ import com.Csports.Csports.model.TrainerProfile;
 import com.Csports.Csports.model.User;
 import com.Csports.Csports.repository.SportRepository;
 import com.Csports.Csports.repository.TrainerProfileRepository;
+
 
 @Service
 public class TrainerProfileService {
@@ -53,4 +55,6 @@ public class TrainerProfileService {
 
         trainerProfileRepository.save(profile);
     }
+
+    
 }
