@@ -9,8 +9,10 @@ import com.Csports.Csports.DTO.BookedSessionResponse;
 import com.Csports.Csports.DTO.PageResponse;
 import com.Csports.Csports.exception.AlreadyBookedException;
 import com.Csports.Csports.exception.CannotBookOwnSessionException;
+import com.Csports.Csports.exception.GeneralException;
 import com.Csports.Csports.exception.ResourceNotFoundException;
 import com.Csports.Csports.exception.SessionFullException;
+import com.Csports.Csports.exception.TrainingSessionNotFoundException;
 import com.Csports.Csports.mapper.BookingMapper;
 import com.Csports.Csports.model.Booking;
 import com.Csports.Csports.model.TrainingSession;
@@ -28,7 +30,8 @@ public class BookingService {
     private final UserService userService;
     private final BookingMapper bookingMapper;
 
-    public BookingService(BookingRepository bookingRepository,TrainingSessionRepository trainingSessionRepository,UserService userService, BookingMapper bookingMapper) {
+    public BookingService(BookingRepository bookingRepository, TrainingSessionRepository trainingSessionRepository,
+            UserService userService, BookingMapper bookingMapper) {
 
         this.bookingRepository = bookingRepository;
         this.trainingSessionRepository = trainingSessionRepository;
@@ -36,7 +39,10 @@ public class BookingService {
         this.bookingMapper = bookingMapper;
     }
 
-    // Transactional annotation ensures that the entire booking process is treated as a single transaction. If any part of the process fails (e.g., if the session is full or the user has already booked), the entire transaction will be rolled back, and no changes will be made to the database.
+    // Transactional annotation ensures that the entire booking process is treated
+    // as a single transaction. If any part of the process fails (e.g., if the
+    // session is full or the user has already booked), the entire transaction will
+    // be rolled back, and no changes will be made to the database.
     // avoid booking the same last spot multiple times
     @Transactional
     public void bookSession(Long sessionId) {
@@ -44,8 +50,7 @@ public class BookingService {
         User user = userService.getCurrentUser();
 
         TrainingSession session = trainingSessionRepository.findById(sessionId)
-                .orElseThrow(() ->
-                        new ResourceNotFoundException("Training session not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Training session not found"));
 
         if (session.getTrainer().getId().equals(user.getId())) {
             throw new CannotBookOwnSessionException();
@@ -91,7 +96,21 @@ public class BookingService {
                 response.getTotalElements(),
                 response.getTotalPages(),
                 response.isFirst(),
-                response.isLast()
-        );
+                response.isLast());
+    }
+
+    @Transactional
+    public void cancelBooking(Long sessionId) {
+
+        User currentUser = userService.getCurrentUser();
+
+        TrainingSession session = trainingSessionRepository.findById(sessionId)
+                .orElseThrow(TrainingSessionNotFoundException::new);
+
+        Booking booking = bookingRepository.findByUserAndSession(currentUser, session).orElseThrow(()->new GeneralException());
+
+        bookingRepository.delete(booking);
+
+        session.setCurrentParticipants(session.getCurrentParticipants() - 1);
     }
 }

@@ -1,5 +1,7 @@
 package com.Csports.Csports.repository;
 
+import java.util.Optional;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -12,7 +14,7 @@ import com.Csports.Csports.model.User;
 public interface BookingRepository extends JpaRepository<Booking, Long> {
 
     boolean existsByUserAndSession(User user, TrainingSession session);
-    
+    Optional<Booking> findByUserAndSession(User user, TrainingSession session);
     Page<Booking> findByUser(User user, Pageable pageable);
     
 
