@@ -72,4 +72,9 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleTrainerProfileAlreadyExists(TrainerProfileAlreadyExistsException ex) {
         return buildResponse(HttpStatus.CONFLICT, ex.getMessage());
     }
+
+    @ExceptionHandler(GeneralException.class)
+    public ResponseEntity<ErrorResponse> handleGeneralException(GeneralException ex) {
+        return buildResponse(HttpStatus.METHOD_NOT_ALLOWED, ex.getMessage());
+    }
 }

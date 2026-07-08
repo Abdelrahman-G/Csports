@@ -12,6 +12,8 @@ import com.Csports.Csports.DTO.CreateTrainingSessionRequest;
 import com.Csports.Csports.DTO.PageResponse;
 import com.Csports.Csports.DTO.TrainingSessionDetailsResponse;
 import com.Csports.Csports.DTO.TrainingSessionResponse;
+import com.Csports.Csports.exception.GeneralException;
+import com.Csports.Csports.exception.ResourceNotFoundException;
 import com.Csports.Csports.exception.TrainerProfileNotFoundException;
 import com.Csports.Csports.exception.TrainingSessionNotFoundException;
 import com.Csports.Csports.mapper.TrainingSessionMapper;
@@ -127,5 +129,23 @@ public class TrainingSessionService {
                                 response.isFirst(),
 
                                 response.isLast());
+        }
+
+        @Transactional
+        public void deleteSession(Long sessionId) {
+
+                User currentTrainer = userService.getCurrentUser();
+
+                TrainingSession session = trainingSessionRepository.findById(sessionId)
+                                .orElseThrow(() -> new ResourceNotFoundException("Training session not found."));
+
+                if (!session.getTrainer().getId().equals(currentTrainer.getId())) {
+                        throw new GeneralException();
+                }
+                
+
+                // notify users first (TODO)
+                
+                trainingSessionRepository.delete(session);
         }
 }

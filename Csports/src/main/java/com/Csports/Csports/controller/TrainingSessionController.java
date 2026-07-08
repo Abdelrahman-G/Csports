@@ -2,6 +2,7 @@ package com.Csports.Csports.controller;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -34,14 +35,24 @@ public class TrainingSessionController {
 
         return ResponseEntity.ok("Training session created successfully.");
     }
-    
+
     @GetMapping
-    public PageResponse<TrainingSessionResponse> getSessions(@RequestParam(defaultValue = "0") int page,@RequestParam(defaultValue = "10") int size) {
+    public PageResponse<TrainingSessionResponse> getSessions(@RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
         return trainingSessionService.getAllUpcomingSessions(page, size);
     }
 
     @GetMapping("/{sessionId}")
     public TrainingSessionDetailsResponse getSession(@PathVariable Long sessionId) {
         return trainingSessionService.getSession(sessionId);
+    }
+
+    @PreAuthorize("hasRole('TRAINER')")
+    @DeleteMapping("/{sessionId}")
+    public ResponseEntity<String> deleteSession(@PathVariable Long sessionId) {
+
+        trainingSessionService.deleteSession(sessionId);
+
+        return ResponseEntity.ok("Training session deleted successfully.");
     }
 }

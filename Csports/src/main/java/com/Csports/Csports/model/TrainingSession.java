@@ -4,7 +4,9 @@ import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.hibernate.annotations.CreationTimestamp;
@@ -88,6 +90,10 @@ public class TrainingSession {
     @CreationTimestamp
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
+
+    @OneToMany(mappedBy = "session",cascade = CascadeType.ALL,orphanRemoval = true)   
+        @Builder.Default
+    private List<Booking> bookings = new ArrayList<>();
 
     public String getGoogleMapsUrl() {
         return "https://www.google.com/maps?q=" +
