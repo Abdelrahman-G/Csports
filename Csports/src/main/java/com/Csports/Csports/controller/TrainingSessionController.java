@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.Csports.Csports.DTO.CreateTrainingSessionRequest;
 import com.Csports.Csports.DTO.PageResponse;
+import com.Csports.Csports.DTO.SessionParticipantResponse;
 import com.Csports.Csports.DTO.TrainingSessionDetailsResponse;
 import com.Csports.Csports.DTO.TrainingSessionResponse;
 import com.Csports.Csports.service.TrainingSessionService;
@@ -54,5 +55,14 @@ public class TrainingSessionController {
         trainingSessionService.deleteSession(sessionId);
 
         return ResponseEntity.ok("Training session deleted successfully.");
+    }
+
+    @PreAuthorize("hasRole('TRAINER')")
+    @GetMapping("/{sessionId}/participants")
+    public PageResponse<SessionParticipantResponse> getParticipants(@PathVariable Long sessionId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+
+        return trainingSessionService.getParticipants(sessionId, page, size);
     }
 }

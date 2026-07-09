@@ -1,4 +1,5 @@
 package com.Csports.Csports.service;
+
 import java.time.LocalDateTime;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -8,6 +9,7 @@ import com.Csports.Csports.DTO.AuthResponse;
 import com.Csports.Csports.DTO.LoginRequest;
 import com.Csports.Csports.DTO.RefreshRequest;
 import com.Csports.Csports.DTO.RegisterRequest;
+import com.Csports.Csports.DTO.RegisterTrainerRequest;
 import com.Csports.Csports.exception.EmailAlreadyExistsException;
 import com.Csports.Csports.exception.InvalidCredentialsException;
 import com.Csports.Csports.exception.PhoneNumberAlreadyExistsException;
@@ -24,12 +26,12 @@ import com.Csports.Csports.repository.RefreshTokenRepository;
 import com.Csports.Csports.repository.RegionRepository;
 import com.Csports.Csports.repository.SportRepository;
 import com.Csports.Csports.repository.TrainerProfileRepository;
-import com.Csports.Csports.repository.UserLocationRepository;
 import com.Csports.Csports.repository.UserRepository;
 import com.Csports.Csports.security.JwtService;
 
+import jakarta.transaction.Transactional;
 
-@Service 
+@Service
 public class AuthService {
 
     private final UserRepository userRepository;
@@ -39,9 +41,10 @@ public class AuthService {
     private final SportRepository sportRepository;
     private final TrainerProfileRepository trainerProfileRepository;
     private final RegionRepository regionRepository;
-    private final UserLocationRepository userLocationRepository;
 
-    public AuthService(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtService jwtService, RefreshTokenRepository refreshTokenRepository, SportRepository sportRepository, TrainerProfileRepository trainerProfileRepository, RegionRepository regionRepository, UserLocationRepository userLocationRepository) {
+    public AuthService(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtService jwtService,
+            RefreshTokenRepository refreshTokenRepository, SportRepository sportRepository,
+            TrainerProfileRepository trainerProfileRepository, RegionRepository regionRepository) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
@@ -49,62 +52,81 @@ public class AuthService {
         this.sportRepository = sportRepository;
         this.trainerProfileRepository = trainerProfileRepository;
         this.regionRepository = regionRepository;
-        this.userLocationRepository = userLocationRepository;
     }
 
-    public void register(RegisterRequest request) {
+    @Transactional
+    public void registerUser(RegisterRequest request) {
 
-        if (userRepository.existsByEmail(request.email())) {
-            throw new EmailAlreadyExistsException("Email already exists");
-        }
-        if (userRepository.existsByPhoneNumber(request.phoneNumber())) {
-            throw new PhoneNumberAlreadyExistsException("this number is registered to and existing account");
-        }
+        validateRegistration(request.email(), request.phoneNumber());
+
+        Region region = regionRepository.findById(request.regionId())
+                .orElseThrow(() -> new ResourceNotFoundException("Region not found."));
+
         User user = User.builder()
                 .name(request.name())
                 .email(request.email())
                 .phoneNumber(request.phoneNumber())
                 .password(passwordEncoder.encode(request.password()))
                 .age(request.age())
-                .role(request.role())
+                .role(Role.USER)
                 .build();
+
+        UserLocation location = UserLocation.builder()
+                .region(region)
+                .latitude(request.latitude())
+                .longitude(request.longitude())
+                .build();
+
+        user.setLocation(location);
+
+        userRepository.save(user);
+    }
+
+    @Transactional
+    public void registerTrainer(RegisterTrainerRequest request) {
+
+        validateRegistration(request.email(), request.phoneNumber());
+
+        Region region = regionRepository.findById(request.regionId())
+                .orElseThrow(() -> new ResourceNotFoundException("Region not found."));
+
+        Sport sport = sportRepository.findById(request.sportId())
+                .orElseThrow(SportNotFoundException::new);
+
+        User user = User.builder()
+                .name(request.name())
+                .email(request.email())
+                .phoneNumber(request.phoneNumber())
+                .password(passwordEncoder.encode(request.password()))
+                .age(request.age())
+                .role(Role.TRAINER)
+                .build();
+
+        UserLocation location = UserLocation.builder()
+                .region(region)
+                .latitude(request.latitude())
+                .longitude(request.longitude())
+                .build();
+
+        user.setLocation(location);
 
         userRepository.save(user);
 
-
-        Region region = regionRepository.findById(request.regionId())
-            .orElseThrow(() -> new ResourceNotFoundException("Region not found"));  
-        
-        UserLocation location = UserLocation.builder()
-            .user(user)
-            .region(region)
-            .latitude(request.latitude())
-            .longitude(request.longitude())
-            .build();
-        userLocationRepository.save(location);
-
-
-        if (user.getRole() == Role.TRAINER) {
-
-            Sport sport = sportRepository.findById(request.sportId())
-            .orElseThrow(SportNotFoundException::new);
-
-            TrainerProfile profile = TrainerProfile.builder()
+        TrainerProfile trainerProfile = TrainerProfile.builder()
                 .user(user)
                 .bio(request.bio())
                 .experienceYears(request.experienceYears())
                 .sport(sport)
                 .build();
 
-            trainerProfileRepository.save(profile);
-        }
+        trainerProfileRepository.save(trainerProfile);
     }
 
-    public AuthResponse  login(LoginRequest request) {
+    public AuthResponse login(LoginRequest request) {
 
         User user = userRepository.findByEmail(request.identifier())
-            .or(() -> userRepository.findByPhoneNumber(request.identifier()))
-            .orElseThrow(() -> new InvalidCredentialsException("Invalid credentials"));
+                .or(() -> userRepository.findByPhoneNumber(request.identifier()))
+                .orElseThrow(() -> new InvalidCredentialsException("Invalid credentials"));
 
         if (!passwordEncoder.matches(request.password(), user.getPassword())) {
             throw new InvalidCredentialsException("Invalid credentials");
@@ -113,15 +135,14 @@ public class AuthService {
         String refreshToken = jwtService.generateRefreshToken(user);
 
         refreshTokenRepository.save(
-            RefreshToken.builder()
-                .token(refreshToken)
-                .user(user)
-                .expiryDate(LocalDateTime.now().plusDays(30))
-                .revoked(false)
-                .build()
-        );
+                RefreshToken.builder()
+                        .token(refreshToken)
+                        .user(user)
+                        .expiryDate(LocalDateTime.now().plusDays(30))
+                        .revoked(false)
+                        .build());
 
-        return new AuthResponse(accessToken, refreshToken,user.getRole());
+        return new AuthResponse(accessToken, refreshToken, user.getRole());
     }
 
     public AuthResponse refresh(RefreshRequest request) {
@@ -143,7 +164,7 @@ public class AuthService {
 
         return new AuthResponse(accessToken, refreshToken.getToken(), user.getRole());
     }
-    
+
     public void logout(RefreshRequest request) {
 
         RefreshToken refreshToken = refreshTokenRepository
@@ -155,5 +176,15 @@ public class AuthService {
         refreshTokenRepository.save(refreshToken);
     }
 
+    private void validateRegistration(String email, String phoneNumber) {
 
+        if (userRepository.existsByEmail(email)) {
+            throw new EmailAlreadyExistsException("Email already exists.");
+        }
+
+        if (userRepository.existsByPhoneNumber(phoneNumber)) {
+            throw new PhoneNumberAlreadyExistsException(
+                    "This phone number is already registered.");
+        }
+    }
 }

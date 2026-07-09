@@ -12,26 +12,21 @@ import lombok.*;
 @Builder
 public class UserLocation {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+        @Id
+        @GeneratedValue(strategy = GenerationType.IDENTITY)
+        private Long id;
 
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(
-            name = "user_id",
-            nullable = false,
-            unique = true)
-    private User user;
+        @OneToOne(fetch = FetchType.LAZY)
+        @JoinColumn(name = "user_id", nullable = false, unique = true)
+        private User user;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(
-            name = "region_id",
-            nullable = false)
-    private Region region;
+        @ManyToOne(fetch = FetchType.LAZY)
+        @JoinColumn(name = "region_id", nullable = false)
+        private Region region;
 
-    @Column(nullable = false)
-    private Double latitude;
+        @Column(nullable = false)
+        private Double latitude;
 
-    @Column(nullable = false)
-    private Double longitude;
+        @Column(nullable = false)
+        private Double longitude;
 }

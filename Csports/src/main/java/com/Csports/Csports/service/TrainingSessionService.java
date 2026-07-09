@@ -10,17 +10,21 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.Csports.Csports.DTO.CreateTrainingSessionRequest;
 import com.Csports.Csports.DTO.PageResponse;
+import com.Csports.Csports.DTO.SessionParticipantResponse;
 import com.Csports.Csports.DTO.TrainingSessionDetailsResponse;
 import com.Csports.Csports.DTO.TrainingSessionResponse;
 import com.Csports.Csports.exception.GeneralException;
 import com.Csports.Csports.exception.ResourceNotFoundException;
 import com.Csports.Csports.exception.TrainerProfileNotFoundException;
 import com.Csports.Csports.exception.TrainingSessionNotFoundException;
+import com.Csports.Csports.mapper.BookingMapper;
 import com.Csports.Csports.mapper.TrainingSessionMapper;
+import com.Csports.Csports.model.Booking;
 import com.Csports.Csports.model.Sport;
 import com.Csports.Csports.model.TrainerProfile;
 import com.Csports.Csports.model.TrainingSession;
 import com.Csports.Csports.model.User;
+import com.Csports.Csports.repository.BookingRepository;
 import com.Csports.Csports.repository.TrainerProfileRepository;
 import com.Csports.Csports.repository.TrainingSessionRepository;
 
@@ -31,16 +35,20 @@ public class TrainingSessionService {
         private final TrainerProfileRepository trainerProfileRepository;
         private final UserService userService;
         private final TrainingSessionMapper trainingSessionMapper;
+        private final BookingRepository bookingRepository;
+        private final BookingMapper bookingMapper;
 
         public TrainingSessionService(
                         TrainingSessionRepository trainingSessionRepository,
                         TrainerProfileRepository trainerProfileRepository,
-                        UserService userService, TrainingSessionMapper trainingSessionMapper) {
+                        UserService userService, TrainingSessionMapper trainingSessionMapper, BookingRepository bookingRepository, BookingMapper bookingMapper) {
 
                 this.trainingSessionRepository = trainingSessionRepository;
                 this.trainerProfileRepository = trainerProfileRepository;
                 this.userService = userService;
                 this.trainingSessionMapper = trainingSessionMapper;
+                this.bookingRepository = bookingRepository;
+                this.bookingMapper = bookingMapper;
         }
 
         public void createSession(CreateTrainingSessionRequest request) {
@@ -94,25 +102,23 @@ public class TrainingSessionService {
 
         @Transactional(readOnly = true)
         public TrainingSessionDetailsResponse getSession(Long sessionId) {
-                TrainingSessionMapper mapper = new TrainingSessionMapper();
                 TrainingSession session = trainingSessionRepository.findById(sessionId)
                                 .orElseThrow(TrainingSessionNotFoundException::new);
 
                 TrainerProfile trainerProfile = trainerProfileRepository.findByUser(session.getTrainer())
                                 .orElseThrow(TrainerProfileNotFoundException::new);
-                return mapper.toDetailsResponse(session, trainerProfile);
+                return trainingSessionMapper.toDetailsResponse(session, trainerProfile);
         }
 
         @Transactional
         public PageResponse<TrainingSessionResponse> getTrainerSessions(int page, int size) {
-                TrainingSessionMapper mapper = new TrainingSessionMapper();
                 User trainer = userService.getCurrentUser();
 
                 Pageable pageable = PageRequest.of(page, size, Sort.by("startDate").ascending());
 
                 Page<TrainingSession> sessions = trainingSessionRepository.findByTrainer(trainer, pageable);
 
-                Page<TrainingSessionResponse> response = sessions.map(mapper::toResponse);
+                Page<TrainingSessionResponse> response = sessions.map(trainingSessionMapper::toResponse);
 
                 return new PageResponse<>(
 
@@ -131,7 +137,7 @@ public class TrainingSessionService {
                                 response.isLast());
         }
 
-        @Transactional
+        @Transactional(readOnly = true)
         public void deleteSession(Long sessionId) {
 
                 User currentTrainer = userService.getCurrentUser();
@@ -142,10 +148,37 @@ public class TrainingSessionService {
                 if (!session.getTrainer().getId().equals(currentTrainer.getId())) {
                         throw new GeneralException();
                 }
-                
 
                 // notify users first (TODO)
-                
+
                 trainingSessionRepository.delete(session);
+        }
+
+        @Transactional(readOnly = true)
+        public PageResponse<SessionParticipantResponse> getParticipants(Long sessionId, int page, int size) {
+
+                User trainer = userService.getCurrentUser();
+
+                TrainingSession session = trainingSessionRepository.findById(sessionId)
+                                .orElseThrow(TrainingSessionNotFoundException::new);
+
+                if (!session.getTrainer().getId().equals(trainer.getId())) {
+                        throw new GeneralException();
+                }
+
+                Pageable pageable = PageRequest.of(page, size);
+
+                Page<Booking> bookings = bookingRepository.findBySession(session, pageable);
+
+                Page<SessionParticipantResponse> response = bookings.map(bookingMapper::toParticipantResponse);
+
+                return new PageResponse<>(
+                                response.getContent(),
+                                response.getNumber(),
+                                response.getSize(),
+                                response.getTotalElements(),
+                                response.getTotalPages(),
+                                response.isFirst(),
+                                response.isLast());
         }
 }

@@ -1,8 +1,8 @@
 package com.Csports.Csports.model;
 
-
 import jakarta.persistence.*;
 import lombok.*;
+
 @Entity
 @Table(name = "trainer_profile")
 @Getter
@@ -12,7 +12,7 @@ import lombok.*;
 @Builder
 public class TrainerProfile {
     @Id
-private Long id;
+    private Long id;
 
     @OneToOne
     @MapsId

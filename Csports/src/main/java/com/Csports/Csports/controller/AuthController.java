@@ -10,21 +10,33 @@ import com.Csports.Csports.DTO.AuthResponse;
 import com.Csports.Csports.DTO.LoginRequest;
 import com.Csports.Csports.DTO.RefreshRequest;
 import com.Csports.Csports.DTO.RegisterRequest;
+import com.Csports.Csports.DTO.RegisterTrainerRequest;
 import com.Csports.Csports.service.AuthService;
 
 @RestController
 @RequestMapping("/auth")
 public class AuthController {
-        private final AuthService authService;
+    private final AuthService authService;
 
     public AuthController(AuthService authService) {
         this.authService = authService;
     }
 
-    @PostMapping("/register")
-    public ResponseEntity<String> register(@RequestBody RegisterRequest request) {
-        authService.register(request);
-        return ResponseEntity.ok("User registered successfully");
+    @PostMapping("/register/user")
+    public ResponseEntity<String> registerUser(@RequestBody RegisterRequest request) {
+
+        authService.registerUser(request);
+
+        return ResponseEntity.ok("User registered successfully.");
+    }
+
+    @PostMapping("/register/trainer")
+    public ResponseEntity<String> registerTrainer(
+            @RequestBody RegisterTrainerRequest request) {
+
+        authService.registerTrainer(request);
+
+        return ResponseEntity.ok("Trainer registered successfully.");
     }
 
     @PostMapping("/login")
