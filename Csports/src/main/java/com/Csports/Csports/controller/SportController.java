@@ -1,6 +1,10 @@
 package com.Csports.Csports.controller;
 import java.util.List;
+
+import org.springframework.security.access.prepost.PostAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import com.Csports.Csports.model.Sport;
@@ -17,5 +21,11 @@ public class SportController {
     @GetMapping("/list")
     public List<Sport> listSports() {
         return sportsRepo.findAll();
+    }
+    
+    @PostAuthorize("hasRole('ADMIN')")
+    @PostMapping("/add")
+    public Sport addSport(@RequestBody Sport sport) {
+        return sportsRepo.save(sport);
     }
 }
