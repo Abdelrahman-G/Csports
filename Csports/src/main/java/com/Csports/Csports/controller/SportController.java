@@ -9,23 +9,24 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import com.Csports.Csports.model.Sport;
 import com.Csports.Csports.repository.SportRepository;
+import com.Csports.Csports.service.SportService;
 
 @RestController
 @RequestMapping("/sports")
 public class SportController {
-    private final SportRepository sportsRepo;
+    private final SportService sportsService;
 
-    public SportController(SportRepository sportsRepo) {
-        this.sportsRepo = sportsRepo;
+    public SportController(SportService sportsService) {
+        this.sportsService = sportsService;
     }
     @GetMapping("/list")
     public List<Sport> listSports() {
-        return sportsRepo.findAll();
+        return sportsService.getSports();
     }
     
     @PostAuthorize("hasRole('ADMIN')")
     @PostMapping("/add")
     public Sport addSport(@RequestBody Sport sport) {
-        return sportsRepo.save(sport);
+        return sportsService.addSport(sport);
     }
 }

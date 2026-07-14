@@ -1,6 +1,5 @@
 package com.Csports.Csports.config;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
@@ -11,31 +10,25 @@ import org.springframework.data.redis.serializer.StringRedisSerializer;
 @Configuration
 public class RedisConfig {
 
-    @Bean
-    public RedisTemplate<String, Object> redisTemplate(
-            RedisConnectionFactory connectionFactory, ObjectMapper objectMapper) {
+        @Bean
+        public RedisTemplate<String, Object> redisTemplate(RedisConnectionFactory connectionFactory) {
 
-        RedisTemplate<String, Object> template =
-                new RedisTemplate<>();
+                RedisTemplate<String, Object> template = new RedisTemplate<>();
 
-        template.setConnectionFactory(connectionFactory);
+                template.setConnectionFactory(connectionFactory);
 
-        template.setKeySerializer(new StringRedisSerializer());
+                template.setKeySerializer(new StringRedisSerializer());
 
-        template.setHashKeySerializer(new StringRedisSerializer());
+                template.setHashKeySerializer(new StringRedisSerializer());
 
-        JacksonJsonRedisSerializer<Object> serializer =
-                new JacksonJsonRedisSerializer<>(
-                        objectMapper,
-                        Object.class
-                );
+                JacksonJsonRedisSerializer<Object> serializer = new JacksonJsonRedisSerializer<>(Object.class);
 
-        template.setValueSerializer(serializer);
+                template.setValueSerializer(serializer);
 
-        template.setHashValueSerializer(serializer);
+                template.setHashValueSerializer(serializer);
 
-        template.afterPropertiesSet();
+                template.afterPropertiesSet();
 
-        return template;
-    }
+                return template;
+        }
 }
