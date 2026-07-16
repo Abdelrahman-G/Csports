@@ -14,10 +14,11 @@ class GlobalExceptionHandlerTest {
 
     @Test
     void shouldHandleResourceNotFoundExceptionWithNotFoundStatus() {
-        ResponseEntity<ErrorResponse> response = handler.handleResourceNotFound(new ResourceNotFoundException("Missing entity"));
+        ResponseEntity<ErrorResponse> response = handler
+                .handleResourceNotFound(new ResourceNotFoundException("Missing entity"));
 
         assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
-        assertEquals("Missing entity", response.getBody());
+        assertEquals("Missing entity", response.getBody().message());
     }
 
     @Test
@@ -25,6 +26,6 @@ class GlobalExceptionHandlerTest {
         ResponseEntity<ErrorResponse> response = handler.handleSportNotFound(new SportNotFoundException());
 
         assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
-        assertEquals("Sport not found.", response.getBody());
+        assertEquals("Sport not found.", response.getBody().message());
     }
 }

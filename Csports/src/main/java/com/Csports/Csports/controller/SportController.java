@@ -7,8 +7,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import com.Csports.Csports.DTO.SportResponse;
 import com.Csports.Csports.model.Sport;
-import com.Csports.Csports.repository.SportRepository;
 import com.Csports.Csports.service.SportService;
 
 @RestController
@@ -20,7 +21,7 @@ public class SportController {
         this.sportsService = sportsService;
     }
     @GetMapping("/list")
-    public List<Sport> listSports() {
+    public List<SportResponse> listSports() {
         return sportsService.getSports();
     }
     
