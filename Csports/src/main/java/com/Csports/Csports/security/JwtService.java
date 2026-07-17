@@ -38,7 +38,7 @@ public class JwtService {
 
         return Jwts.builder()
                 .subject(String.valueOf(user.getId()))
-                .issuedAt(new Date(accessExpiration))
+                .issuedAt(new Date(System.currentTimeMillis()))
                 .expiration(new Date(
                         System.currentTimeMillis() + accessExpiration))
                 .signWith(getSigningKey())
@@ -48,7 +48,7 @@ public class JwtService {
 
         return Jwts.builder()
                 .subject(String.valueOf(user.getId()))
-                .issuedAt(new Date(refreshExpiration))
+                .issuedAt(new Date(System.currentTimeMillis()))
                 .expiration(new Date(
                         System.currentTimeMillis() + refreshExpiration))
                 .signWith(getSigningKey())

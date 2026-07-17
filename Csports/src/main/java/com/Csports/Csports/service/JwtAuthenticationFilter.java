@@ -9,8 +9,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import com.Csports.Csports.model.User;
 import com.Csports.Csports.security.JwtService;
-
-import io.jsonwebtoken.io.IOException;
+import java.io.IOException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -34,23 +33,27 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             HttpServletResponse response,
             FilterChain filterChain)
             throws ServletException, IOException, java.io.IOException {
-
+System.out.println(request.getMethod() + " " + request.getRequestURI());
+System.out.println("Authorization: " + request.getHeader("Authorization"));
         String authHeader = request.getHeader("Authorization");
-
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             filterChain.doFilter(request, response);
             return;
         }
 
         String jwt = authHeader.substring(7);
+System.out.println("JWT = " + jwt);
 
         String userId = jwtService.extractUserId(jwt);
+System.out.println("UserId = " + userId);
 
         if (userId != null && SecurityContextHolder.getContext().getAuthentication() == null) {
 
             UserDetails userDetails = userDetailsService.loadUserByUsername(userId);
+System.out.println("Authorities = " + userDetails.getAuthorities());
 
             if (jwtService.isTokenValid(jwt, (User) userDetails)) {
+System.out.println("Valid = " );
 
                 UsernamePasswordAuthenticationToken authToken =
                         new UsernamePasswordAuthenticationToken(

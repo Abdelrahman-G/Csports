@@ -24,6 +24,7 @@ public class SportService {
         List<SportResponse> cachedSports = redisService.get(SPORTS_CACHE_KEY);
 
         if (cachedSports != null) {
+            System.out.println("Returning sports from Redis");
             return cachedSports;
         }
 
