@@ -25,11 +25,11 @@ public class RedisController {
         return "Saved";
     }
 
-    @GetMapping("/get")
-    public Object get() {
+    // @GetMapping("/get")
+    // public Object get() {
 
-        return redisService.get("name");
-    }
+    //     return redisService.get("name");
+    // }
 
     @DeleteMapping("/delete")
     public String delete() {

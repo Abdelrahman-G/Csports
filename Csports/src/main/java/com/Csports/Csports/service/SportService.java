@@ -9,6 +9,8 @@ import com.Csports.Csports.DTO.SportResponse;
 import com.Csports.Csports.model.Sport;
 import com.Csports.Csports.repository.SportRepository;
 
+import tools.jackson.core.type.TypeReference;
+
 @Service
 public class SportService {
     private final SportRepository sportRepository;
@@ -21,7 +23,7 @@ public class SportService {
     }
 
     public List<SportResponse> getSports() {
-        List<SportResponse> cachedSports = redisService.get(SPORTS_CACHE_KEY);
+        List<SportResponse> cachedSports = redisService.get(SPORTS_CACHE_KEY, new TypeReference<List<SportResponse>>() {});
 
         if (cachedSports != null) {
             System.out.println("Returning sports from Redis");

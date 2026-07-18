@@ -1,7 +1,8 @@
 package com.Csports.Csports.controller;
+
 import java.util.List;
 
-import org.springframework.security.access.prepost.PostAuthorize;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -20,12 +21,13 @@ public class SportController {
     public SportController(SportService sportsService) {
         this.sportsService = sportsService;
     }
+
     @GetMapping("/list")
     public List<SportResponse> listSports() {
         return sportsService.getSports();
     }
-    
-    @PostAuthorize("hasRole('ADMIN')")
+
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/add")
     public Sport addSport(@RequestBody Sport sport) {
         return sportsService.addSport(sport);
