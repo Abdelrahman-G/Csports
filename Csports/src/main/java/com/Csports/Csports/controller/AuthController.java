@@ -59,6 +59,7 @@ public String me(Authentication authentication) {
     @PostMapping("/logout")
     public ResponseEntity<String> logout(@RequestBody RefreshRequest request) {
         authService.logout(request);
+        
         return ResponseEntity.ok("Logged out successfully");
     }
 }

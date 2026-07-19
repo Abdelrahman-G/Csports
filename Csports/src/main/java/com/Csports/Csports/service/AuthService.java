@@ -41,10 +41,11 @@ public class AuthService {
         private final SportRepository sportRepository;
         private final TrainerProfileRepository trainerProfileRepository;
         private final RegionRepository regionRepository;
+        private final RedisService redisService;
 
         public AuthService(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtService jwtService,
                         RefreshTokenRepository refreshTokenRepository, SportRepository sportRepository,
-                        TrainerProfileRepository trainerProfileRepository, RegionRepository regionRepository) {
+                        TrainerProfileRepository trainerProfileRepository, RegionRepository regionRepository, RedisService redisService) {
                 this.userRepository = userRepository;
                 this.passwordEncoder = passwordEncoder;
                 this.jwtService = jwtService;
@@ -52,6 +53,7 @@ public class AuthService {
                 this.sportRepository = sportRepository;
                 this.trainerProfileRepository = trainerProfileRepository;
                 this.regionRepository = regionRepository;
+                this.redisService = redisService;
         }
 
         @Transactional
@@ -172,7 +174,7 @@ public class AuthService {
                                 .orElseThrow(() -> new InvalidCredentialsException("Invalid refresh token"));
 
                 refreshToken.setRevoked(true);
-
+                redisService.delete("user:" + refreshToken.getUser().getId());
                 refreshTokenRepository.save(refreshToken);
         }
 
