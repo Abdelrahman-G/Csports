@@ -35,6 +35,7 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                     .requestMatchers("/auth/**").permitAll()
                     .requestMatchers("/redis/**").permitAll()
+
                     .anyRequest().authenticated()
             )
             .addFilterBefore(jwtAuthenticationFilter,

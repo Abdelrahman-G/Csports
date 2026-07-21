@@ -2,6 +2,7 @@ package com.Csports.Csports.service;
 
 import java.time.LocalDateTime;
 
+import org.springframework.cache.CacheManager;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -41,11 +42,11 @@ public class AuthService {
         private final SportRepository sportRepository;
         private final TrainerProfileRepository trainerProfileRepository;
         private final RegionRepository regionRepository;
-        private final RedisService redisService;
+        private final CacheManager cacheManager;
 
         public AuthService(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtService jwtService,
                         RefreshTokenRepository refreshTokenRepository, SportRepository sportRepository,
-                        TrainerProfileRepository trainerProfileRepository, RegionRepository regionRepository, RedisService redisService) {
+                        TrainerProfileRepository trainerProfileRepository, RegionRepository regionRepository, CacheManager cacheManager) {
                 this.userRepository = userRepository;
                 this.passwordEncoder = passwordEncoder;
                 this.jwtService = jwtService;
@@ -53,7 +54,7 @@ public class AuthService {
                 this.sportRepository = sportRepository;
                 this.trainerProfileRepository = trainerProfileRepository;
                 this.regionRepository = regionRepository;
-                this.redisService = redisService;
+                this.cacheManager = cacheManager;
         }
 
         @Transactional
@@ -167,6 +168,7 @@ public class AuthService {
                 return new AuthResponse(accessToken, refreshToken.getToken(), user.getRole());
         }
 
+        
         public void logout(RefreshRequest request) {
 
                 RefreshToken refreshToken = refreshTokenRepository
@@ -174,7 +176,7 @@ public class AuthService {
                                 .orElseThrow(() -> new InvalidCredentialsException("Invalid refresh token"));
 
                 refreshToken.setRevoked(true);
-                redisService.delete("user:" + refreshToken.getUser().getId());
+                cacheManager.getCache("users").evict(refreshToken.getUser().getId());
                 refreshTokenRepository.save(refreshToken);
         }
 
