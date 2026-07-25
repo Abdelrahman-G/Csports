@@ -1,13 +1,11 @@
 package com.Csports.Csports.service;
 
-
-import org.springframework.cache.annotation.Cacheable;
+import com.Csports.Csports.model.User;
+import com.Csports.Csports.repository.UserRepository;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
-
-import com.Csports.Csports.repository.UserRepository;
 
 @Service
 public class CustomUserDetailsService implements UserDetailsService {
@@ -19,10 +17,8 @@ public class CustomUserDetailsService implements UserDetailsService {
     }
 
     @Override
-    @Cacheable(value = "users", key = "#userId")
-    public UserDetails loadUserByUsername(String userId) {
-        UserDetails userDetails = userRepository.findById(Long.parseLong(userId))
-                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
-        return userDetails;
+    public UserDetails loadUserByUsername(String userId) throws UsernameNotFoundException {
+        return userRepository.findById(Long.parseLong(userId))
+                .orElseThrow(() -> new UsernameNotFoundException("User not found: " + userId));
     }
 }

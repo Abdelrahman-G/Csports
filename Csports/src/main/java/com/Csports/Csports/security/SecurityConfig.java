@@ -35,6 +35,8 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                     .requestMatchers("/auth/**").permitAll()
                     .requestMatchers("/redis/**").permitAll()
+                    // .requestMatchers("/sports/**").permitAll()
+                    // .requestMatchers("/regions/**").permitAll()
 
                     .anyRequest().authenticated()
             )

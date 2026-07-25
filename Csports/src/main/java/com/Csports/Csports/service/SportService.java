@@ -22,7 +22,7 @@ public class SportService {
     
     @Cacheable(value = "sports", key = "'all'")
     public List<SportResponse> getSports() {
-
+System.out.println(">>> Calling DB for sports list");
         List<SportResponse> sports = sportRepository.findAll()
                 .stream()
                 .map(sport -> new SportResponse(
