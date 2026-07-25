@@ -2,6 +2,7 @@ package com.Csports.Csports.controller;
 
 import com.Csports.Csports.DTO.SportResponse;
 import com.Csports.Csports.service.RedisService;
+import com.Csports.Csports.service.TokenBlacklistService;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.web.bind.annotation.*;
@@ -17,13 +18,16 @@ public class RedisController {
     private final RedisService redisService;
     private final RedisTemplate<String, Object> redisTemplate;
     private final RedisConnectionFactory connectionFactory;
+    private final TokenBlacklistService tokenBlacklistService;
 
     public RedisController(RedisService redisService,
                            RedisTemplate<String, Object> redisTemplate,
-                           RedisConnectionFactory connectionFactory) {
+                           RedisConnectionFactory connectionFactory,
+                           TokenBlacklistService tokenBlacklistService) {
         this.redisService = redisService;
         this.redisTemplate = redisTemplate;
         this.connectionFactory = connectionFactory;
+        this.tokenBlacklistService = tokenBlacklistService;
     }
 
     @PostMapping("/save")
@@ -82,5 +86,19 @@ public class RedisController {
     @GetMapping("/cache/get-object")
     public Object getObject() {
         return redisService.get("sport:1");
+    }
+
+    @PostMapping("/blacklist")
+    public String blacklist(@RequestParam String token, @RequestParam(defaultValue = "15") long minutes) {
+        tokenBlacklistService.blacklist(token, Duration.ofMinutes(minutes));
+        return "Token blacklisted for " + minutes + " minutes";
+    }
+
+    @GetMapping("/blacklist/check")
+    public Map<String, Object> checkBlacklist(@RequestParam String token) {
+        return Map.of(
+                "token", token,
+                "blacklisted", tokenBlacklistService.isBlacklisted(token)
+        );
     }
 }

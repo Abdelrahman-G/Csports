@@ -1,6 +1,5 @@
 package com.Csports.Csports.service;
 
-import com.Csports.Csports.model.User;
 import com.Csports.Csports.repository.UserRepository;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;

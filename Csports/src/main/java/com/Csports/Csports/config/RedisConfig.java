@@ -1,5 +1,8 @@
 package com.Csports.Csports.config;
 
+import org.springframework.cache.interceptor.CacheErrorHandler;
+import org.springframework.cache.annotation.CachingConfigurer;
+import org.springframework.cache.annotation.CachingConfigurerSupport;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -11,11 +14,25 @@ import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSeriali
 import org.springframework.data.redis.serializer.RedisSerializationContext;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
+import com.Csports.Csports.config.RedisCacheErrorHandler;
+
 import java.time.Duration;
 
 @Configuration
 @EnableCaching
-public class RedisConfig {
+public class RedisConfig extends CachingConfigurerSupport implements CachingConfigurer {
+
+    private final RedisCacheErrorHandler redisCacheErrorHandler;
+
+    public RedisConfig(RedisCacheErrorHandler redisCacheErrorHandler) {
+        this.redisCacheErrorHandler = redisCacheErrorHandler;
+    }
+
+    @Bean
+    @Override
+    public CacheErrorHandler errorHandler() {
+        return redisCacheErrorHandler;
+    }
 
     @Bean
     public RedisTemplate<String, Object> redisTemplate(RedisConnectionFactory connectionFactory) {

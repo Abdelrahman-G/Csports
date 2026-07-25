@@ -3,6 +3,7 @@ package com.Csports.Csports.service;
 import java.time.LocalDateTime;
 
 import org.springframework.cache.CacheManager;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -29,6 +30,7 @@ import com.Csports.Csports.repository.SportRepository;
 import com.Csports.Csports.repository.TrainerProfileRepository;
 import com.Csports.Csports.repository.UserRepository;
 import com.Csports.Csports.security.JwtService;
+import com.Csports.Csports.service.TokenBlacklistService;
 
 import jakarta.transaction.Transactional;
 
@@ -42,11 +44,13 @@ public class AuthService {
         private final SportRepository sportRepository;
         private final TrainerProfileRepository trainerProfileRepository;
         private final RegionRepository regionRepository;
-        private final CacheManager cacheManager;
+        private final TokenBlacklistService tokenBlacklistService;
+        private final long accessTokenTtlMillis;
 
         public AuthService(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtService jwtService,
                         RefreshTokenRepository refreshTokenRepository, SportRepository sportRepository,
-                        TrainerProfileRepository trainerProfileRepository, RegionRepository regionRepository, CacheManager cacheManager) {
+                        TrainerProfileRepository trainerProfileRepository, RegionRepository regionRepository, CacheManager cacheManager, TokenBlacklistService tokenBlacklistService,
+                        @org.springframework.beans.factory.annotation.Value("${jwt.access-expiration}") long accessTokenTtlMillis) {
                 this.userRepository = userRepository;
                 this.passwordEncoder = passwordEncoder;
                 this.jwtService = jwtService;
@@ -54,7 +58,8 @@ public class AuthService {
                 this.sportRepository = sportRepository;
                 this.trainerProfileRepository = trainerProfileRepository;
                 this.regionRepository = regionRepository;
-                this.cacheManager = cacheManager;
+                this.tokenBlacklistService = tokenBlacklistService;
+                this.accessTokenTtlMillis = accessTokenTtlMillis;
         }
 
         @Transactional
@@ -169,14 +174,14 @@ public class AuthService {
         }
 
         
-        public void logout(RefreshRequest request) {
+        public void logout(String accessToken, RefreshRequest request) {
 
                 RefreshToken refreshToken = refreshTokenRepository
                                 .findByToken(request.refreshToken())
                                 .orElseThrow(() -> new InvalidCredentialsException("Invalid refresh token"));
 
                 refreshToken.setRevoked(true);
-                cacheManager.getCache("users").evict(refreshToken.getUser().getId());
+                tokenBlacklistService.blacklist(accessToken, java.time.Duration.ofMillis(accessTokenTtlMillis));
                 refreshTokenRepository.save(refreshToken);
         }
 
