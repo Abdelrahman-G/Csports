@@ -15,6 +15,7 @@ import com.Csports.Csports.service.SportService;
 
 @RestController
 @RequestMapping("/sports")
+
 public class SportController {
     private final SportService sportsService;
 

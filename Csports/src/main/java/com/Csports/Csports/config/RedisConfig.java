@@ -1,34 +1,69 @@
 package com.Csports.Csports.config;
 
+import org.springframework.cache.interceptor.CacheErrorHandler;
+import org.springframework.cache.annotation.CachingConfigurer;
+import org.springframework.cache.annotation.CachingConfigurerSupport;
+import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.data.redis.cache.RedisCacheConfiguration;
+import org.springframework.data.redis.cache.RedisCacheManager;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.serializer.JacksonJsonRedisSerializer;
+import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
+import org.springframework.data.redis.serializer.RedisSerializationContext;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
+import com.Csports.Csports.config.RedisCacheErrorHandler;
+
+import java.time.Duration;
+
 @Configuration
-public class RedisConfig {
+@EnableCaching
+public class RedisConfig extends CachingConfigurerSupport implements CachingConfigurer {
 
-        @Bean
-        public RedisTemplate<String, Object> redisTemplate(RedisConnectionFactory connectionFactory) {
+    private final RedisCacheErrorHandler redisCacheErrorHandler;
 
-                RedisTemplate<String, Object> template = new RedisTemplate<>();
+    public RedisConfig(RedisCacheErrorHandler redisCacheErrorHandler) {
+        this.redisCacheErrorHandler = redisCacheErrorHandler;
+    }
 
-                template.setConnectionFactory(connectionFactory);
+    @Bean
+    @Override
+    public CacheErrorHandler errorHandler() {
+        return redisCacheErrorHandler;
+    }
 
-                template.setKeySerializer(new StringRedisSerializer());
+    @Bean
+    public RedisTemplate<String, Object> redisTemplate(RedisConnectionFactory connectionFactory) {
+        RedisTemplate<String, Object> template = new RedisTemplate<>();
+        template.setConnectionFactory(connectionFactory);
+        template.setKeySerializer(new StringRedisSerializer());
+        template.setHashKeySerializer(new StringRedisSerializer());
+        @SuppressWarnings("deprecation")
+        GenericJackson2JsonRedisSerializer serializer = new GenericJackson2JsonRedisSerializer();
+        template.setValueSerializer(serializer);
+        template.setHashValueSerializer(serializer);
+        template.afterPropertiesSet();
+        return template;
+    }
 
-                template.setHashKeySerializer(new StringRedisSerializer());
+    @Bean
+    public RedisCacheManager cacheManager(RedisConnectionFactory connectionFactory) {
+        @SuppressWarnings("deprecation")
+        GenericJackson2JsonRedisSerializer serializer = new GenericJackson2JsonRedisSerializer();
+        RedisCacheConfiguration cacheConfig = RedisCacheConfiguration.defaultCacheConfig()
+                .entryTtl(Duration.ofHours(1))
+                .disableCachingNullValues()
+                .serializeKeysWith(
+                        RedisSerializationContext.SerializationPair.fromSerializer(new StringRedisSerializer())
+                )
+                .serializeValuesWith(
+                        RedisSerializationContext.SerializationPair.fromSerializer(serializer)
+                );
 
-                JacksonJsonRedisSerializer<Object> serializer = new JacksonJsonRedisSerializer<>(Object.class);
-
-                template.setValueSerializer(serializer);
-
-                template.setHashValueSerializer(serializer);
-
-                template.afterPropertiesSet();
-
-                return template;
-        }
+        return RedisCacheManager.builder(connectionFactory)
+                .cacheDefaults(cacheConfig)
+                .build();
+    }
 }

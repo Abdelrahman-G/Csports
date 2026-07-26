@@ -57,8 +57,11 @@ public String me(Authentication authentication) {
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<String> logout(@RequestBody RefreshRequest request) {
-        authService.logout(request);
+    public ResponseEntity<String> logout(@RequestBody RefreshRequest request, jakarta.servlet.http.HttpServletRequest httpRequest) {
+        String authHeader = httpRequest.getHeader("Authorization");
+        String accessToken = (authHeader != null && authHeader.startsWith("Bearer ")) ? authHeader.substring(7) : null;
+        authService.logout(accessToken, request);
+        
         return ResponseEntity.ok("Logged out successfully");
     }
 }

@@ -9,6 +9,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import com.Csports.Csports.model.User;
 import com.Csports.Csports.security.JwtService;
+import com.Csports.Csports.service.TokenBlacklistService;
 import java.io.IOException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -20,11 +21,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         private final JwtService jwtService;
         private final CustomUserDetailsService userDetailsService;
+        private final TokenBlacklistService tokenBlacklistService;
 
-        public JwtAuthenticationFilter(JwtService jwtService, CustomUserDetailsService userDetailsService) {
+        public JwtAuthenticationFilter(JwtService jwtService, CustomUserDetailsService userDetailsService, TokenBlacklistService tokenBlacklistService) {
 
                 this.jwtService = jwtService;
                 this.userDetailsService = userDetailsService;
+                this.tokenBlacklistService = tokenBlacklistService;
         }
 
         @Override
@@ -40,6 +43,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 }
 
                 String jwt = authHeader.substring(7);
+
+                if (tokenBlacklistService.isBlacklisted(jwt)) {
+                        filterChain.doFilter(request, response);
+                        return;
+                }
 
                 String userId = jwtService.extractUserId(jwt);
 

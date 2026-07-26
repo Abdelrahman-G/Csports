@@ -11,7 +11,6 @@ import org.springframework.stereotype.Service;
 import com.Csports.Csports.model.User;
 
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 
 @Service
@@ -31,9 +30,19 @@ public class JwtService {
     }
 
         private Key getSigningKey() {
-        byte[] keyBytes = Decoders.BASE64.decode(secretKey);
-        return Keys.hmacShaKeyFor(keyBytes);
-    }
+                byte[] keyBytes = hexStringToByteArray(secretKey);
+                return Keys.hmacShaKeyFor(keyBytes);
+        }
+
+        private byte[] hexStringToByteArray(String hex) {
+                int len = hex.length();
+                byte[] data = new byte[len / 2];
+                for (int i = 0; i < len; i += 2) {
+                        data[i / 2] = (byte) ((Character.digit(hex.charAt(i), 16) << 4)
+                                        + Character.digit(hex.charAt(i + 1), 16));
+                }
+                return data;
+        }
     public String generateAccessToken(User user) {
 
         return Jwts.builder()

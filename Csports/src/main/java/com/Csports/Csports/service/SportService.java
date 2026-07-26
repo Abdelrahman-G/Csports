@@ -1,35 +1,28 @@
 package com.Csports.Csports.service;
 
-import java.time.Duration;
 import java.util.List;
 
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import com.Csports.Csports.DTO.SportResponse;
 import com.Csports.Csports.model.Sport;
 import com.Csports.Csports.repository.SportRepository;
 
-import tools.jackson.core.type.TypeReference;
 
 @Service
 public class SportService {
     private final SportRepository sportRepository;
-    private final RedisService redisService;
-    private static final String SPORTS_CACHE_KEY = "sports";
 
-    public SportService(SportRepository sportRepository, RedisService redisService) {
+
+    public SportService(SportRepository sportRepository) {
         this.sportRepository = sportRepository;
-        this.redisService = redisService;
     }
-
+    
+    @Cacheable(value = "sports", key = "'all'")
     public List<SportResponse> getSports() {
-        List<SportResponse> cachedSports = redisService.get(SPORTS_CACHE_KEY, new TypeReference<List<SportResponse>>() {});
-
-        if (cachedSports != null) {
-            System.out.println("Returning sports from Redis");
-            return cachedSports;
-        }
-
+System.out.println(">>> Calling DB for sports list");
         List<SportResponse> sports = sportRepository.findAll()
                 .stream()
                 .map(sport -> new SportResponse(
@@ -37,17 +30,11 @@ public class SportService {
                         sport.getName()))
                 .toList();
 
-        redisService.save(
-                SPORTS_CACHE_KEY,
-                sports,
-                Duration.ofHours(24));
-
         return sports;
     }
-
+    @CacheEvict(value = "sports", allEntries = true)
     public Sport addSport(Sport sport) {
         Sport savedSport = sportRepository.save(sport);
-        redisService.delete(SPORTS_CACHE_KEY);
         return savedSport;
     }
 }
