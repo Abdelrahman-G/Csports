@@ -7,6 +7,7 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import com.Csports.Csports.DTO.SportResponse;
+import com.Csports.Csports.config.CacheNames;
 import com.Csports.Csports.model.Sport;
 import com.Csports.Csports.repository.SportRepository;
 
@@ -20,9 +21,8 @@ public class SportService {
         this.sportRepository = sportRepository;
     }
     
-    @Cacheable(value = "sports", key = "'all'")
+    @Cacheable(cacheNames = CacheNames.SPORTS, key = "'all'", sync = true)
     public List<SportResponse> getSports() {
-System.out.println(">>> Calling DB for sports list");
         List<SportResponse> sports = sportRepository.findAll()
                 .stream()
                 .map(sport -> new SportResponse(
@@ -32,7 +32,7 @@ System.out.println(">>> Calling DB for sports list");
 
         return sports;
     }
-    @CacheEvict(value = "sports", allEntries = true)
+    @CacheEvict(cacheNames = CacheNames.SPORTS, allEntries = true)
     public Sport addSport(Sport sport) {
         Sport savedSport = sportRepository.save(sport);
         return savedSport;

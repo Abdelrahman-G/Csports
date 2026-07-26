@@ -5,6 +5,7 @@ import com.Csports.Csports.service.RedisService;
 import com.Csports.Csports.service.TokenBlacklistService;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
+import org.springframework.context.annotation.Profile;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.Duration;
@@ -13,6 +14,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/redis")
+@Profile("dev")
 public class RedisController {
 
     private final RedisService redisService;
@@ -38,7 +40,7 @@ public class RedisController {
 
     @GetMapping("/get")
     public Object get() {
-        return redisService.get("name");
+        return redisService.get("name", String.class).orElse(null);
     }
 
     @GetMapping("/exists")
@@ -69,7 +71,7 @@ public class RedisController {
 
     @GetMapping("/cache/{cacheName}")
     public Map<String, Object> inspectCache(@PathVariable String cacheName) {
-        String pattern = "spring:cache:" + cacheName + "::*";
+        String pattern = "csports:v1:cache:" + cacheName + "::*";
         return Map.of(
                 "cache", cacheName,
                 "keys", redisTemplate.keys(pattern)
@@ -85,13 +87,13 @@ public class RedisController {
 
     @GetMapping("/cache/get-object")
     public Object getObject() {
-        return redisService.get("sport:1");
+        return redisService.get("sport:1", SportResponse.class).orElse(null);
     }
 
     @PostMapping("/blacklist")
-    public String blacklist(@RequestParam String token, @RequestParam(defaultValue = "15") long minutes) {
-        tokenBlacklistService.blacklist(token, Duration.ofMinutes(minutes));
-        return "Token blacklisted for " + minutes + " minutes";
+    public String blacklist(@RequestParam String token) {
+        tokenBlacklistService.blacklist(token);
+        return "Token blacklisted for its remaining lifetime";
     }
 
     @GetMapping("/blacklist/check")

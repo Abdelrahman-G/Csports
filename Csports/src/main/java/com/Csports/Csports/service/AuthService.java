@@ -2,8 +2,6 @@ package com.Csports.Csports.service;
 
 import java.time.LocalDateTime;
 
-import org.springframework.cache.CacheManager;
-import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -45,12 +43,11 @@ public class AuthService {
         private final TrainerProfileRepository trainerProfileRepository;
         private final RegionRepository regionRepository;
         private final TokenBlacklistService tokenBlacklistService;
-        private final long accessTokenTtlMillis;
 
         public AuthService(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtService jwtService,
                         RefreshTokenRepository refreshTokenRepository, SportRepository sportRepository,
-                        TrainerProfileRepository trainerProfileRepository, RegionRepository regionRepository, CacheManager cacheManager, TokenBlacklistService tokenBlacklistService,
-                        @org.springframework.beans.factory.annotation.Value("${jwt.access-expiration}") long accessTokenTtlMillis) {
+                        TrainerProfileRepository trainerProfileRepository, RegionRepository regionRepository,
+                        TokenBlacklistService tokenBlacklistService) {
                 this.userRepository = userRepository;
                 this.passwordEncoder = passwordEncoder;
                 this.jwtService = jwtService;
@@ -59,7 +56,6 @@ public class AuthService {
                 this.trainerProfileRepository = trainerProfileRepository;
                 this.regionRepository = regionRepository;
                 this.tokenBlacklistService = tokenBlacklistService;
-                this.accessTokenTtlMillis = accessTokenTtlMillis;
         }
 
         @Transactional
@@ -181,7 +177,7 @@ public class AuthService {
                                 .orElseThrow(() -> new InvalidCredentialsException("Invalid refresh token"));
 
                 refreshToken.setRevoked(true);
-                tokenBlacklistService.blacklist(accessToken, java.time.Duration.ofMillis(accessTokenTtlMillis));
+                tokenBlacklistService.blacklist(accessToken);
                 refreshTokenRepository.save(refreshToken);
         }
 

@@ -1,39 +1,37 @@
 package com.Csports.Csports.config;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.cache.Cache;
 import org.springframework.cache.interceptor.CacheErrorHandler;
-import org.springframework.data.redis.serializer.SerializationException;
 import org.springframework.stereotype.Component;
 
 @Component
 public class RedisCacheErrorHandler implements CacheErrorHandler {
 
-    private static final Logger logger = Logger.getLogger(RedisCacheErrorHandler.class.getName());
+    private static final Logger logger = LoggerFactory.getLogger(RedisCacheErrorHandler.class);
 
     @Override
     public void handleCacheGetError(RuntimeException exception, Cache cache, Object key) {
-        if (exception instanceof SerializationException) {
-            logger.warning("Cache read error for key " + key + ": " + exception.getMessage());
-            return;
-        }
-        throw exception;
+        logger.warn(
+                "Cache read failed for cache {} and key {}; falling back to the source",
+                cache.getName(),
+                key,
+                exception);
     }
 
     @Override
     public void handleCachePutError(RuntimeException exception, Cache cache, Object key, Object value) {
-        logger.warning("Cache write error for key " + key + ": " + exception.getMessage());
+        logger.warn("Cache write failed for cache {} and key {}", cache.getName(), key, exception);
     }
 
     @Override
     public void handleCacheEvictError(RuntimeException exception, Cache cache, Object key) {
-        logger.warning("Cache evict error for key " + key + ": " + exception.getMessage());
+        logger.warn("Cache eviction failed for cache {} and key {}", cache.getName(), key, exception);
     }
 
     @Override
     public void handleCacheClearError(RuntimeException exception, Cache cache) {
-        logger.warning("Cache clear error: " + exception.getMessage());
+        logger.warn("Cache clear failed for cache {}", cache.getName(), exception);
     }
 }

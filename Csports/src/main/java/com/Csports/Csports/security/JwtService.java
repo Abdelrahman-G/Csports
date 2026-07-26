@@ -2,6 +2,7 @@ package com.Csports.Csports.security;
 
 import java.security.Key;
 import java.util.Date;
+import java.time.Duration;
 
 import javax.crypto.SecretKey;
 
@@ -71,6 +72,18 @@ public class JwtService {
                 .parseSignedClaims(token)
                 .getPayload()
                 .getSubject();
+    }
+
+    public Duration getRemainingLifetime(String token) {
+        Date expiration = Jwts.parser()
+                .verifyWith((SecretKey) getSigningKey())
+                .build()
+                .parseSignedClaims(token)
+                .getPayload()
+                .getExpiration();
+
+        long remainingMillis = expiration.getTime() - System.currentTimeMillis();
+        return remainingMillis > 0 ? Duration.ofMillis(remainingMillis) : Duration.ZERO;
     }
     public boolean isTokenValid(String token, User userDetails) {
 

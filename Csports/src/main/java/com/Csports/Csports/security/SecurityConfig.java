@@ -33,8 +33,12 @@ public class SecurityConfig {
             .sessionManagement(session ->
                     session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
-                    .requestMatchers("/auth/**").permitAll()
-                    .requestMatchers("/redis/**").permitAll()
+                    .requestMatchers(
+                            "/auth/register/user",
+                            "/auth/register/trainer",
+                            "/auth/login",
+                            "/auth/refresh"
+                    ).permitAll()
                     // .requestMatchers("/sports/**").permitAll()
                     // .requestMatchers("/regions/**").permitAll()
 
