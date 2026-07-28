@@ -1,3 +1,0 @@
-use railway for deployment
-flyway for DB migration
-github actions
