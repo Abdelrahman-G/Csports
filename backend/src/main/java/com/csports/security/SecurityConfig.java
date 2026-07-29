@@ -1,4 +1,6 @@
 package com.csports.security;
+
+import org.springframework.http.HttpMethod;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -10,14 +12,21 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
-import com.csports.security.JwtAuthenticationFilter;
 
 @Configuration
 @EnableMethodSecurity
 public class SecurityConfig {
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
-    public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter) {
+    private final ApiAuthenticationEntryPoint authenticationEntryPoint;
+    private final ApiAccessDeniedHandler accessDeniedHandler;
+
+    public SecurityConfig(
+            JwtAuthenticationFilter jwtAuthenticationFilter,
+            ApiAuthenticationEntryPoint authenticationEntryPoint,
+            ApiAccessDeniedHandler accessDeniedHandler) {
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
+        this.authenticationEntryPoint = authenticationEntryPoint;
+        this.accessDeniedHandler = accessDeniedHandler;
     }    
 
     @Bean
@@ -32,6 +41,9 @@ public class SecurityConfig {
             .csrf(AbstractHttpConfigurer::disable)
             .sessionManagement(session ->
                     session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            .exceptionHandling(exceptions -> exceptions
+                    .authenticationEntryPoint(authenticationEntryPoint)
+                    .accessDeniedHandler(accessDeniedHandler))
             .authorizeHttpRequests(auth -> auth
                     .requestMatchers(
                             "/auth/register/user",
@@ -46,9 +58,17 @@ public class SecurityConfig {
                             "/swagger-ui/**",
                             "/swagger-ui.html"
                     ).permitAll()
-                    // .requestMatchers("/sports/**").permitAll()
-                    // .requestMatchers("/regions/**").permitAll()
-
+                    // Public discovery: reference data and session catalogue/details.
+                    .requestMatchers(HttpMethod.GET,
+                            "/api/v1/sports/**",
+                            "/sports/**",
+                            "/api/v1/regions",
+                            "/regions",
+                            "/api/v1/sessions",
+                            "/sessions",
+                            "/api/v1/sessions/*",
+                            "/sessions/*"
+                    ).permitAll()
                     .anyRequest().authenticated()
             )
             .addFilterBefore(jwtAuthenticationFilter,

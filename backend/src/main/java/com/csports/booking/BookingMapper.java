@@ -6,7 +6,6 @@ import org.springframework.stereotype.Component;
 
 import com.csports.booking.dto.BookedSessionResponse;
 import com.csports.session.dto.SessionParticipantResponse;
-import com.csports.booking.Booking;
 import com.csports.user.User;
 import com.csports.session.TrainingSession;
 
@@ -43,7 +42,9 @@ public class BookingMapper {
 
                 session.getPrice(),
 
-                booking.getBookedAt().toLocalDate());
+                booking.getBookedAt().toLocalDate(),
+
+                session.getStatus());
     }
 
     public SessionParticipantResponse toParticipantResponse(Booking booking) {

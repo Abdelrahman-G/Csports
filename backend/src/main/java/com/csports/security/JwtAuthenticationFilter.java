@@ -1,6 +1,8 @@
 package com.csports.security;
 
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
@@ -15,6 +17,7 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import io.jsonwebtoken.JwtException;
 
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
@@ -22,12 +25,18 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         private final JwtService jwtService;
         private final CustomUserDetailsService userDetailsService;
         private final TokenBlacklistService tokenBlacklistService;
+        private final ApiAuthenticationEntryPoint authenticationEntryPoint;
 
-        public JwtAuthenticationFilter(JwtService jwtService, CustomUserDetailsService userDetailsService, TokenBlacklistService tokenBlacklistService) {
+        public JwtAuthenticationFilter(
+                        JwtService jwtService,
+                        CustomUserDetailsService userDetailsService,
+                        TokenBlacklistService tokenBlacklistService,
+                        ApiAuthenticationEntryPoint authenticationEntryPoint) {
 
                 this.jwtService = jwtService;
                 this.userDetailsService = userDetailsService;
                 this.tokenBlacklistService = tokenBlacklistService;
+                this.authenticationEntryPoint = authenticationEntryPoint;
         }
 
         @Override
@@ -44,18 +53,28 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
                 String jwt = authHeader.substring(7);
 
-                if (tokenBlacklistService.isBlacklisted(jwt)) {
-                        filterChain.doFilter(request, response);
-                        return;
-                }
+                try {
+                        if (tokenBlacklistService.isBlacklisted(jwt)) {
+                                authenticationEntryPoint.commence(
+                                                request,
+                                                response,
+                                                new BadCredentialsException("Access token has been revoked"));
+                                return;
+                        }
 
-                String userId = jwtService.extractUserId(jwt);
+                        String userId = jwtService.extractUserId(jwt);
 
-                if (userId != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+                        if (userId != null && SecurityContextHolder.getContext().getAuthentication() == null) {
 
-                        UserDetails userDetails = userDetailsService.loadUserByUsername(userId);
+                                UserDetails userDetails = userDetailsService.loadUserByUsername(userId);
 
-                        if (jwtService.isTokenValid(jwt, (User) userDetails)) {
+                                if (!jwtService.isTokenValid(jwt, (User) userDetails)) {
+                                        authenticationEntryPoint.commence(
+                                                        request,
+                                                        response,
+                                                        new BadCredentialsException("Invalid access token"));
+                                        return;
+                                }
 
                                 UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
                                                 userDetails,
@@ -69,6 +88,17 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                                 SecurityContextHolder.getContext()
                                                 .setAuthentication(authToken);
                         }
+                } catch (JwtException | IllegalArgumentException ex) {
+                        SecurityContextHolder.clearContext();
+                        authenticationEntryPoint.commence(
+                                        request,
+                                        response,
+                                        new BadCredentialsException("Invalid or expired access token", ex));
+                        return;
+                } catch (AuthenticationException ex) {
+                        SecurityContextHolder.clearContext();
+                        authenticationEntryPoint.commence(request, response, ex);
+                        return;
                 }
 
                 filterChain.doFilter(request, response);

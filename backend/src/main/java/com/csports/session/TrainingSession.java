@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import com.csports.booking.Booking;
 import com.csports.sport.Sport;
@@ -91,9 +92,26 @@ public class TrainingSession {
     @Column(nullable = false)
     private Double price;
 
+    @Builder.Default
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 32)
+    private TrainingSessionStatus status = TrainingSessionStatus.SCHEDULED;
+
     @CreationTimestamp
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
+
+    @UpdateTimestamp
+    @Column(nullable = false)
+    private LocalDateTime updatedAt;
+
+    private LocalDateTime cancelledAt;
+
+    @Column(length = 500)
+    private String lastUpdateReason;
+
+    @Column(length = 500)
+    private String cancellationReason;
 
     @OneToMany(mappedBy = "session",cascade = CascadeType.ALL,orphanRemoval = true)   
         @Builder.Default

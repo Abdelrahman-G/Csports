@@ -5,6 +5,8 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.Set;
 
+import com.csports.session.TrainingSessionStatus;
+
 public record BookedSessionResponse(
 
         Long sessionId,
@@ -31,6 +33,8 @@ public record BookedSessionResponse(
 
         Double price,
 
-        LocalDate bookedAt
+        LocalDate bookedAt,
+
+        TrainingSessionStatus sessionStatus
 
 ) {}

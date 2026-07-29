@@ -28,7 +28,10 @@ public class TrainingSessionMapper {
                 Set.copyOf(session.getDays()),
                 session.getPrice(),
                 session.getCurrentParticipants(),
-                session.getMaxParticipants()
+                session.getMaxParticipants(),
+                session.getStatus(),
+                session.getCancelledAt(),
+                session.getCancellationReason()
         );
     }
 
@@ -70,7 +73,15 @@ public class TrainingSessionMapper {
 
                 session.getMaxParticipants(),
 
-                session.getMaxParticipants() - session.getCurrentParticipants()
+                session.getMaxParticipants() - session.getCurrentParticipants(),
+
+                session.getStatus(),
+
+                session.getCancelledAt(),
+
+                session.getLastUpdateReason(),
+
+                session.getCancellationReason()
         );
     }
 

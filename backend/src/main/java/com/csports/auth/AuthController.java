@@ -13,8 +13,9 @@ import com.csports.auth.dto.LoginRequest;
 import com.csports.auth.dto.RefreshRequest;
 import com.csports.auth.dto.RegisterRequest;
 import com.csports.auth.dto.RegisterTrainerRequest;
-import com.csports.auth.AuthService;
 import com.csports.common.web.ApiPaths;
+
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping({ApiPaths.AUTH, ApiPaths.LEGACY_AUTH})
@@ -29,7 +30,7 @@ public String me(Authentication authentication) {
     return authentication.getAuthorities().toString();
 }
     @PostMapping("/register/user")
-    public ResponseEntity<String> registerUser(@RequestBody RegisterRequest request) {
+    public ResponseEntity<String> registerUser(@Valid @RequestBody RegisterRequest request) {
 
         authService.registerUser(request);
 
@@ -38,7 +39,7 @@ public String me(Authentication authentication) {
 
     @PostMapping("/register/trainer")
     public ResponseEntity<String> registerTrainer(
-            @RequestBody RegisterTrainerRequest request) {
+            @Valid @RequestBody RegisterTrainerRequest request) {
 
         authService.registerTrainer(request);
 
@@ -46,19 +47,19 @@ public String me(Authentication authentication) {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<AuthResponse> login(@RequestBody LoginRequest request) {
+    public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest request) {
         AuthResponse authResponse = authService.login(request);
         return ResponseEntity.ok(authResponse);
     }
 
     @PostMapping("/refresh")
-    public ResponseEntity<AuthResponse> refresh(@RequestBody RefreshRequest request) {
+    public ResponseEntity<AuthResponse> refresh(@Valid @RequestBody RefreshRequest request) {
         AuthResponse authResponse = authService.refresh(request);
         return ResponseEntity.ok(authResponse);
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<String> logout(@RequestBody RefreshRequest request, jakarta.servlet.http.HttpServletRequest httpRequest) {
+    public ResponseEntity<String> logout(@Valid @RequestBody RefreshRequest request, jakarta.servlet.http.HttpServletRequest httpRequest) {
         String authHeader = httpRequest.getHeader("Authorization");
         String accessToken = (authHeader != null && authHeader.startsWith("Bearer ")) ? authHeader.substring(7) : null;
         authService.logout(accessToken, request);

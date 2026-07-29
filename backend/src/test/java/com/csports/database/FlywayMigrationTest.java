@@ -38,14 +38,28 @@ class FlywayMigrationTest {
     private RedisTemplate<String, Object> redisTemplate;
 
     @Test
-    void initialMigrationBuildsSchemaThatHibernateCanValidate() {
+    void allMigrationsBuildSchemaThatHibernateCanValidate() {
         Integer migrationCount = jdbcTemplate.queryForObject(
                 "select count(*) from flyway_schema_history "
-                        + "where version = '1' and success = true",
+                        + "where version in ('1', '2', '3') and success = true",
                 Integer.class
         );
 
-        assertThat(migrationCount).isEqualTo(1);
+        assertThat(migrationCount).isEqualTo(3);
+
+        Integer notificationTableCount = jdbcTemplate.queryForObject(
+                "select count(*) from information_schema.tables "
+                        + "where table_name = 'user_notification'",
+                Integer.class
+        );
+        assertThat(notificationTableCount).isEqualTo(1);
+
+        Integer bookingStatusColumnCount = jdbcTemplate.queryForObject(
+                "select count(*) from information_schema.columns "
+                        + "where table_name = 'booking' and column_name = 'status'",
+                Integer.class
+        );
+        assertThat(bookingStatusColumnCount).isEqualTo(1);
     }
 
     @Test
@@ -96,7 +110,6 @@ class FlywayMigrationTest {
 
         HttpResponse<String> sportsResponse = client.send(
                 HttpRequest.newBuilder(uri("/api/v1/sports/list"))
-                        .header("Authorization", "Bearer " + tokenMatch.group(1))
                         .GET()
                         .build(),
                 HttpResponse.BodyHandlers.ofString()
@@ -104,6 +117,82 @@ class FlywayMigrationTest {
 
         assertThat(sportsResponse.statusCode()).isEqualTo(200);
         assertThat(sportsResponse.body()).isEqualTo("[]");
+
+        HttpResponse<String> unauthenticatedResponse = client.send(
+                HttpRequest.newBuilder(uri("/api/v1/bookings/me")).GET().build(),
+                HttpResponse.BodyHandlers.ofString()
+        );
+        assertThat(unauthenticatedResponse.statusCode()).isEqualTo(401);
+        assertThat(unauthenticatedResponse.body()).contains(
+                "\"code\":\"AUTHENTICATION_REQUIRED\"",
+                "\"path\":\"/api/v1/bookings/me\""
+        );
+
+        HttpResponse<String> invalidTokenResponse = client.send(
+                HttpRequest.newBuilder(uri("/api/v1/bookings/me"))
+                        .header("Authorization", "Bearer this-is-not-a-jwt")
+                        .GET()
+                        .build(),
+                HttpResponse.BodyHandlers.ofString()
+        );
+        assertThat(invalidTokenResponse.statusCode()).isEqualTo(401);
+        assertThat(invalidTokenResponse.body()).contains("\"code\":\"AUTHENTICATION_REQUIRED\"");
+
+        HttpResponse<String> forbiddenResponse = client.send(
+                HttpRequest.newBuilder(uri("/api/v1/sessions"))
+                        .header("Authorization", "Bearer " + tokenMatch.group(1))
+                        .header("Content-Type", "application/json")
+                        .POST(HttpRequest.BodyPublishers.ofString(
+                                """
+                                {
+                                  "title": "User cannot create this",
+                                  "locationName": "Nasr City",
+                                  "latitude": 30.0581,
+                                  "longitude": 31.3302,
+                                  "startDate": "2099-01-05",
+                                  "endDate": "2099-01-05",
+                                  "startTime": "18:00:00",
+                                  "durationMinutes": 60,
+                                  "days": ["MONDAY"],
+                                  "maxParticipants": 10,
+                                  "price": 100
+                                }
+                                """
+                        ))
+                        .build(),
+                HttpResponse.BodyHandlers.ofString()
+        );
+        assertThat(forbiddenResponse.statusCode()).isEqualTo(403);
+        assertThat(forbiddenResponse.body()).contains("\"code\":\"ACCESS_DENIED\"");
+
+        HttpResponse<String> validationResponse = client.send(
+                HttpRequest.newBuilder(uri("/api/v1/auth/register/user"))
+                        .header("Content-Type", "application/json")
+                        .POST(HttpRequest.BodyPublishers.ofString(
+                                """
+                                {
+                                  "name": "",
+                                  "email": "invalid-email",
+                                  "phoneNumber": "12",
+                                  "password": "short",
+                                  "age": 10,
+                                  "regionId": 1,
+                                  "latitude": 28.0,
+                                  "longitude": 32.0
+                                }
+                                """
+                        ))
+                        .build(),
+                HttpResponse.BodyHandlers.ofString()
+        );
+        assertThat(validationResponse.statusCode()).isEqualTo(400);
+        assertThat(validationResponse.body()).contains(
+                "\"code\":\"VALIDATION_FAILED\"",
+                "\"fieldErrors\"",
+                "\"latitude\"",
+                "\"longitude\"",
+                "\"email\""
+        );
     }
 
     private URI uri(String path) {

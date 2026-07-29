@@ -2,6 +2,7 @@ package com.csports.session;
 
 import java.time.LocalDate;
 import java.util.Optional;
+import java.util.List;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -15,10 +16,16 @@ import com.csports.user.User;
 @Repository
 public interface TrainingSessionRepository extends JpaRepository<TrainingSession, Long> {
     @EntityGraph(attributePaths = {"trainer", "sport"})
-    Page<TrainingSession> findByStartDateGreaterThanEqual(LocalDate date, Pageable pageable);
+    Page<TrainingSession> findByStatusAndStartDateGreaterThanEqual(
+            TrainingSessionStatus status,
+            LocalDate date,
+            Pageable pageable);
 
     Optional<TrainingSession> findById(Long id);
 
     Page<TrainingSession> findByTrainer(User trainer, Pageable pageable);
 
+    List<TrainingSession> findByStatusAndEndDateLessThanEqual(
+            TrainingSessionStatus status,
+            LocalDate endDate);
 }

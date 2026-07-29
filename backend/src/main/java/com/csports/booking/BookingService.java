@@ -5,19 +5,19 @@ import org.springframework.stereotype.Service;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import java.time.LocalDateTime;
 import com.csports.booking.dto.BookedSessionResponse;
 import com.csports.common.pagination.PageResponse;
 import com.csports.booking.exception.AlreadyBookedException;
 import com.csports.booking.exception.CannotBookOwnSessionException;
-import com.csports.common.exception.GeneralException;
 import com.csports.common.exception.ResourceNotFoundException;
 import com.csports.booking.exception.SessionFullException;
 import com.csports.session.exception.TrainingSessionNotFoundException;
-import com.csports.booking.BookingMapper;
-import com.csports.booking.Booking;
+import com.csports.session.exception.SessionStateConflictException;
 import com.csports.session.TrainingSession;
+import com.csports.session.SessionSchedule;
+import com.csports.session.TrainingSessionStatus;
 import com.csports.user.User;
-import com.csports.booking.BookingRepository;
 import com.csports.session.TrainingSessionRepository;
 import com.csports.user.UserService;
 
@@ -57,7 +57,19 @@ public class BookingService {
             throw new CannotBookOwnSessionException();
         }
 
-        if (bookingRepository.existsByUserAndSession(user, session)) {
+        if (session.getStatus() != TrainingSessionStatus.SCHEDULED) {
+            throw new SessionStateConflictException("Only scheduled training sessions can be booked.");
+        }
+
+        if (!SessionSchedule.firstStart(session).isAfter(LocalDateTime.now())) {
+            throw new SessionStateConflictException(
+                    "Booking closes when the first training occurrence starts.");
+        }
+
+        if (bookingRepository.existsByUserAndSessionAndStatus(
+                user,
+                session,
+                BookingStatus.CONFIRMED)) {
             throw new AlreadyBookedException();
         }
 
@@ -73,7 +85,7 @@ public class BookingService {
         Booking booking = Booking.builder()
                 .user(user)
                 .session(session)
-                // .status(BookingStatus.CONFIRMED)
+                .status(BookingStatus.CONFIRMED)
                 .build();
 
         bookingRepository.save(booking);
@@ -86,7 +98,10 @@ public class BookingService {
 
         Pageable pageable = PageRequest.of(page, size, Sort.by("bookedAt").descending());
 
-        Page<Booking> bookings = bookingRepository.findByUser(currentUser, pageable);
+        Page<Booking> bookings = bookingRepository.findByUserAndStatus(
+                currentUser,
+                BookingStatus.CONFIRMED,
+                pageable);
 
         Page<BookedSessionResponse> response = bookings.map(bookingMapper::toResponse);
 
@@ -108,10 +123,14 @@ public class BookingService {
         TrainingSession session = trainingSessionRepository.findById(sessionId)
                 .orElseThrow(TrainingSessionNotFoundException::new);
 
-        Booking booking = bookingRepository.findByUserAndSession(currentUser, session).orElseThrow(()->new GeneralException());
+        Booking booking = bookingRepository.findByUserAndSessionAndStatus(
+                        currentUser,
+                        session,
+                        BookingStatus.CONFIRMED)
+                .orElseThrow(() -> new ResourceNotFoundException("Booking not found."));
 
-        bookingRepository.delete(booking);
+        booking.setStatus(BookingStatus.CANCELLED_BY_USER);
 
-        session.setCurrentParticipants(session.getCurrentParticipants() - 1);
+        session.setCurrentParticipants(Math.max(0, session.getCurrentParticipants() - 1));
     }
 }

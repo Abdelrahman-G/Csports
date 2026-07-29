@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
 
 @SpringBootTest
@@ -32,5 +33,20 @@ class ApiVersioningTest {
                 "/api/v1/sessions",
                 "/sessions"
         );
+    }
+
+    @Test
+    void sessionUpdateUsesPatchInsteadOfPut() {
+        boolean patchExists = handlerMapping.getHandlerMethods().keySet().stream()
+                .anyMatch(mapping ->
+                        mapping.getPatternValues().contains("/api/v1/sessions/{sessionId}")
+                        && mapping.getMethodsCondition().getMethods().contains(RequestMethod.PATCH));
+        boolean putExists = handlerMapping.getHandlerMethods().keySet().stream()
+                .anyMatch(mapping ->
+                        mapping.getPatternValues().contains("/api/v1/sessions/{sessionId}")
+                        && mapping.getMethodsCondition().getMethods().contains(RequestMethod.PUT));
+
+        assertThat(patchExists).isTrue();
+        assertThat(putExists).isFalse();
     }
 }

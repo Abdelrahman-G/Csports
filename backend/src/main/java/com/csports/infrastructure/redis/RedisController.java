@@ -2,7 +2,6 @@ package com.csports.infrastructure.redis;
 
 import com.csports.common.web.ApiPaths;
 import com.csports.sport.dto.SportResponse;
-import com.csports.infrastructure.redis.RedisService;
 import com.csports.security.TokenBlacklistService;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
@@ -14,7 +13,7 @@ import java.util.Collection;
 import java.util.Map;
 
 @RestController
-@RequestMapping({ApiPaths.DEV_REDIS, ApiPaths.LEGACY_REDIS})
+@RequestMapping({ ApiPaths.DEV_REDIS, ApiPaths.LEGACY_REDIS })
 @Profile("dev")
 public class RedisController {
 
@@ -24,9 +23,9 @@ public class RedisController {
     private final TokenBlacklistService tokenBlacklistService;
 
     public RedisController(RedisService redisService,
-                           RedisTemplate<String, Object> redisTemplate,
-                           RedisConnectionFactory connectionFactory,
-                           TokenBlacklistService tokenBlacklistService) {
+            RedisTemplate<String, Object> redisTemplate,
+            RedisConnectionFactory connectionFactory,
+            TokenBlacklistService tokenBlacklistService) {
         this.redisService = redisService;
         this.redisTemplate = redisTemplate;
         this.connectionFactory = connectionFactory;
@@ -75,8 +74,7 @@ public class RedisController {
         String pattern = "csports:v1:cache:" + cacheName + "::*";
         return Map.of(
                 "cache", cacheName,
-                "keys", redisTemplate.keys(pattern)
-        );
+                "keys", redisTemplate.keys(pattern));
     }
 
     @PostMapping("/cache/save-object")
@@ -101,7 +99,6 @@ public class RedisController {
     public Map<String, Object> checkBlacklist(@RequestParam String token) {
         return Map.of(
                 "token", token,
-                "blacklisted", tokenBlacklistService.isBlacklisted(token)
-        );
+                "blacklisted", tokenBlacklistService.isBlacklisted(token));
     }
 }

@@ -12,6 +12,7 @@ import com.csports.booking.dto.BookedSessionResponse;
 import com.csports.common.pagination.PageResponse;
 import com.csports.booking.BookingMapper;
 import com.csports.booking.Booking;
+import com.csports.booking.BookingStatus;
 import com.csports.user.User;
 import com.csports.booking.BookingRepository;
 
@@ -42,7 +43,10 @@ public class UserService {
                 size,
                 Sort.by("bookedAt").descending());
 
-        Page<Booking> bookings = bookingRepository.findByUser(currentUser, pageable);
+        Page<Booking> bookings = bookingRepository.findByUserAndStatus(
+                currentUser,
+                BookingStatus.CONFIRMED,
+                pageable);
 
         Page<BookedSessionResponse> response = bookings.map(bookingMapper::toResponse);
 

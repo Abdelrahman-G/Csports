@@ -12,6 +12,8 @@ Spring MVC controllers
     v
 Feature services -----> Redis (cache and token blacklist)
     |
+    +----> Domain events -----> In-app notifications
+    |
     v
 Spring Data repositories
     |
@@ -27,6 +29,7 @@ PostgreSQL <--------- Flyway migrations
 - `sport`: sport catalog
 - `session`: training session lifecycle
 - `booking`: session booking behavior
+- `notification`: user notifications produced by domain events
 - `location`: regions and user locations
 - `security`: JWT parsing and Spring Security configuration
 - `infrastructure.redis`: Redis-specific configuration and operations

@@ -2,6 +2,7 @@ package com.csports.booking;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -12,11 +13,15 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.csports.booking.dto.BookedSessionResponse;
 import com.csports.common.pagination.PageResponse;
-import com.csports.booking.BookingService;
 import com.csports.common.web.ApiPaths;
+
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.Positive;
 
 @RestController
 @RequestMapping({ApiPaths.BOOKINGS, ApiPaths.LEGACY_BOOKINGS})
+@Validated
 public class BookingController {
 
     private final BookingService bookingService;
@@ -28,22 +33,25 @@ public class BookingController {
 
     @PreAuthorize("hasRole('USER')")
     @PostMapping("/{sessionId}")
-    public ResponseEntity<String> bookSession(@PathVariable Long sessionId) {
+    public ResponseEntity<String> bookSession(@PathVariable @Positive Long sessionId) {
 
         bookingService.bookSession(sessionId);
 
         return ResponseEntity.ok("Training session booked successfully.");
     }
 
+    @PreAuthorize("hasRole('USER')")
     @GetMapping("/me")
-    public PageResponse<BookedSessionResponse> getMySessions(@RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size) {
+    public PageResponse<BookedSessionResponse> getMySessions(
+            @RequestParam(defaultValue = "0") @Min(0) int page,
+            @RequestParam(defaultValue = "10") @Min(1) @Max(100) int size) {
 
         return bookingService.getMySessions(page, size);
     }
 
+    @PreAuthorize("hasRole('USER')")
     @DeleteMapping("/{sessionId}")
-    public ResponseEntity<String> cancelBooking(@PathVariable Long sessionId) {
+    public ResponseEntity<String> cancelBooking(@PathVariable @Positive Long sessionId) {
 
         bookingService.cancelBooking(sessionId);
 

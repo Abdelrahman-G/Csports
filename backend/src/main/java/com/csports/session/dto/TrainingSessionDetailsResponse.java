@@ -3,7 +3,10 @@ package com.csports.session.dto;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.time.LocalDateTime;
 import java.util.Set;
+
+import com.csports.session.TrainingSessionStatus;
 
 public record TrainingSessionDetailsResponse(
 
@@ -41,5 +44,13 @@ public record TrainingSessionDetailsResponse(
 
         Integer maxParticipants,
 
-        Integer remainingSeats
+        Integer remainingSeats,
+
+        TrainingSessionStatus status,
+
+        LocalDateTime cancelledAt,
+
+        String lastUpdateReason,
+
+        String cancellationReason
 ) {}

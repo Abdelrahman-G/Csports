@@ -1,7 +1,7 @@
 package com.csports.booking;
 
 public enum BookingStatus {
-    PROCESSING,
-    CANCELLED,
-    CONFIRMED
+    CONFIRMED,
+    CANCELLED_BY_USER,
+    CANCELLED_BY_TRAINER
 }

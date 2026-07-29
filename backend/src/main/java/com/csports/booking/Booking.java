@@ -33,9 +33,10 @@ public class Booking {
     @JoinColumn(name = "session_id", nullable = false)
     private TrainingSession session;
 
-    // @Enumerated(EnumType.STRING)
-    // @Column(nullable = false)
-    // private BookingStatus status;
+    @Builder.Default
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 32)
+    private BookingStatus status = BookingStatus.CONFIRMED;
 
     @CreationTimestamp
     private LocalDateTime bookedAt;
