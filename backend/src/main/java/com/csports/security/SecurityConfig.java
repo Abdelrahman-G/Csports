@@ -67,7 +67,9 @@ public class SecurityConfig {
                             "/api/v1/sessions",
                             "/sessions",
                             "/api/v1/sessions/*",
-                            "/sessions/*"
+                            "/sessions/*",
+                            "/api/v1/trainers/{trainerId:[0-9]+}",
+                            "/trainers/{trainerId:[0-9]+}"
                     ).permitAll()
                     .anyRequest().authenticated()
             )

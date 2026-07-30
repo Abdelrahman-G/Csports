@@ -4,6 +4,8 @@ import com.csports.common.web.ApiPaths;
 import com.csports.common.pagination.PageResponse;
 import com.csports.session.dto.TrainingSessionResponse;
 import com.csports.session.TrainingSessionService;
+import com.csports.trainer.dto.TrainerProfileResponse;
+import com.csports.trainer.dto.UpdateTrainerProfileRequest;
 
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
@@ -11,6 +13,8 @@ import org.springframework.web.bind.annotation.*;
 
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.Positive;
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping({ApiPaths.TRAINERS, ApiPaths.LEGACY_TRAINERS})
@@ -18,10 +22,32 @@ import jakarta.validation.constraints.Min;
 public class TrainerController {
 
     private final TrainingSessionService trainingSessionService;
+    private final TrainerProfileService trainerProfileService;
 
-    public TrainerController(TrainingSessionService trainingSessionService) {
-
+    public TrainerController(
+            TrainingSessionService trainingSessionService,
+            TrainerProfileService trainerProfileService) {
         this.trainingSessionService = trainingSessionService;
+        this.trainerProfileService = trainerProfileService;
+    }
+
+    @PreAuthorize("hasRole('TRAINER')")
+    @GetMapping("/me")
+    public TrainerProfileResponse getMyProfile() {
+        return trainerProfileService.getMyProfile();
+    }
+
+    @PreAuthorize("hasRole('TRAINER')")
+    @PatchMapping("/me")
+    public TrainerProfileResponse updateMyProfile(
+            @Valid @RequestBody UpdateTrainerProfileRequest request) {
+        return trainerProfileService.updateMyProfile(request);
+    }
+
+    @GetMapping("/{trainerId}")
+    public TrainerProfileResponse getPublicProfile(
+            @PathVariable @Positive Long trainerId) {
+        return trainerProfileService.getPublicProfile(trainerId);
     }
 
     @PreAuthorize("hasRole('TRAINER')")

@@ -3,13 +3,15 @@ package com.csports.user;
 import com.csports.booking.dto.BookedSessionResponse;
 import com.csports.common.pagination.PageResponse;
 import com.csports.common.web.ApiPaths;
-import com.csports.user.UserService;
+import com.csports.user.dto.UpdateUserProfileRequest;
+import com.csports.user.dto.UserProfileResponse;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping({ApiPaths.USERS, ApiPaths.LEGACY_USERS})
@@ -20,6 +22,19 @@ public class UserController {
 
     public UserController(UserService userService) {
         this.userService = userService;
+    }
+
+    @PreAuthorize("isAuthenticated()")
+    @GetMapping("/me")
+    public UserProfileResponse getMyProfile() {
+        return userService.getMyProfile();
+    }
+
+    @PreAuthorize("isAuthenticated()")
+    @PatchMapping("/me")
+    public UserProfileResponse updateMyProfile(
+            @Valid @RequestBody UpdateUserProfileRequest request) {
+        return userService.updateMyProfile(request);
     }
 
     @PreAuthorize("hasRole('USER')")

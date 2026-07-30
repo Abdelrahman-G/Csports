@@ -31,7 +31,11 @@ class ApiVersioningTest {
                 "/api/v1/sports/list",
                 "/sports/list",
                 "/api/v1/sessions",
-                "/sessions"
+                "/sessions",
+                "/api/v1/users/me",
+                "/users/me",
+                "/api/v1/trainers/{trainerId}",
+                "/trainers/{trainerId}"
         );
     }
 

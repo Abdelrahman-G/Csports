@@ -13,8 +13,10 @@ be the trainer who created that session.
 |---|---:|---:|---:|---:|---|
 | Register and log in | Yes | Yes | Yes | Yes | None |
 | Refresh an access token | Yes | Yes | Yes | Yes | Valid refresh token |
-| Log out / view current identity | No | Yes | Yes | Yes | Current account |
+| Log out / view or update current account | No | Yes | Yes | Yes | Current account |
 | List sports and regions | Yes | Yes | Yes | Yes | None |
+| View a public trainer profile | Yes | Yes | Yes | Yes | None |
+| View/update own trainer profile | No | No | Yes | No | Current trainer profile |
 | Add a sport | No | No | No | Yes | None |
 | List and view training sessions | Yes | Yes | Yes | Yes | None |
 | Create a training session | No | No | Yes | No | Current trainer profile |
