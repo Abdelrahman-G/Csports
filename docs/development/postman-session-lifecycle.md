@@ -131,7 +131,8 @@ POST {{baseUrl}}/bookings/{{sessionId}}
 Authorization: Bearer {{userToken}}
 ```
 
-Expected: `200`. Repeating it should return `409`.
+Expected: `201 Created` with `bookingStatus: "CONFIRMED"`. Repeating it should
+return `409`.
 
 Verify:
 

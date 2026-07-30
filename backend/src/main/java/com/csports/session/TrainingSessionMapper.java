@@ -1,6 +1,7 @@
 package com.csports.session;
 
 import java.util.Set;
+import java.time.LocalDateTime;
 
 import org.springframework.stereotype.Component;
 
@@ -13,6 +14,8 @@ import com.csports.session.TrainingSession;
 public class TrainingSessionMapper {
 
     public TrainingSessionResponse toResponse(TrainingSession session) {
+        LocalDateTime bookingClosesAt = SessionSchedule.firstStart(session);
+        boolean bookingOpen = isBookingOpen(session, bookingClosesAt);
 
         return new TrainingSessionResponse(
                 session.getId(),
@@ -36,6 +39,8 @@ public class TrainingSessionMapper {
                 session.getCurrentParticipants(),
                 session.getMaxParticipants(),
                 session.getMaxParticipants() - session.getCurrentParticipants(),
+                bookingClosesAt,
+                bookingOpen,
                 session.getStatus(),
                 session.getCancelledAt(),
                 session.getCancellationReason()
@@ -43,6 +48,8 @@ public class TrainingSessionMapper {
     }
 
     public TrainingSessionDetailsResponse toDetailsResponse(TrainingSession session, TrainerProfile trainerProfile) {
+        LocalDateTime bookingClosesAt = SessionSchedule.firstStart(session);
+        boolean bookingOpen = isBookingOpen(session, bookingClosesAt);
 
         return new TrainingSessionDetailsResponse(
 
@@ -94,6 +101,10 @@ public class TrainingSessionMapper {
 
                 session.getMaxParticipants() - session.getCurrentParticipants(),
 
+                bookingClosesAt,
+
+                bookingOpen,
+
                 session.getStatus(),
 
                 session.getCancelledAt(),
@@ -104,4 +115,11 @@ public class TrainingSessionMapper {
         );
     }
 
+    private boolean isBookingOpen(
+            TrainingSession session,
+            LocalDateTime bookingClosesAt) {
+        return session.getStatus() == TrainingSessionStatus.SCHEDULED
+                && session.getCurrentParticipants() < session.getMaxParticipants()
+                && bookingClosesAt.isAfter(LocalDateTime.now());
+    }
 }

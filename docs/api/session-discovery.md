@@ -73,7 +73,7 @@ and use the ID only as the selected value or search parameter.
 4. A cache hit returns the typed `PageResponse<TrainingSessionResponse>`
    without executing a session search query.
 5. A cache miss executes the JPA specification and stores the mapped page for
-   two minutes.
+   five minutes.
 
 The cache uses an explicit generic serializer so nested content is restored as
 `TrainingSessionResponse`, not `LinkedHashMap`.
@@ -82,6 +82,11 @@ Creating, updating, cancelling, or restoring a session clears search pages.
 Booking or cancelling a booking also clears them because availability and seat
 counts changed. Redis failures use the cache error handler and fall back to
 PostgreSQL rather than failing the endpoint.
+
+Session responses include `bookingClosesAt` and `bookingOpen`. The latter is
+true only while the session is scheduled, has a remaining seat, and has not
+reached its first occurrence. A future React client can use these values to
+disable its booking action without duplicating backend date and capacity rules.
 
 Search cache clearing uses Redis `SCAN` in batches instead of the blocking
 `KEYS` command.

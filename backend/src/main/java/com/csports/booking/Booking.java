@@ -39,9 +39,28 @@ public class Booking {
     private BookingStatus status = BookingStatus.CONFIRMED;
 
     @CreationTimestamp
+    @Column(nullable = false, updatable = false)
     private LocalDateTime bookedAt;
+
+    private LocalDateTime cancelledAt;
+
+    /**
+     * A nullable marker used by the database's unique index. Confirmed
+     * bookings use 1; historical bookings use NULL, allowing a user to book
+     * the same session again after cancelling while still preventing two
+     * simultaneously confirmed bookings.
+     */
+    @Column(name = "active_marker")
+    private Short activeMarker;
 
     // versioning the booking to avoid concurrent updates (optimistic locking)
     @Version
-    private Long version;   
+    @Column(nullable = false)
+    private Long version;
+
+    @PrePersist
+    @PreUpdate
+    void synchronizeActiveMarker() {
+        activeMarker = status == BookingStatus.CONFIRMED ? (short) 1 : null;
+    }
 }

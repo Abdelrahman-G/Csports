@@ -5,7 +5,10 @@ import java.util.List;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -13,7 +16,8 @@ import com.csports.session.TrainingSession;
 import com.csports.user.User;
 
 @Repository
-public interface BookingRepository extends JpaRepository<Booking, Long> {
+public interface BookingRepository
+        extends JpaRepository<Booking, Long>, JpaSpecificationExecutor<Booking> {
 
     boolean existsByUserAndSessionAndStatus(
             User user,
@@ -29,6 +33,15 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
             User user,
             BookingStatus status,
             Pageable pageable);
+
+    @Override
+    @EntityGraph(attributePaths = {
+            "session",
+            "session.trainer",
+            "session.sport",
+            "session.region"
+    })
+    Page<Booking> findAll(Specification<Booking> specification, Pageable pageable);
 
     Page<Booking> findBySessionAndStatus(
             TrainingSession session,

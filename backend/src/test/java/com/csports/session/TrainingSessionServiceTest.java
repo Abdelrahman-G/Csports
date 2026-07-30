@@ -2,7 +2,6 @@ package com.csports.session;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.Set;
@@ -65,6 +64,7 @@ class TrainingSessionServiceTest {
                 .latitude(30.0444)
                 .longitude(31.2357)
                 .build());
+        LocalDate startDate = LocalDate.now().plusDays(1);
 
         TrainingSession savedSession = trainingSessionRepository.saveAndFlush(
                 TrainingSession.builder()
@@ -76,11 +76,11 @@ class TrainingSessionServiceTest {
                         .locationName("Test location")
                         .latitude(30.0444)
                         .longitude(31.2357)
-                        .startDate(LocalDate.now().plusDays(1))
-                        .endDate(LocalDate.now().plusDays(2))
+                        .startDate(startDate)
+                        .endDate(startDate.plusDays(1))
                         .startTime(LocalTime.of(18, 0))
                         .durationMinutes(60)
-                        .days(Set.of(DayOfWeek.MONDAY))
+                        .days(Set.of(startDate.getDayOfWeek()))
                         .maxParticipants(10)
                         .price(100.0)
                         .build());
@@ -95,6 +95,6 @@ class TrainingSessionServiceTest {
 
         assertThat(mappedSession.trainerName()).isEqualTo(trainer.getName());
         assertThat(mappedSession.sport()).isEqualTo(sport.getName());
-        assertThat(mappedSession.days()).containsExactly(DayOfWeek.MONDAY);
+        assertThat(mappedSession.days()).containsExactly(startDate.getDayOfWeek());
     }
 }

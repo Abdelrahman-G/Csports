@@ -1,9 +1,5 @@
 package com.csports.user;
 
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -11,13 +7,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.csports.auth.exception.EmailAlreadyExistsException;
 import com.csports.auth.exception.PhoneNumberAlreadyExistsException;
-import com.csports.booking.dto.BookedSessionResponse;
-import com.csports.common.pagination.PageResponse;
 import com.csports.common.exception.ResourceNotFoundException;
-import com.csports.booking.BookingMapper;
-import com.csports.booking.Booking;
-import com.csports.booking.BookingStatus;
-import com.csports.booking.BookingRepository;
 import com.csports.location.Region;
 import com.csports.location.RegionRepository;
 import com.csports.location.UserLocation;
@@ -27,18 +17,12 @@ import com.csports.user.exception.InvalidProfileUpdateException;
 
 @Service
 public class UserService {
-    private final BookingRepository bookingRepository;
-    private final BookingMapper bookingMapper;
     private final UserRepository userRepository;
     private final RegionRepository regionRepository;
 
     public UserService(
-            BookingRepository bookingRepository,
-            BookingMapper bookingMapper,
             UserRepository userRepository,
             RegionRepository regionRepository) {
-        this.bookingRepository = bookingRepository;
-        this.bookingMapper = bookingMapper;
         this.userRepository = userRepository;
         this.regionRepository = regionRepository;
     }
@@ -99,33 +83,6 @@ public class UserService {
         updateLocation(user, request);
 
         return toProfileResponse(user);
-    }
-
-    @Transactional(readOnly = true)
-    public PageResponse<BookedSessionResponse> getMySessions(int page, int size) {
-
-        User currentUser = getCurrentUser();
-
-        Pageable pageable = PageRequest.of(
-                page,
-                size,
-                Sort.by("bookedAt").descending());
-
-        Page<Booking> bookings = bookingRepository.findByUserAndStatus(
-                currentUser,
-                BookingStatus.CONFIRMED,
-                pageable);
-
-        Page<BookedSessionResponse> response = bookings.map(bookingMapper::toResponse);
-
-        return new PageResponse<>(
-                response.getContent(),
-                response.getNumber(),
-                response.getSize(),
-                response.getTotalElements(),
-                response.getTotalPages(),
-                response.isFirst(),
-                response.isLast());
     }
 
     private User getManagedCurrentUser() {

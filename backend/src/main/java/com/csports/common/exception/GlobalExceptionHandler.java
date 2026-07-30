@@ -27,6 +27,7 @@ import com.csports.auth.exception.EmailAlreadyExistsException;
 import com.csports.auth.exception.InvalidCredentialsException;
 import com.csports.auth.exception.PhoneNumberAlreadyExistsException;
 import com.csports.booking.exception.AlreadyBookedException;
+import com.csports.booking.exception.BookingOperationInProgressException;
 import com.csports.booking.exception.CannotBookOwnSessionException;
 import com.csports.booking.exception.SessionFullException;
 import com.csports.session.exception.InvalidSessionScheduleException;
@@ -154,6 +155,7 @@ public class GlobalExceptionHandler {
             EmailAlreadyExistsException.class,
             PhoneNumberAlreadyExistsException.class,
             AlreadyBookedException.class,
+            BookingOperationInProgressException.class,
             SessionFullException.class,
             SessionStateConflictException.class,
             ObjectOptimisticLockingFailureException.class,

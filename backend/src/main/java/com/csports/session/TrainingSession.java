@@ -51,7 +51,7 @@ public class TrainingSession {
     @Column(length = 2000)
     private String description;
 
-    // versioning the booking to avoid concurrent updates (optimistic locking)
+    // Detects concurrent changes to the same session, including seat updates.
     @Version
     @Column(nullable = false)
     private Long version;

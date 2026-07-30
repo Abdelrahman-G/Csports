@@ -289,8 +289,9 @@ public class TrainingSessionService {
             }
         }
 
+        LocalDateTime cancelledAt = LocalDateTime.now();
         session.setStatus(TrainingSessionStatus.CANCELLED);
-        session.setCancelledAt(LocalDateTime.now());
+        session.setCancelledAt(cancelledAt);
         session.setCancellationReason(request.reason());
         session.setCurrentParticipants(0);
 
@@ -298,8 +299,10 @@ public class TrainingSessionService {
                 .map(booking -> booking.getUser().getId())
                 .distinct()
                 .toList();
-        activeBookings.forEach(booking ->
-                booking.setStatus(BookingStatus.CANCELLED_BY_TRAINER));
+        activeBookings.forEach(booking -> {
+            booking.setStatus(BookingStatus.CANCELLED_BY_TRAINER);
+            booking.setCancelledAt(cancelledAt);
+        });
 
         publishSessionChange(
                 session,
