@@ -1,12 +1,14 @@
 package com.csports.infrastructure.redis;
 
-import org.springframework.cache.interceptor.CacheErrorHandler;
-import org.springframework.cache.annotation.CachingConfigurer;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.cache.annotation.CachingConfigurer;
+import org.springframework.cache.interceptor.CacheErrorHandler;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.data.redis.cache.BatchStrategies;
 import org.springframework.data.redis.cache.RedisCacheConfiguration;
 import org.springframework.data.redis.cache.RedisCacheManager;
+import org.springframework.data.redis.cache.RedisCacheWriter;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.serializer.GenericJacksonJsonRedisSerializer;
@@ -16,9 +18,11 @@ import org.springframework.data.redis.serializer.RedisSerializationContext;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 import java.time.Duration;
-import java.util.Map;
 import java.util.List;
+import java.util.Map;
 
+import com.csports.common.pagination.PageResponse;
+import com.csports.session.dto.TrainingSessionResponse;
 import com.csports.sport.dto.SportResponse;
 import tools.jackson.databind.JavaType;
 import tools.jackson.databind.ObjectMapper;
@@ -50,6 +54,14 @@ public class RedisConfig implements CachingConfigurer {
         return new JacksonJsonRedisSerializer<>(objectMapper, sportsListType);
     }
 
+    @Bean("sessionSearchCacheValueSerializer")
+    public RedisSerializer<PageResponse<TrainingSessionResponse>>
+            sessionSearchCacheValueSerializer(ObjectMapper objectMapper) {
+        JavaType pageType = objectMapper.getTypeFactory()
+                .constructParametricType(PageResponse.class, TrainingSessionResponse.class);
+        return new JacksonJsonRedisSerializer<>(objectMapper, pageType);
+    }
+
     @Bean
     public RedisTemplate<String, Object> redisTemplate(
             RedisConnectionFactory connectionFactory,
@@ -69,7 +81,10 @@ public class RedisConfig implements CachingConfigurer {
             RedisConnectionFactory connectionFactory,
             @Qualifier("redisValueSerializer") RedisSerializer<Object> redisValueSerializer,
             @Qualifier("sportsCacheValueSerializer")
-            RedisSerializer<List<SportResponse>> sportsCacheValueSerializer) {
+            RedisSerializer<List<SportResponse>> sportsCacheValueSerializer,
+            @Qualifier("sessionSearchCacheValueSerializer")
+            RedisSerializer<PageResponse<TrainingSessionResponse>>
+                    sessionSearchCacheValueSerializer) {
         RedisCacheConfiguration defaultConfiguration = RedisCacheConfiguration.defaultCacheConfig()
                 .entryTtl(Duration.ofHours(1))
                 .disableCachingNullValues()
@@ -89,10 +104,22 @@ public class RedisConfig implements CachingConfigurer {
                                 RedisSerializationContext.SerializationPair.fromSerializer(
                                         sportsCacheValueSerializer
                                 )
+                        ),
+                CacheNames.SESSION_SEARCH,
+                defaultConfiguration
+                        .entryTtl(Duration.ofMinutes(5))
+                        .serializeValuesWith(
+                                RedisSerializationContext.SerializationPair.fromSerializer(
+                                        sessionSearchCacheValueSerializer
+                                )
                         )
         );
 
-        return RedisCacheManager.builder(connectionFactory)
+        RedisCacheWriter cacheWriter = RedisCacheWriter.nonLockingRedisCacheWriter(
+                connectionFactory,
+                BatchStrategies.scan(1_000));
+
+        return RedisCacheManager.builder(cacheWriter)
                 .cacheDefaults(defaultConfiguration)
                 .withInitialCacheConfigurations(cacheConfigurations)
                 .transactionAware()

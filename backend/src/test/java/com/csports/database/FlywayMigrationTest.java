@@ -41,11 +41,11 @@ class FlywayMigrationTest {
     void allMigrationsBuildSchemaThatHibernateCanValidate() {
         Integer migrationCount = jdbcTemplate.queryForObject(
                 "select count(*) from flyway_schema_history "
-                        + "where version in ('1', '2', '3') and success = true",
+                        + "where version in ('1', '2', '3', '4') and success = true",
                 Integer.class
         );
 
-        assertThat(migrationCount).isEqualTo(3);
+        assertThat(migrationCount).isEqualTo(4);
 
         Integer notificationTableCount = jdbcTemplate.queryForObject(
                 "select count(*) from information_schema.tables "
@@ -60,6 +60,25 @@ class FlywayMigrationTest {
                 Integer.class
         );
         assertThat(bookingStatusColumnCount).isEqualTo(1);
+
+        Integer sessionRegionColumnCount = jdbcTemplate.queryForObject(
+                "select count(*) from information_schema.columns "
+                        + "where table_name = 'training_session' and column_name = 'region_id'",
+                Integer.class
+        );
+        assertThat(sessionRegionColumnCount).isEqualTo(1);
+
+        Integer discoveryIndexCount = jdbcTemplate.queryForObject(
+                "select count(*) from information_schema.indexes "
+                        + "where upper(index_name) in ("
+                        + "'IDX_TRAINING_SESSION_STATUS_END_START', "
+                        + "'IDX_TRAINING_SESSION_SPORT_STATUS_START', "
+                        + "'IDX_TRAINING_SESSION_REGION_STATUS_START', "
+                        + "'IDX_TRAINING_SESSION_TRAINER_START', "
+                        + "'IDX_TRAINING_SESSION_STATUS_PRICE')",
+                Integer.class
+        );
+        assertThat(discoveryIndexCount).isEqualTo(5);
     }
 
     @Test
@@ -147,6 +166,7 @@ class FlywayMigrationTest {
                                 {
                                   "title": "User cannot create this",
                                   "locationName": "Nasr City",
+                                  "regionId": 1,
                                   "latitude": 30.0581,
                                   "longitude": 31.3302,
                                   "startDate": "2099-01-05",

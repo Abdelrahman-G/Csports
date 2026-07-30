@@ -13,6 +13,7 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import com.csports.booking.Booking;
+import com.csports.location.Region;
 import com.csports.sport.Sport;
 import com.csports.user.User;
 
@@ -39,6 +40,10 @@ public class TrainingSession {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "sport_id", nullable = false)
     private Sport sport;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "region_id", nullable = false)
+    private Region region;
 
     @Column(nullable = false)
     private String title;

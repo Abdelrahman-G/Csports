@@ -30,6 +30,7 @@ import com.csports.booking.exception.AlreadyBookedException;
 import com.csports.booking.exception.CannotBookOwnSessionException;
 import com.csports.booking.exception.SessionFullException;
 import com.csports.session.exception.InvalidSessionScheduleException;
+import com.csports.session.exception.InvalidSessionSearchException;
 import com.csports.session.exception.SessionEndedException;
 import com.csports.session.exception.SessionStateConflictException;
 import com.csports.sport.exception.SportNotFoundException;
@@ -189,6 +190,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler({
             InvalidSessionScheduleException.class,
+            InvalidSessionSearchException.class,
             SessionEndedException.class,
             CannotBookOwnSessionException.class,
             InvalidProfileUpdateException.class

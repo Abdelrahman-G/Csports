@@ -12,6 +12,7 @@ trainerToken
 userToken
 sessionId
 notificationId
+regionId
 ```
 
 For authenticated requests use:
@@ -52,7 +53,7 @@ Content-Type: application/json
   "bio": "Lifecycle test trainer",
   "experienceYears": 5,
   "sportId": 1,
-  "regionId": 1,
+  "regionId": {{regionId}},
   "latitude": 30.0581,
   "longitude": 31.3302
 }
@@ -86,7 +87,7 @@ POST {{baseUrl}}/auth/register/user
   "phoneNumber": "+201000000102",
   "password": "Password123!",
   "age": 25,
-  "regionId": 1,
+  "regionId": {{regionId}},
   "latitude": 30.0581,
   "longitude": 31.3302
 }
@@ -107,6 +108,7 @@ Content-Type: application/json
   "title": "Monday football training",
   "description": "Lifecycle test session",
   "locationName": "Nasr City Club",
+  "regionId": {{regionId}},
   "latitude": 30.0581,
   "longitude": 31.3302,
   "startDate": "2026-08-10",
@@ -150,6 +152,7 @@ Content-Type: application/json
 {
   "reason": "The original field is undergoing maintenance",
   "locationName": "New Cairo Sports Club",
+  "regionId": {{regionId}},
   "latitude": 30.0285,
   "longitude": 31.4913
 }

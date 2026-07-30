@@ -14,11 +14,23 @@ public record TrainingSessionResponse(
 
         String title,
 
+        Long trainerId,
+
         String trainerName,
+
+        Long sportId,
 
         String sport,
 
         String locationName,
+
+        Long regionId,
+
+        String regionName,
+
+        String city,
+
+        String country,
 
         String googleMapsUrl,
 
@@ -37,6 +49,8 @@ public record TrainingSessionResponse(
         Integer currentParticipants,
 
         Integer maxParticipants,
+
+        Integer remainingSeats,
 
         TrainingSessionStatus status,
 

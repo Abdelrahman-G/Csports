@@ -17,9 +17,15 @@ public class TrainingSessionMapper {
         return new TrainingSessionResponse(
                 session.getId(),
                 session.getTitle(),
+                session.getTrainer().getId(),
                 session.getTrainer().getName(),
+                session.getSport().getId(),
                 session.getSport().getName(),
                 session.getLocationName(),
+                session.getRegion().getId(),
+                session.getRegion().getName(),
+                session.getRegion().getCity(),
+                session.getRegion().getCountry(),
                 session.getGoogleMapsUrl(),
                 session.getStartDate(),
                 session.getEndDate(),
@@ -29,6 +35,7 @@ public class TrainingSessionMapper {
                 session.getPrice(),
                 session.getCurrentParticipants(),
                 session.getMaxParticipants(),
+                session.getMaxParticipants() - session.getCurrentParticipants(),
                 session.getStatus(),
                 session.getCancelledAt(),
                 session.getCancellationReason()
@@ -45,15 +52,27 @@ public class TrainingSessionMapper {
 
                 session.getDescription(),
 
+                session.getTrainer().getId(),
+
                 session.getTrainer().getName(),
 
                 trainerProfile.getBio(),
 
                 trainerProfile.getExperienceYears(),
 
+                session.getSport().getId(),
+
                 session.getSport().getName(),
 
                 session.getLocationName(),
+
+                session.getRegion().getId(),
+
+                session.getRegion().getName(),
+
+                session.getRegion().getCity(),
+
+                session.getRegion().getCountry(),
 
                 session.getGoogleMapsUrl(),
 

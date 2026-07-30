@@ -1,6 +1,7 @@
 package com.csports.booking;
 
 import org.springframework.data.domain.Sort;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -8,6 +9,7 @@ import org.springframework.data.domain.Pageable;
 import java.time.LocalDateTime;
 import com.csports.booking.dto.BookedSessionResponse;
 import com.csports.common.pagination.PageResponse;
+import com.csports.infrastructure.redis.CacheNames;
 import com.csports.booking.exception.AlreadyBookedException;
 import com.csports.booking.exception.CannotBookOwnSessionException;
 import com.csports.common.exception.ResourceNotFoundException;
@@ -45,6 +47,7 @@ public class BookingService {
     // session is full or the user has already booked), the entire transaction will
     // be rolled back, and no changes will be made to the database.
     // avoid booking the same last spot multiple times
+    @CacheEvict(cacheNames = CacheNames.SESSION_SEARCH, allEntries = true)
     @Transactional
     public void bookSession(Long sessionId) {
 
@@ -115,6 +118,7 @@ public class BookingService {
                 response.isLast());
     }
 
+    @CacheEvict(cacheNames = CacheNames.SESSION_SEARCH, allEntries = true)
     @Transactional
     public void cancelBooking(Long sessionId) {
 
