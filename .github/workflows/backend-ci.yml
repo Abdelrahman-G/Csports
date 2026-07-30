@@ -4,11 +4,16 @@ on:
   push:
     paths:
       - "backend/**"
+      - "infrastructure/**"
       - ".github/workflows/backend-ci.yml"
   pull_request:
     paths:
       - "backend/**"
+      - "infrastructure/**"
       - ".github/workflows/backend-ci.yml"
+
+permissions:
+  contents: read
 
 jobs:
   verify:
@@ -34,3 +39,19 @@ jobs:
       - name: Run unit and infrastructure integration tests
         working-directory: backend
         run: ./mvnw --batch-mode clean verify -Pintegration-tests
+
+  docker:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      JWT_SECRET: 0f1e9099d03b7b54b95f683e1d1908dd623e17ad0fc20f9e4537f634140f1bdb
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Validate Docker Compose
+        run: docker compose -f infrastructure/docker-compose.yml config --quiet
+
+      - name: Build backend image
+        run: docker build --tag csports-backend:ci backend

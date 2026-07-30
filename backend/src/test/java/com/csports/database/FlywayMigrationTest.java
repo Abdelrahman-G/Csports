@@ -41,11 +41,11 @@ class FlywayMigrationTest {
     void allMigrationsBuildSchemaThatHibernateCanValidate() {
         Integer migrationCount = jdbcTemplate.queryForObject(
                 "select count(*) from flyway_schema_history "
-                        + "where version in ('1', '2', '3', '4', '5') and success = true",
+                        + "where version in ('1', '2', '3', '4', '5', '6') and success = true",
                 Integer.class
         );
 
-        assertThat(migrationCount).isEqualTo(5);
+        assertThat(migrationCount).isEqualTo(6);
 
         Integer notificationTableCount = jdbcTemplate.queryForObject(
                 "select count(*) from information_schema.tables "
@@ -152,7 +152,11 @@ class FlywayMigrationTest {
         );
 
         assertThat(sportsResponse.statusCode()).isEqualTo(200);
-        assertThat(sportsResponse.body()).isEqualTo("[]");
+        assertThat(sportsResponse.body()).contains(
+                "\"name\":\"Swimming\"",
+                "\"name\":\"Football\"",
+                "\"name\":\"Basketball\""
+        );
 
         HttpResponse<String> unauthenticatedResponse = client.send(
                 HttpRequest.newBuilder(uri("/api/v1/bookings/me")).GET().build(),

@@ -46,5 +46,3 @@ public class SessionNotificationListener {
         notificationRepository.saveAll(notifications);
     }
 }
-// user :
-// eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI2IiwiaWF0IjoxNzg1MzQ4NDUwLCJleHAiOjE3ODUzNDkzNTB9.Lw_ZJbNGsi4K2FCkBvP_C3hHshxtQUGB0_WLTs19emg

@@ -1,6 +1,7 @@
 package com.csports.auth;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -14,6 +15,7 @@ import com.csports.auth.dto.RefreshRequest;
 import com.csports.auth.dto.RegisterRequest;
 import com.csports.auth.dto.RegisterTrainerRequest;
 import com.csports.common.web.ApiPaths;
+import com.csports.user.User;
 import com.csports.user.UserService;
 import com.csports.user.dto.UserProfileResponse;
 
@@ -70,10 +72,14 @@ public class AuthController {
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<String> logout(@Valid @RequestBody RefreshRequest request, jakarta.servlet.http.HttpServletRequest httpRequest) {
+    public ResponseEntity<String> logout(
+            @Valid @RequestBody RefreshRequest request,
+            jakarta.servlet.http.HttpServletRequest httpRequest,
+            Authentication authentication) {
         String authHeader = httpRequest.getHeader("Authorization");
         String accessToken = (authHeader != null && authHeader.startsWith("Bearer ")) ? authHeader.substring(7) : null;
-        authService.logout(accessToken, request);
+        User currentUser = (User) authentication.getPrincipal();
+        authService.logout(accessToken, request, currentUser.getId());
         
         return ResponseEntity.ok("Logged out successfully");
     }
