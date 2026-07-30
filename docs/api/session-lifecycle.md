@@ -45,7 +45,7 @@ its participants.
   original value.
 - Capacity may be reduced down to, but not below, the active booking count.
 - Schedule and Greater Cairo/Giza coordinate validation still applies.
-- Booked users are notified only when `locationName`, latitude, or longitude
+- Booked users are notified only when `locationName`, `regionId`, latitude, or longitude
   changes. The notification contains the trainer's reason.
 - The last update reason is retained on the session.
 

@@ -30,6 +30,10 @@ public record CreateTrainingSessionRequest(
         @Size(max = 255, message = "Location name must not exceed 255 characters")
         String locationName,
 
+        @NotNull(message = "Region id is required")
+        @Positive(message = "Region id must be positive")
+        Long regionId,
+
         @NotNull(message = "Latitude is required")
         @DecimalMin(value = ServiceArea.MIN_LATITUDE, message = "Latitude must be within the Cairo and Giza service area")
         @DecimalMax(value = ServiceArea.MAX_LATITUDE, message = "Latitude must be within the Cairo and Giza service area")

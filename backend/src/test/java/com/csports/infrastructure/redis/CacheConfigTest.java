@@ -12,10 +12,17 @@ import org.springframework.data.redis.serializer.RedisSerializer;
 import org.springframework.test.context.ActiveProfiles;
 
 import com.csports.sport.dto.SportResponse;
+import com.csports.common.pagination.PageResponse;
+import com.csports.session.TrainingSessionStatus;
+import com.csports.session.dto.TrainingSessionResponse;
 
+import java.time.DayOfWeek;
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.List;
+import java.util.Set;
 
-@SpringBootTest
+@SpringBootTest(properties = "csports.cache.enabled=true")
 @ActiveProfiles("test")
 class CacheConfigTest {
 
@@ -26,10 +33,16 @@ class CacheConfigTest {
     @Qualifier("sportsCacheValueSerializer")
     private RedisSerializer<List<SportResponse>> sportsCacheValueSerializer;
 
+    @Autowired
+    @Qualifier("sessionSearchCacheValueSerializer")
+    private RedisSerializer<PageResponse<TrainingSessionResponse>>
+            sessionSearchCacheValueSerializer;
+
     @Test
     void cacheManagerShouldExposeExpectedCaches() {
         assertThat(cacheManager).isInstanceOf(RedisCacheManager.class);
         assertThat(cacheManager.getCache("sports")).isNotNull();
+        assertThat(cacheManager.getCache("session-search")).isNotNull();
     }
 
     @Test
@@ -44,5 +57,52 @@ class CacheConfigTest {
                 .singleElement()
                 .isInstanceOf(SportResponse.class)
                 .isEqualTo(sports.getFirst());
+    }
+
+    @Test
+    void sessionSearchSerializerPreservesNestedResponseTypes() {
+        TrainingSessionResponse session = new TrainingSessionResponse(
+                5L,
+                "Cached swimming",
+                7L,
+                "Trainer",
+                2L,
+                "Swimming",
+                "Cairo Club",
+                1L,
+                "Nasr City",
+                "Cairo",
+                "Egypt",
+                "https://www.google.com/maps?q=30.05,31.25",
+                LocalDate.of(2026, 10, 1),
+                LocalDate.of(2026, 12, 1),
+                LocalTime.of(9, 0),
+                120,
+                Set.of(DayOfWeek.MONDAY),
+                700.0,
+                1,
+                5,
+                4,
+                TrainingSessionStatus.SCHEDULED,
+                null,
+                null);
+        PageResponse<TrainingSessionResponse> page = new PageResponse<>(
+                List.of(session),
+                0,
+                10,
+                1,
+                1,
+                true,
+                true);
+
+        byte[] serialized = sessionSearchCacheValueSerializer.serialize(page);
+        PageResponse<TrainingSessionResponse> deserialized =
+                sessionSearchCacheValueSerializer.deserialize(serialized);
+
+        assertThat(deserialized).isNotNull();
+        assertThat(deserialized.content())
+                .singleElement()
+                .isInstanceOf(TrainingSessionResponse.class)
+                .isEqualTo(session);
     }
 }

@@ -10,6 +10,7 @@ import java.util.Objects;
 import java.util.Set;
 
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -24,11 +25,15 @@ import com.csports.booking.BookingStatus;
 import com.csports.common.exception.ForbiddenOperationException;
 import com.csports.common.exception.ResourceNotFoundException;
 import com.csports.common.pagination.PageResponse;
+import com.csports.infrastructure.redis.CacheNames;
+import com.csports.location.Region;
+import com.csports.location.RegionRepository;
 import com.csports.notification.NotificationType;
 import com.csports.notification.SessionChangedEvent;
 import com.csports.session.dto.CreateTrainingSessionRequest;
 import com.csports.session.dto.CancelTrainingSessionRequest;
 import com.csports.session.dto.SessionParticipantResponse;
+import com.csports.session.dto.SessionSearchRequest;
 import com.csports.session.dto.TrainingSessionDetailsResponse;
 import com.csports.session.dto.TrainingSessionResponse;
 import com.csports.session.dto.UpdateTrainingSessionRequest;
@@ -52,6 +57,8 @@ public class TrainingSessionService {
     private final BookingRepository bookingRepository;
     private final BookingMapper bookingMapper;
     private final ApplicationEventPublisher eventPublisher;
+    private final RegionRepository regionRepository;
+    private final TrainingSessionSearchService trainingSessionSearchService;
 
     public TrainingSessionService(
             TrainingSessionRepository trainingSessionRepository,
@@ -60,7 +67,9 @@ public class TrainingSessionService {
             TrainingSessionMapper trainingSessionMapper,
             BookingRepository bookingRepository,
             BookingMapper bookingMapper,
-            ApplicationEventPublisher eventPublisher) {
+            ApplicationEventPublisher eventPublisher,
+            RegionRepository regionRepository,
+            TrainingSessionSearchService trainingSessionSearchService) {
         this.trainingSessionRepository = trainingSessionRepository;
         this.trainerProfileRepository = trainerProfileRepository;
         this.userService = userService;
@@ -68,8 +77,11 @@ public class TrainingSessionService {
         this.bookingRepository = bookingRepository;
         this.bookingMapper = bookingMapper;
         this.eventPublisher = eventPublisher;
+        this.regionRepository = regionRepository;
+        this.trainingSessionSearchService = trainingSessionSearchService;
     }
 
+    @CacheEvict(cacheNames = CacheNames.SESSION_SEARCH, allEntries = true)
     @Transactional
     public TrainingSessionResponse createSession(CreateTrainingSessionRequest request) {
         validateSchedule(request.startDate(), request.endDate(), request.startTime(), request.days());
@@ -79,9 +91,12 @@ public class TrainingSessionService {
                 .orElseThrow(TrainerProfileNotFoundException::new);
 
         Sport sport = trainerProfile.getSport();
+        Region region = regionRepository.findById(request.regionId())
+                .orElseThrow(() -> new ResourceNotFoundException("Region not found."));
         TrainingSession session = TrainingSession.builder()
                 .trainer(trainer)
                 .sport(sport)
+                .region(region)
                 .description(request.description())
                 .latitude(request.latitude())
                 .longitude(request.longitude())
@@ -102,15 +117,24 @@ public class TrainingSessionService {
 
     @Transactional(readOnly = true)
     public PageResponse<TrainingSessionResponse> getAllUpcomingSessions(int page, int size) {
-        Pageable pageable = PageRequest.of(page, size, Sort.by("startDate").ascending());
+        return searchSessions(new SessionSearchRequest(
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                false,
+                "startDate",
+                "asc",
+                page,
+                size));
+    }
 
-        Page<TrainingSession> sessions =
-                trainingSessionRepository.findByStatusAndStartDateGreaterThanEqual(
-                        TrainingSessionStatus.SCHEDULED,
-                        LocalDate.now(),
-                        pageable);
-
-        return toSessionPage(sessions);
+    public PageResponse<TrainingSessionResponse> searchSessions(SessionSearchRequest request) {
+        return trainingSessionSearchService.search(request);
     }
 
     @Transactional(readOnly = true)
@@ -130,6 +154,7 @@ public class TrainingSessionService {
         return toSessionPage(trainingSessionRepository.findByTrainer(trainer, pageable));
     }
 
+    @CacheEvict(cacheNames = CacheNames.SESSION_SEARCH, allEntries = true)
     @Transactional
     public TrainingSessionResponse updateSession(
             Long sessionId,
@@ -156,6 +181,10 @@ public class TrainingSessionService {
         String updatedLocationName = request.locationName() != null
                 ? request.locationName()
                 : session.getLocationName();
+        Region updatedRegion = request.regionId() != null
+                ? regionRepository.findById(request.regionId())
+                        .orElseThrow(() -> new ResourceNotFoundException("Region not found."))
+                : session.getRegion();
         Double updatedLatitude = request.latitude() != null
                 ? request.latitude()
                 : session.getLatitude();
@@ -206,12 +235,14 @@ public class TrainingSessionService {
 
         boolean locationChanged =
                 !Objects.equals(session.getLocationName(), updatedLocationName)
+                || !Objects.equals(session.getRegion().getId(), updatedRegion.getId())
                 || !Objects.equals(session.getLatitude(), updatedLatitude)
                 || !Objects.equals(session.getLongitude(), updatedLongitude);
 
         session.setTitle(updatedTitle);
         session.setDescription(updatedDescription);
         session.setLocationName(updatedLocationName);
+        session.setRegion(updatedRegion);
         session.setLatitude(updatedLatitude);
         session.setLongitude(updatedLongitude);
         session.setStartDate(updatedStartDate);
@@ -233,6 +264,7 @@ public class TrainingSessionService {
         return trainingSessionMapper.toResponse(session);
     }
 
+    @CacheEvict(cacheNames = CacheNames.SESSION_SEARCH, allEntries = true)
     @Transactional
     public void cancelSession(Long sessionId, CancelTrainingSessionRequest request) {
         User trainer = userService.getCurrentUser();
@@ -276,6 +308,7 @@ public class TrainingSessionService {
                 recipientIds);
     }
 
+    @CacheEvict(cacheNames = CacheNames.SESSION_SEARCH, allEntries = true)
     @Transactional
     public void restoreSession(Long sessionId) {
         User trainer = userService.getCurrentUser();
@@ -305,6 +338,7 @@ public class TrainingSessionService {
      * Kept temporarily for existing clients. A booked business record is now
      * cancelled rather than physically deleted.
      */
+    @CacheEvict(cacheNames = CacheNames.SESSION_SEARCH, allEntries = true)
     @Transactional
     public void deleteSession(Long sessionId, CancelTrainingSessionRequest request) {
         cancelSession(sessionId, request);

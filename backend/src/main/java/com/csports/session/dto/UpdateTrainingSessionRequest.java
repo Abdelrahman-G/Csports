@@ -37,6 +37,9 @@ public record UpdateTrainingSessionRequest(
         @Size(max = 255, message = "Location name must not exceed 255 characters")
         String locationName,
 
+        @Positive(message = "Region id must be positive")
+        Long regionId,
+
         @DecimalMin(value = ServiceArea.MIN_LATITUDE, message = "Latitude must be within the Cairo and Giza service area")
         @DecimalMax(value = ServiceArea.MAX_LATITUDE, message = "Latitude must be within the Cairo and Giza service area")
         Double latitude,
@@ -73,6 +76,7 @@ public record UpdateTrainingSessionRequest(
         return title != null
                 || description != null
                 || locationName != null
+                || regionId != null
                 || latitude != null
                 || longitude != null
                 || startDate != null

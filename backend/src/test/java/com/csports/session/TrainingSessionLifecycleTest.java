@@ -24,6 +24,8 @@ import com.csports.booking.BookingStatus;
 import com.csports.notification.NotificationType;
 import com.csports.notification.UserNotification;
 import com.csports.notification.UserNotificationRepository;
+import com.csports.location.Region;
+import com.csports.location.RegionRepository;
 import com.csports.session.dto.CancelTrainingSessionRequest;
 import com.csports.session.dto.TrainingSessionResponse;
 import com.csports.session.dto.UpdateTrainingSessionRequest;
@@ -62,6 +64,9 @@ class TrainingSessionLifecycleTest {
     private SportRepository sportRepository;
 
     @Autowired
+    private RegionRepository regionRepository;
+
+    @Autowired
     private TrainingSessionLifecycleJob lifecycleJob;
 
     @AfterEach
@@ -77,6 +82,7 @@ class TrainingSessionLifecycleTest {
         Sport sport = sportRepository.saveAndFlush(Sport.builder()
                 .name("Lifecycle Sport " + unique)
                 .build());
+        Region region = saveRegion("Lifecycle Region " + unique);
         trainerProfileRepository.saveAndFlush(TrainerProfile.builder()
                 .user(trainer)
                 .sport(sport)
@@ -88,6 +94,7 @@ class TrainingSessionLifecycleTest {
         TrainingSession session = trainingSessionRepository.saveAndFlush(TrainingSession.builder()
                 .trainer(trainer)
                 .sport(sport)
+                .region(region)
                 .title("Original session")
                 .description("Original details")
                 .locationName("Nasr City")
@@ -115,6 +122,7 @@ class TrainingSessionLifecycleTest {
                 "Updated session",
                 "Updated details",
                 "New Cairo",
+                region.getId(),
                 30.0285,
                 31.4913,
                 updatedDate,
@@ -195,6 +203,7 @@ class TrainingSessionLifecycleTest {
                         null,
                         null,
                         "New Cairo",
+                        null,
                         30.0285,
                         31.4913,
                         null,
@@ -251,6 +260,7 @@ class TrainingSessionLifecycleTest {
                         null,
                         null,
                         null,
+                        null,
                         null)))
                 .isInstanceOf(com.csports.session.exception.InvalidSessionScheduleException.class)
                 .hasMessageContaining("At least one editable");
@@ -282,6 +292,7 @@ class TrainingSessionLifecycleTest {
                         "Still too close",
                         "Details",
                         "Nasr City",
+                        null,
                         30.0581,
                         31.3302,
                         sessionDate,
@@ -322,6 +333,7 @@ class TrainingSessionLifecycleTest {
                         "Moved session",
                         "Details",
                         "Nasr City",
+                        null,
                         30.0581,
                         31.3302,
                         requestedDate,
@@ -452,6 +464,7 @@ class TrainingSessionLifecycleTest {
         return trainingSessionRepository.saveAndFlush(TrainingSession.builder()
                 .trainer(trainer)
                 .sport(sport)
+                .region(saveRegion("Session Region " + java.util.UUID.randomUUID()))
                 .title(title)
                 .description("Lifecycle rules test")
                 .locationName("Nasr City")
@@ -465,6 +478,16 @@ class TrainingSessionLifecycleTest {
                 .maxParticipants(maxParticipants)
                 .currentParticipants(currentParticipants)
                 .price(100.0)
+                .build());
+    }
+
+    private Region saveRegion(String name) {
+        return regionRepository.saveAndFlush(Region.builder()
+                .country("Egypt")
+                .city("Cairo")
+                .name(name)
+                .latitude(30.0581)
+                .longitude(31.3302)
                 .build());
     }
 

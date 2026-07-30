@@ -16,15 +16,27 @@ public record TrainingSessionDetailsResponse(
 
         String description,
 
+        Long trainerId,
+
         String trainerName,
 
         String trainerBio,
 
         Integer trainerExperienceYears,
 
+        Long sportId,
+
         String sport,
 
         String locationName,
+
+        Long regionId,
+
+        String regionName,
+
+        String city,
+
+        String country,
 
         String googleMapsUrl,
 

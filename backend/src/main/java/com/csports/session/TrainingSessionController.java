@@ -6,6 +6,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -19,6 +20,7 @@ import com.csports.common.web.ApiPaths;
 import com.csports.session.dto.CreateTrainingSessionRequest;
 import com.csports.session.dto.CancelTrainingSessionRequest;
 import com.csports.session.dto.SessionParticipantResponse;
+import com.csports.session.dto.SessionSearchRequest;
 import com.csports.session.dto.TrainingSessionDetailsResponse;
 import com.csports.session.dto.TrainingSessionResponse;
 import com.csports.session.dto.UpdateTrainingSessionRequest;
@@ -49,9 +51,8 @@ public class TrainingSessionController {
 
     @GetMapping
     public PageResponse<TrainingSessionResponse> getSessions(
-            @RequestParam(defaultValue = "0") @Min(0) int page,
-            @RequestParam(defaultValue = "10") @Min(1) @Max(100) int size) {
-        return trainingSessionService.getAllUpcomingSessions(page, size);
+            @Valid @ModelAttribute SessionSearchRequest request) {
+        return trainingSessionService.searchSessions(request);
     }
 
     @GetMapping("/{sessionId}")
