@@ -1,7 +1,7 @@
 package com.csports.auth;
 
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -14,6 +14,8 @@ import com.csports.auth.dto.RefreshRequest;
 import com.csports.auth.dto.RegisterRequest;
 import com.csports.auth.dto.RegisterTrainerRequest;
 import com.csports.common.web.ApiPaths;
+import com.csports.user.UserService;
+import com.csports.user.dto.UserProfileResponse;
 
 import jakarta.validation.Valid;
 
@@ -21,14 +23,23 @@ import jakarta.validation.Valid;
 @RequestMapping({ApiPaths.AUTH, ApiPaths.LEGACY_AUTH})
 public class AuthController {
     private final AuthService authService;
+    private final UserService userService;
 
-    public AuthController(AuthService authService) {
+    public AuthController(AuthService authService, UserService userService) {
         this.authService = authService;
+        this.userService = userService;
     }
-@GetMapping("/me")
-public String me(Authentication authentication) {
-    return authentication.getAuthorities().toString();
-}
+
+    /**
+     * Backward-compatible alias. New clients should use /api/v1/users/me.
+     */
+    @Deprecated
+    @PreAuthorize("isAuthenticated()")
+    @GetMapping("/me")
+    public UserProfileResponse me() {
+        return userService.getMyProfile();
+    }
+
     @PostMapping("/register/user")
     public ResponseEntity<String> registerUser(@Valid @RequestBody RegisterRequest request) {
 

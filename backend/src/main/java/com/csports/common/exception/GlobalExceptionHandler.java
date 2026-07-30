@@ -35,6 +35,7 @@ import com.csports.session.exception.SessionStateConflictException;
 import com.csports.sport.exception.SportNotFoundException;
 import com.csports.trainer.exception.TrainerProfileAlreadyExistsException;
 import com.csports.trainer.exception.TrainerProfileNotFoundException;
+import com.csports.user.exception.InvalidProfileUpdateException;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolation;
@@ -189,7 +190,8 @@ public class GlobalExceptionHandler {
     @ExceptionHandler({
             InvalidSessionScheduleException.class,
             SessionEndedException.class,
-            CannotBookOwnSessionException.class
+            CannotBookOwnSessionException.class,
+            InvalidProfileUpdateException.class
     })
     public ResponseEntity<ErrorResponse> handleBusinessValidation(
             RuntimeException ex,

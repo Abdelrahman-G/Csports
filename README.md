@@ -166,6 +166,7 @@ while repeatedly rewriting its API layer.
 - [Architecture overview](docs/architecture/overview.md)
 - [Authorization matrix](docs/security/authorization.md)
 - [API error contract](docs/api/errors.md)
+- [Account and trainer profiles](docs/api/account-profiles.md)
 - [Training session lifecycle](docs/api/session-lifecycle.md)
 - [Postman session lifecycle test](docs/development/postman-session-lifecycle.md)
 - [Flyway and database changes](docs/database/flyway.md)
