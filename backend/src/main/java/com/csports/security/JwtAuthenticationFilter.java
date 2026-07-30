@@ -68,7 +68,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
                                 UserDetails userDetails = userDetailsService.loadUserByUsername(userId);
 
-                                if (!jwtService.isTokenValid(jwt, (User) userDetails)) {
+                                if (!jwtService.isAccessTokenValid(jwt, (User) userDetails)) {
                                         authenticationEntryPoint.commence(
                                                         request,
                                                         response,

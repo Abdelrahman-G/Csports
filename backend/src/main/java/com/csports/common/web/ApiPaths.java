@@ -12,7 +12,6 @@ public final class ApiPaths {
     public static final String TRAINERS = V1 + "/trainers";
     public static final String USERS = V1 + "/users";
     public static final String NOTIFICATIONS = V1 + "/notifications";
-    public static final String DEV_REDIS = V1 + "/dev/redis";
 
     public static final String LEGACY_AUTH = "/auth";
     public static final String LEGACY_BOOKINGS = "/bookings";
@@ -22,7 +21,6 @@ public final class ApiPaths {
     public static final String LEGACY_TRAINERS = "/trainers";
     public static final String LEGACY_USERS = "/users";
     public static final String LEGACY_NOTIFICATIONS = "/notifications";
-    public static final String LEGACY_REDIS = "/redis";
 
     private ApiPaths() {
     }

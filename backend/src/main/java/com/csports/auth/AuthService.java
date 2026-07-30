@@ -124,6 +124,7 @@ public class AuthService {
                 trainerProfileRepository.save(trainerProfile);
         }
 
+        @Transactional
         public AuthResponse login(LoginRequest request) {
 
                 User user = userRepository.findByEmail(request.identifier())
@@ -136,17 +137,12 @@ public class AuthService {
                 String accessToken = jwtService.generateAccessToken(user);
                 String refreshToken = jwtService.generateRefreshToken(user);
 
-                refreshTokenRepository.save(
-                                RefreshToken.builder()
-                                                .token(refreshToken)
-                                                .user(user)
-                                                .expiryDate(LocalDateTime.now().plusDays(30))
-                                                .revoked(false)
-                                                .build());
+                saveRefreshToken(refreshToken, user);
 
                 return new AuthResponse(accessToken, refreshToken, user.getRole());
         }
 
+        @Transactional
         public AuthResponse refresh(RefreshRequest request) {
 
                 RefreshToken refreshToken = refreshTokenRepository.findByToken(request.refreshToken())
@@ -156,27 +152,57 @@ public class AuthService {
                         throw new InvalidCredentialsException("Refresh token revoked");
                 }
 
-                if (refreshToken.getExpiryDate().isBefore(LocalDateTime.now())) {
-                        throw new InvalidCredentialsException("Refresh token expired");
+                User user = refreshToken.getUser();
+                if (refreshToken.getExpiryDate().isBefore(LocalDateTime.now())
+                                || !jwtService.isRefreshTokenValid(
+                                                refreshToken.getToken(),
+                                                user)) {
+                        throw new InvalidCredentialsException("Refresh token is invalid or expired");
                 }
 
-                User user = refreshToken.getUser();
+                int consumedTokenCount = refreshTokenRepository.revokeIfActive(refreshToken.getId());
+                if (consumedTokenCount != 1) {
+                        throw new InvalidCredentialsException("Refresh token revoked");
+                }
 
+                // Keep the managed entity consistent with the atomic database update.
+                refreshToken.setRevoked(true);
                 String accessToken = jwtService.generateAccessToken(user);
+                String rotatedRefreshToken = jwtService.generateRefreshToken(user);
+                saveRefreshToken(rotatedRefreshToken, user);
 
-                return new AuthResponse(accessToken, refreshToken.getToken(), user.getRole());
+                return new AuthResponse(accessToken, rotatedRefreshToken, user.getRole());
         }
 
-        
-        public void logout(String accessToken, RefreshRequest request) {
+        @Transactional
+        public void logout(
+                        String accessToken,
+                        RefreshRequest request,
+                        Long authenticatedUserId) {
 
                 RefreshToken refreshToken = refreshTokenRepository
                                 .findByToken(request.refreshToken())
                                 .orElseThrow(() -> new InvalidCredentialsException("Invalid refresh token"));
 
+                if (!refreshToken.getUser().getId().equals(authenticatedUserId)
+                                || !jwtService.isRefreshTokenValid(
+                                                refreshToken.getToken(),
+                                                refreshToken.getUser())) {
+                        throw new InvalidCredentialsException("Invalid refresh token");
+                }
+
                 refreshToken.setRevoked(true);
                 tokenBlacklistService.blacklist(accessToken);
-                refreshTokenRepository.save(refreshToken);
+        }
+
+        private void saveRefreshToken(String token, User user) {
+                refreshTokenRepository.save(
+                                RefreshToken.builder()
+                                                .token(token)
+                                                .user(user)
+                                                .expiryDate(jwtService.getExpiration(token))
+                                                .revoked(false)
+                                                .build());
         }
 
         private void validateRegistration(String email, String phoneNumber) {
