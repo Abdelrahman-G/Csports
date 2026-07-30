@@ -1,112 +1,68 @@
 package com.csports.booking;
 
-import org.springframework.data.domain.Sort;
+import java.time.LocalDate;
+
 import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.stereotype.Service;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import java.time.LocalDateTime;
+import org.springframework.data.domain.Sort;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.csports.booking.dto.BookedSessionResponse;
+import com.csports.booking.dto.BookingSearchRequest;
 import com.csports.common.pagination.PageResponse;
 import com.csports.infrastructure.redis.CacheNames;
-import com.csports.booking.exception.AlreadyBookedException;
-import com.csports.booking.exception.CannotBookOwnSessionException;
-import com.csports.common.exception.ResourceNotFoundException;
-import com.csports.booking.exception.SessionFullException;
-import com.csports.session.exception.TrainingSessionNotFoundException;
-import com.csports.session.exception.SessionStateConflictException;
-import com.csports.session.TrainingSession;
-import com.csports.session.SessionSchedule;
-import com.csports.session.TrainingSessionStatus;
 import com.csports.user.User;
-import com.csports.session.TrainingSessionRepository;
 import com.csports.user.UserService;
-
-import jakarta.transaction.Transactional;
 
 @Service
 public class BookingService {
 
     private final BookingRepository bookingRepository;
-    private final TrainingSessionRepository trainingSessionRepository;
     private final UserService userService;
     private final BookingMapper bookingMapper;
+    private final SessionBookingLock sessionBookingLock;
+    private final BookingTransactionService bookingTransactionService;
 
-    public BookingService(BookingRepository bookingRepository, TrainingSessionRepository trainingSessionRepository,
-            UserService userService, BookingMapper bookingMapper) {
-
+    public BookingService(
+            BookingRepository bookingRepository,
+            UserService userService,
+            BookingMapper bookingMapper,
+            SessionBookingLock sessionBookingLock,
+            BookingTransactionService bookingTransactionService) {
         this.bookingRepository = bookingRepository;
-        this.trainingSessionRepository = trainingSessionRepository;
         this.userService = userService;
         this.bookingMapper = bookingMapper;
+        this.sessionBookingLock = sessionBookingLock;
+        this.bookingTransactionService = bookingTransactionService;
     }
 
-    // Transactional annotation ensures that the entire booking process is treated
-    // as a single transaction. If any part of the process fails (e.g., if the
-    // session is full or the user has already booked), the entire transaction will
-    // be rolled back, and no changes will be made to the database.
-    // avoid booking the same last spot multiple times
     @CacheEvict(cacheNames = CacheNames.SESSION_SEARCH, allEntries = true)
-    @Transactional
-    public void bookSession(Long sessionId) {
-
-        User user = userService.getCurrentUser();
-
-        TrainingSession session = trainingSessionRepository.findById(sessionId)
-                .orElseThrow(() -> new ResourceNotFoundException("Training session not found"));
-
-        if (session.getTrainer().getId().equals(user.getId())) {
-            throw new CannotBookOwnSessionException();
-        }
-
-        if (session.getStatus() != TrainingSessionStatus.SCHEDULED) {
-            throw new SessionStateConflictException("Only scheduled training sessions can be booked.");
-        }
-
-        if (!SessionSchedule.firstStart(session).isAfter(LocalDateTime.now())) {
-            throw new SessionStateConflictException(
-                    "Booking closes when the first training occurrence starts.");
-        }
-
-        if (bookingRepository.existsByUserAndSessionAndStatus(
-                user,
-                session,
-                BookingStatus.CONFIRMED)) {
-            throw new AlreadyBookedException();
-        }
-
-        if (session.getCurrentParticipants() >= session.getMaxParticipants()) {
-            throw new SessionFullException();
-        }
-
-        session.setCurrentParticipants(session.getCurrentParticipants() + 1);
-
-        // Version is checked here
-        trainingSessionRepository.save(session);
-
-        Booking booking = Booking.builder()
-                .user(user)
-                .session(session)
-                .status(BookingStatus.CONFIRMED)
-                .build();
-
-        bookingRepository.save(booking);
+    public BookedSessionResponse bookSession(Long sessionId) {
+        Long userId = userService.getCurrentUser().getId();
+        return sessionBookingLock.execute(
+                sessionId,
+                () -> bookingTransactionService.bookSession(sessionId, userId));
     }
 
-    @Transactional
-    public PageResponse<BookedSessionResponse> getMySessions(int page, int size) {
-
+    @Transactional(readOnly = true)
+    public PageResponse<BookedSessionResponse> getMyBookings(
+            BookingSearchRequest request) {
         User currentUser = userService.getCurrentUser();
+        PageRequest pageable = PageRequest.of(
+                request.page(),
+                request.size(),
+                Sort.by(Sort.Direction.DESC, "bookedAt")
+                        .and(Sort.by(Sort.Direction.DESC, "id")));
 
-        Pageable pageable = PageRequest.of(page, size, Sort.by("bookedAt").descending());
-
-        Page<Booking> bookings = bookingRepository.findByUserAndStatus(
-                currentUser,
-                BookingStatus.CONFIRMED,
-                pageable);
-
-        Page<BookedSessionResponse> response = bookings.map(bookingMapper::toResponse);
+        Page<BookedSessionResponse> response = bookingRepository.findAll(
+                        BookingSpecifications.forUser(
+                                currentUser.getId(),
+                                request,
+                                LocalDate.now()),
+                        pageable)
+                .map(bookingMapper::toResponse);
 
         return new PageResponse<>(
                 response.getContent(),
@@ -118,23 +74,24 @@ public class BookingService {
                 response.isLast());
     }
 
+    /**
+     * Backward-compatible service method for the deprecated users/sessions
+     * route. New clients should call bookings/me with explicit filters.
+     */
+    @Transactional(readOnly = true)
+    public PageResponse<BookedSessionResponse> getMySessions(int page, int size) {
+        return getMyBookings(new BookingSearchRequest(
+                null,
+                BookingView.UPCOMING,
+                page,
+                size));
+    }
+
     @CacheEvict(cacheNames = CacheNames.SESSION_SEARCH, allEntries = true)
-    @Transactional
-    public void cancelBooking(Long sessionId) {
-
-        User currentUser = userService.getCurrentUser();
-
-        TrainingSession session = trainingSessionRepository.findById(sessionId)
-                .orElseThrow(TrainingSessionNotFoundException::new);
-
-        Booking booking = bookingRepository.findByUserAndSessionAndStatus(
-                        currentUser,
-                        session,
-                        BookingStatus.CONFIRMED)
-                .orElseThrow(() -> new ResourceNotFoundException("Booking not found."));
-
-        booking.setStatus(BookingStatus.CANCELLED_BY_USER);
-
-        session.setCurrentParticipants(Math.max(0, session.getCurrentParticipants() - 1));
+    public BookedSessionResponse cancelBooking(Long sessionId) {
+        Long userId = userService.getCurrentUser().getId();
+        return sessionBookingLock.execute(
+                sessionId,
+                () -> bookingTransactionService.cancelBooking(sessionId, userId));
     }
 }

@@ -10,7 +10,7 @@ The project currently demonstrates:
 - Spring Boot 4 and Java 21
 - JWT access and refresh token authentication
 - PostgreSQL persistence with Flyway migrations
-- Redis caching and token blacklisting
+- Redis caching, token blacklisting, and per-session booking locks
 - Docker Compose infrastructure
 - Versioned REST endpoints with backwards-compatible legacy routes
 - Generated OpenAPI/Swagger documentation
@@ -93,6 +93,10 @@ be overridden with an environment variable:
 | `REDIS_HOST` | `localhost` |
 | `REDIS_PORT` | `6379` |
 | `JWT_SECRET` | development-only key |
+| `BOOKING_LOCK_ENABLED` | `true` |
+| `BOOKING_LOCK_WAIT_TIME` | `2s` |
+| `BOOKING_LOCK_LEASE_TIME` | `10s` |
+| `BOOKING_LOCK_RETRY_INTERVAL` | `50ms` |
 
 The `prod` profile requires database credentials and `JWT_SECRET`; it contains
 no secret fallback. See [.env.example](.env.example).
@@ -169,6 +173,7 @@ while repeatedly rewriting its API layer.
 - [Account and trainer profiles](docs/api/account-profiles.md)
 - [Session discovery and filtering](docs/api/session-discovery.md)
 - [Training session lifecycle](docs/api/session-lifecycle.md)
+- [Booking lifecycle and Redis locking](docs/api/booking-lifecycle.md)
 - [Postman session lifecycle test](docs/development/postman-session-lifecycle.md)
 - [Flyway and database changes](docs/database/flyway.md)
 - [API versioning](docs/api/versioning.md)

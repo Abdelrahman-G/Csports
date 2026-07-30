@@ -1,22 +1,23 @@
 package com.csports.booking;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.csports.booking.dto.BookedSessionResponse;
+import com.csports.booking.dto.BookingSearchRequest;
 import com.csports.common.pagination.PageResponse;
 import com.csports.common.web.ApiPaths;
 
-import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.Min;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
 
 @RestController
@@ -33,28 +34,26 @@ public class BookingController {
 
     @PreAuthorize("hasRole('USER')")
     @PostMapping("/{sessionId}")
-    public ResponseEntity<String> bookSession(@PathVariable @Positive Long sessionId) {
+    public ResponseEntity<BookedSessionResponse> bookSession(
+            @PathVariable @Positive Long sessionId) {
 
-        bookingService.bookSession(sessionId);
-
-        return ResponseEntity.ok("Training session booked successfully.");
+        BookedSessionResponse booking = bookingService.bookSession(sessionId);
+        return ResponseEntity.status(HttpStatus.CREATED).body(booking);
     }
 
     @PreAuthorize("hasRole('USER')")
     @GetMapping("/me")
-    public PageResponse<BookedSessionResponse> getMySessions(
-            @RequestParam(defaultValue = "0") @Min(0) int page,
-            @RequestParam(defaultValue = "10") @Min(1) @Max(100) int size) {
+    public PageResponse<BookedSessionResponse> getMyBookings(
+            @Valid @ModelAttribute BookingSearchRequest request) {
 
-        return bookingService.getMySessions(page, size);
+        return bookingService.getMyBookings(request);
     }
 
     @PreAuthorize("hasRole('USER')")
     @DeleteMapping("/{sessionId}")
-    public ResponseEntity<String> cancelBooking(@PathVariable @Positive Long sessionId) {
+    public BookedSessionResponse cancelBooking(
+            @PathVariable @Positive Long sessionId) {
 
-        bookingService.cancelBooking(sessionId);
-
-        return ResponseEntity.ok("Booking cancelled successfully.");
+        return bookingService.cancelBooking(sessionId);
     }
 }

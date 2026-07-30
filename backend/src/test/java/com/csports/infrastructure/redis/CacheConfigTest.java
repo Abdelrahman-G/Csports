@@ -83,6 +83,8 @@ class CacheConfigTest {
                 1,
                 5,
                 4,
+                LocalDate.of(2026, 10, 5).atTime(9, 0),
+                true,
                 TrainingSessionStatus.SCHEDULED,
                 null,
                 null);

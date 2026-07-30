@@ -52,6 +52,10 @@ public record TrainingSessionResponse(
 
         Integer remainingSeats,
 
+        LocalDateTime bookingClosesAt,
+
+        boolean bookingOpen,
+
         TrainingSessionStatus status,
 
         LocalDateTime cancelledAt,

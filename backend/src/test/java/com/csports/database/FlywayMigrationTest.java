@@ -41,11 +41,11 @@ class FlywayMigrationTest {
     void allMigrationsBuildSchemaThatHibernateCanValidate() {
         Integer migrationCount = jdbcTemplate.queryForObject(
                 "select count(*) from flyway_schema_history "
-                        + "where version in ('1', '2', '3', '4') and success = true",
+                        + "where version in ('1', '2', '3', '4', '5') and success = true",
                 Integer.class
         );
 
-        assertThat(migrationCount).isEqualTo(4);
+        assertThat(migrationCount).isEqualTo(5);
 
         Integer notificationTableCount = jdbcTemplate.queryForObject(
                 "select count(*) from information_schema.tables "
@@ -79,6 +79,23 @@ class FlywayMigrationTest {
                 Integer.class
         );
         assertThat(discoveryIndexCount).isEqualTo(5);
+
+        Integer bookingLifecycleColumnCount = jdbcTemplate.queryForObject(
+                "select count(*) from information_schema.columns "
+                        + "where table_name = 'booking' "
+                        + "and column_name in ('cancelled_at', 'active_marker')",
+                Integer.class
+        );
+        assertThat(bookingLifecycleColumnCount).isEqualTo(2);
+
+        Integer bookingIntegrityIndexCount = jdbcTemplate.queryForObject(
+                "select count(*) from information_schema.indexes "
+                        + "where upper(index_name) in ("
+                        + "'UQ_BOOKING_CONFIRMED_USER_SESSION', "
+                        + "'IDX_BOOKING_USER_STATUS_BOOKED_AT')",
+                Integer.class
+        );
+        assertThat(bookingIntegrityIndexCount).isEqualTo(2);
     }
 
     @Test
