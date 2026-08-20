@@ -159,6 +159,103 @@
   margin: 0;
 }
 
+.placeholder-page {
+  min-height: 100vh;
+  padding: 24px;
+  display: grid;
+  place-items: center;
+}
+
+.placeholder-card {
+  width: min(480px, 100%);
+  padding: 48px;
+  border: 1px solid #d5e8dc;
+  border-radius: 20px;
+  background: #ffffff;
+  box-shadow: 0 20px 50px rgba(24, 89, 56, 0.1);
+}
+
+.placeholder-card h1 {
+  margin: 0 0 16px;
+  color: #16251d;
+  font-size: 2.4rem;
+}
+
+.placeholder-card > p:not(.eyebrow) {
+  margin: 0 0 28px;
+  color: #53685c;
+  line-height: 1.7;
+}
+
+.back-link {
+  color: #238654;
+  font-weight: 700;
+}
+
+.auth-card {
+  width: min(520px, 100%);
+}
+
+.auth-form {
+  display: grid;
+  gap: 20px;
+}
+
+.form-field {
+  display: grid;
+  gap: 8px;
+}
+
+.form-field label {
+  color: #263c30;
+  font-weight: 700;
+}
+
+.form-field input {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid #a9bdb1;
+  border-radius: 8px;
+  color: #16251d;
+  background: #ffffff;
+  font: inherit;
+}
+
+.form-field input:focus {
+  border-color: #238654;
+  outline: 3px solid #d7eee1;
+}
+
+.form-field input[aria-invalid='true'] {
+  border-color: #b42318;
+}
+
+.field-error {
+  color: #b42318;
+  font-size: 0.88rem;
+}
+
+.submit-button {
+  margin-top: 4px;
+  padding: 12px 18px;
+  border: 0;
+  border-radius: 8px;
+  color: #ffffff;
+  background: #238654;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.submit-button:hover {
+  background: #196d43;
+}
+
+.submit-button:focus-visible {
+  outline: 3px solid #9ad6b6;
+  outline-offset: 3px;
+}
+
 @media (max-width: 760px) {
   .header {
     padding: 18px 0;
