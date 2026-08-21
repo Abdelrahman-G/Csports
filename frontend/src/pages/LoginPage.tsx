@@ -1,5 +1,8 @@
 import { useState, type FormEvent } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
+import { ApiError, loginAccount } from '../auth/authApi'
+import { useAuth } from '../auth/authContext'
+import { getHomePath } from '../auth/routePaths'
 
 type LoginErrors = {
   identifier?: string
@@ -7,12 +10,15 @@ type LoginErrors = {
 }
 
 function LoginPage() {
+  const navigate = useNavigate()
+  const { signIn } = useAuth()
   const [identifier, setIdentifier] = useState('')
   const [password, setPassword] = useState('')
   const [errors, setErrors] = useState<LoginErrors>({})
-  const [message, setMessage] = useState('')
+  const [serverError, setServerError] = useState('')
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
 
     const nextErrors: LoginErrors = {}
@@ -28,11 +34,37 @@ function LoginPage() {
     setErrors(nextErrors)
 
     if (Object.keys(nextErrors).length > 0) {
-      setMessage('')
+      setServerError('')
       return
     }
 
-    setMessage('The form is valid. Backend login will be connected later.')
+    setIsSubmitting(true)
+    setServerError('')
+
+    try {
+      const session = await loginAccount({
+        identifier: identifier.trim(),
+        password,
+      })
+
+      signIn(session)
+      navigate(getHomePath(session.role), { replace: true })
+    } catch (error) {
+      if (error instanceof ApiError) {
+        setErrors({
+          identifier: error.fieldErrors.identifier,
+          password: error.fieldErrors.password,
+        })
+      }
+
+      setServerError(
+        error instanceof Error
+          ? error.message
+          : 'Login failed. Please try again.',
+      )
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   return (
@@ -51,7 +83,12 @@ function LoginPage() {
               type="text"
               autoComplete="username"
               value={identifier}
-              onChange={(event) => setIdentifier(event.target.value)}
+              onChange={(event) => {
+                setIdentifier(event.target.value)
+                setErrors((current) => ({ ...current, identifier: undefined }))
+                setServerError('')
+              }}
+              disabled={isSubmitting}
               aria-invalid={Boolean(errors.identifier)}
               aria-describedby={errors.identifier ? 'identifier-error' : undefined}
             />
@@ -70,7 +107,12 @@ function LoginPage() {
               type="password"
               autoComplete="current-password"
               value={password}
-              onChange={(event) => setPassword(event.target.value)}
+              onChange={(event) => {
+                setPassword(event.target.value)
+                setErrors((current) => ({ ...current, password: undefined }))
+                setServerError('')
+              }}
+              disabled={isSubmitting}
               aria-invalid={Boolean(errors.password)}
               aria-describedby={errors.password ? 'password-error' : undefined}
             />
@@ -81,12 +123,20 @@ function LoginPage() {
             )}
           </div>
 
-          <button className="submit-button" type="submit">
-            Log in
+          <button
+            className="submit-button"
+            type="submit"
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? 'Logging in...' : 'Log in'}
           </button>
         </form>
 
-        {message && <p className="form-message">{message}</p>}
+        {serverError && (
+          <p className="form-error-message" role="alert">
+            {serverError}
+          </p>
+        )}
 
         <div className="auth-links">
           <span>

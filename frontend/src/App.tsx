@@ -4,6 +4,9 @@ import LandingPage from './pages/LandingPage'
 import LoginPage from './pages/LoginPage'
 import NotFoundPage from './pages/NotFoundPage'
 import SignupPage from './pages/SignupPage'
+import TrainerHomePage from './pages/TrainerHomePage'
+import UserHomePage from './pages/UserHomePage'
+import RequireRole from './auth/RequireRole'
 
 function App() {
   return (
@@ -11,6 +14,22 @@ function App() {
       <Route path="/" element={<LandingPage />} />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/signup" element={<SignupPage />} />
+      <Route
+        path="/user/home"
+        element={
+          <RequireRole allowedRole="USER">
+            <UserHomePage />
+          </RequireRole>
+        }
+      />
+      <Route
+        path="/trainer/home"
+        element={
+          <RequireRole allowedRole="TRAINER">
+            <TrainerHomePage />
+          </RequireRole>
+        }
+      />
       <Route path="*" element={<NotFoundPage />} />
     </Routes>
   )

@@ -251,18 +251,27 @@
   background: #196d43;
 }
 
+.submit-button:disabled {
+  cursor: wait;
+  opacity: 0.7;
+}
+
 .submit-button:focus-visible {
   outline: 3px solid #9ad6b6;
   outline-offset: 3px;
 }
 
-.placeholder-card .form-message {
+.placeholder-card .form-error-message {
   margin: 20px 0 0;
   padding: 12px 14px;
   border-radius: 8px;
-  color: #185c3a;
-  background: #eaf5ef;
+  color: #842029;
+  background: #fbe9eb;
   font-size: 0.92rem;
+}
+
+.dashboard-card {
+  border-top: 5px solid #238654;
 }
 
 .auth-links {
