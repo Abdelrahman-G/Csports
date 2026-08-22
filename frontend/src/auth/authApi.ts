@@ -65,3 +65,55 @@ export async function loginAccount(request: LoginRequest): Promise<AuthSession> 
 
   return body
 }
+
+export async function refreshAccount(
+  refreshToken: string,
+): Promise<AuthSession> {
+  const response = await fetch('/api/v1/auth/refresh', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ refreshToken }),
+  })
+
+  const body: unknown = await response.json().catch(() => null)
+
+  if (!response.ok) {
+    const errorResponse = body as ApiErrorResponse | null
+
+    if (errorResponse?.message) {
+      throw new ApiError(errorResponse)
+    }
+
+    throw new Error('Your session could not be refreshed.')
+  }
+
+  if (!isAuthSession(body)) {
+    throw new Error('The server returned an invalid refresh response.')
+  }
+
+  return body
+}
+
+export async function logoutAccount(session: AuthSession): Promise<void> {
+  const response = await fetch('/api/v1/auth/logout', {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${session.accessToken}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ refreshToken: session.refreshToken }),
+  })
+
+  if (!response.ok) {
+    const body: unknown = await response.json().catch(() => null)
+    const errorResponse = body as ApiErrorResponse | null
+
+    if (errorResponse?.message) {
+      throw new ApiError(errorResponse)
+    }
+
+    throw new Error('The server could not complete logout.')
+  }
+}
