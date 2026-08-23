@@ -1,6 +1,7 @@
 package com.csports.auth.dto;
 
 import com.csports.common.validation.ServiceArea;
+import com.csports.common.validation.EgyptianPhoneNumber;
 
 import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.DecimalMin;
@@ -25,7 +26,7 @@ public record RegisterTrainerRequest(
         String email,
 
         @NotBlank(message = "Phone number is required")
-        @Pattern(regexp = "^\\+?[0-9]{10,15}$", message = "Phone number must contain 10 to 15 digits and may start with +")
+        @Pattern(regexp = EgyptianPhoneNumber.REGEX, message = EgyptianPhoneNumber.MESSAGE)
         String phoneNumber,
 
         @NotBlank(message = "Password is required")
