@@ -53,8 +53,10 @@ function UserHomePage() {
   return (
     <main className="placeholder-page">
       <section className="placeholder-card dashboard-card">
-        <p className="eyebrow">Participant account</p>
-        <h1>{profile ? `Welcome, ${profile.name}` : 'Loading your profile...'}</h1>
+        <p className="eyebrow">Your training space</p>
+        <h1>
+          {profile ? `Good to see you, ${profile.name}` : 'Preparing your space...'}
+        </h1>
 
         {error && (
           <p className="form-error-message" role="alert">
@@ -91,7 +93,7 @@ function UserHomePage() {
           onClick={handleLogout}
           disabled={isLoggingOut}
         >
-          {isLoggingOut ? 'Logging out...' : 'Log out'}
+          {isLoggingOut ? 'Signing you out...' : 'Log out'}
         </button>
       </section>
     </main>

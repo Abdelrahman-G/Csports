@@ -53,8 +53,10 @@ function TrainerHomePage() {
   return (
     <main className="placeholder-page">
       <section className="placeholder-card dashboard-card">
-        <p className="eyebrow">Trainer account</p>
-        <h1>{profile ? `Welcome, ${profile.name}` : 'Loading your profile...'}</h1>
+        <p className="eyebrow">Your coaching space</p>
+        <h1>
+          {profile ? `Ready to lead, ${profile.name}?` : 'Preparing your space...'}
+        </h1>
 
         {error && (
           <p className="form-error-message" role="alert">
@@ -93,7 +95,7 @@ function TrainerHomePage() {
           onClick={handleLogout}
           disabled={isLoggingOut}
         >
-          {isLoggingOut ? 'Logging out...' : 'Log out'}
+          {isLoggingOut ? 'Signing you out...' : 'Log out'}
         </button>
       </section>
     </main>

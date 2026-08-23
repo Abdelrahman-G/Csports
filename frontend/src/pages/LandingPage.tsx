@@ -14,23 +14,23 @@ function LandingPage() {
             Log in
           </Link>
           <Link className="signup-link" to="/signup">
-            Sign up
+            Join Csports
           </Link>
         </nav>
       </header>
 
       <main className="hero">
         <section className="hero-content">
-          <p className="eyebrow">Train together. Improve together.</p>
-          <h1>Find the right sport for you.</h1>
+          <p className="eyebrow">Your city. Your sport. Your people.</p>
+          <h1>Train for the person you want to become.</h1>
           <p className="hero-description">
-            Discover local training sessions, connect with experienced trainers,
-            and book your place in a few simple steps.
+            Discover serious coaches and nearby sessions that match your goals.
+            Show up, stay consistent, and make every week count.
           </p>
 
           <div className="hero-actions">
             <Link className="primary-button" to="/signup">
-              Create an account
+              Sign up
             </Link>
             <Link className="secondary-button" to="/login">
               Log in
@@ -39,13 +39,16 @@ function LandingPage() {
         </section>
 
         <section className="hero-visual" aria-label="Csports highlights">
-          <h2>Your next session starts here</h2>
-          <p>Search, book, and manage your training sessions from one place.</p>
+          <h2>Momentum starts with one session.</h2>
+          <p>
+            Find the right coach, claim your place, and turn intention into
+            progress.
+          </p>
 
           <div className="feature-list">
-            <span>Find trainers</span>
-            <span>Book sessions</span>
-            <span>Stay notified</span>
+            <span>Train nearby</span>
+            <span>Meet your coach</span>
+            <span>Keep your momentum</span>
           </div>
         </section>
       </main>

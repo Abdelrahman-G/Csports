@@ -4,11 +4,11 @@ function NotFoundPage() {
   return (
     <main className="placeholder-page">
       <section className="placeholder-card">
-        <p className="eyebrow">404</p>
-        <h1>Page not found</h1>
-        <p>The page you requested does not exist.</p>
+        <p className="eyebrow">Wrong turn</p>
+        <h1>This path leads nowhere.</h1>
+        <p>Let’s get you back in motion.</p>
         <Link className="back-link" to="/">
-          Back to home
+          Return to Csports
         </Link>
       </section>
     </main>

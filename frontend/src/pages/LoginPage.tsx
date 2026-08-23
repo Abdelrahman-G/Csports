@@ -1,8 +1,9 @@
 import { useState, type FormEvent } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { ApiError, loginAccount } from '../auth/authApi'
 import { useAuth } from '../auth/authContext'
 import { getHomePath } from '../auth/routePaths'
+import PasswordInput from '../components/PasswordInput'
 
 type LoginErrors = {
   identifier?: string
@@ -11,12 +12,16 @@ type LoginErrors = {
 
 function LoginPage() {
   const navigate = useNavigate()
+  const location = useLocation()
   const { signIn } = useAuth()
   const [identifier, setIdentifier] = useState('')
   const [password, setPassword] = useState('')
   const [errors, setErrors] = useState<LoginErrors>({})
   const [serverError, setServerError] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const registrationMessage = (
+    location.state as { registrationMessage?: string } | null
+  )?.registrationMessage
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -70,9 +75,15 @@ function LoginPage() {
   return (
     <main className="placeholder-page">
       <section className="placeholder-card auth-card">
-        <p className="eyebrow">Welcome back</p>
-        <h1>Log in</h1>
-        <p>Enter your account details to continue.</p>
+        <p className="eyebrow">Pick up where you left off</p>
+        <h1>Welcome back</h1>
+        <p>Your next goal, session, or athlete is waiting.</p>
+
+        {registrationMessage && (
+          <p className="form-success-message" role="status">
+            {registrationMessage}
+          </p>
+        )}
 
         <form className="auth-form" onSubmit={handleSubmit} noValidate>
           <div className="form-field">
@@ -99,36 +110,26 @@ function LoginPage() {
             )}
           </div>
 
-          <div className="form-field">
-            <label htmlFor="password">Password</label>
-            <input
-              id="password"
-              name="password"
-              type="password"
-              autoComplete="current-password"
-              value={password}
-              onChange={(event) => {
-                setPassword(event.target.value)
-                setErrors((current) => ({ ...current, password: undefined }))
-                setServerError('')
-              }}
-              disabled={isSubmitting}
-              aria-invalid={Boolean(errors.password)}
-              aria-describedby={errors.password ? 'password-error' : undefined}
-            />
-            {errors.password && (
-              <span className="field-error" id="password-error">
-                {errors.password}
-              </span>
-            )}
-          </div>
+          <PasswordInput
+            id="password"
+            label="Password"
+            autoComplete="current-password"
+            value={password}
+            onChange={(value) => {
+              setPassword(value)
+              setErrors((current) => ({ ...current, password: undefined }))
+              setServerError('')
+            }}
+            error={errors.password}
+            disabled={isSubmitting}
+          />
 
           <button
             className="submit-button"
             type="submit"
             disabled={isSubmitting}
           >
-            {isSubmitting ? 'Logging in...' : 'Log in'}
+            {isSubmitting ? 'Getting you back in...' : 'Continue'}
           </button>
         </form>
 
@@ -140,10 +141,10 @@ function LoginPage() {
 
         <div className="auth-links">
           <span>
-            No account? <Link to="/signup">Sign up</Link>
+            Ready to begin? <Link to="/signup">Join Csports</Link>
           </span>
           <Link className="back-link" to="/">
-            Back to home
+            Back to the start
           </Link>
         </div>
       </section>
