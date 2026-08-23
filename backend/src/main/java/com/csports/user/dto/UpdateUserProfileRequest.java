@@ -1,5 +1,6 @@
 package com.csports.user.dto;
 
+import com.csports.common.validation.EgyptianPhoneNumber;
 import com.csports.common.validation.ServiceArea;
 
 import jakarta.validation.constraints.DecimalMax;
@@ -26,9 +27,7 @@ public record UpdateUserProfileRequest(
         @Size(max = 255, message = "Email must not exceed 255 characters")
         String email,
 
-        @Pattern(
-                regexp = "^\\+?[0-9]{10,15}$",
-                message = "Phone number must contain 10 to 15 digits and may start with +")
+        @Pattern(regexp = EgyptianPhoneNumber.REGEX, message = EgyptianPhoneNumber.MESSAGE)
         String phoneNumber,
 
         @Min(value = 13, message = "Age must be at least 13")
