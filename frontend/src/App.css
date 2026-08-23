@@ -432,9 +432,23 @@
 
 .training-location-grid {
   display: grid;
-  grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
-  align-items: stretch;
-  gap: 16px;
+  grid-template-columns: minmax(0, 1fr);
+  align-items: start;
+  gap: 12px;
+}
+
+.region-field {
+  width: 100%;
+  padding: 18px;
+  align-content: start;
+  border: 1px solid #c9ddd1;
+  border-radius: 12px;
+  background: #f8fcfa;
+}
+
+.region-field select {
+  min-height: 46px;
+  background: #ffffff;
 }
 
 .location-field {

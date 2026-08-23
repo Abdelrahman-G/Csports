@@ -504,7 +504,7 @@ function RegistrationPage({ accountType }: RegistrationPageProps) {
             <p>Choose your region, then confirm your current location.</p>
 
             <div className="training-location-grid">
-              <div className="form-field">
+              <div className="form-field region-field">
                 <label htmlFor="regionId">Region</label>
                 <select
                   id="regionId"
