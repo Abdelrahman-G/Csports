@@ -1,5 +1,4 @@
 import { useEffect, useState, type FormEvent } from 'react'
-import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../auth/authContext'
 import { getMyUserProfile, type UserProfile } from '../auth/profileApi'
 import {
@@ -130,8 +129,7 @@ function SessionCard({ session }: { session: TrainingSession }) {
 }
 
 function UserHomePage() {
-  const navigate = useNavigate()
-  const { authenticatedFetch, logout } = useAuth()
+  const { authenticatedFetch } = useAuth()
   const [profile, setProfile] = useState<UserProfile | null>(null)
   const [regions, setRegions] = useState<Region[]>([])
   const [sports, setSports] = useState<Sport[]>([])
@@ -145,7 +143,6 @@ function UserHomePage() {
   const [isLoadingSessions, setIsLoadingSessions] = useState(false)
   const [isLocating, setIsLocating] = useState(false)
   const [error, setError] = useState('')
-  const [isLoggingOut, setIsLoggingOut] = useState(false)
 
   useEffect(() => {
     const controller = new AbortController()
@@ -338,18 +335,6 @@ function UserHomePage() {
     )
   }
 
-  async function handleLogout() {
-    setIsLoggingOut(true)
-
-    try {
-      await logout()
-    } catch {
-      // AuthProvider still removes the local session if the server is unavailable.
-    } finally {
-      navigate('/login', { replace: true })
-    }
-  }
-
   const selectedRegion = regions.find(
     (region) => String(region.id) === appliedFilters.regionId,
   )
@@ -361,83 +346,76 @@ function UserHomePage() {
   return (
     <main className="discovery-page">
       <header className="discovery-header">
-        <div>
-          <p className="eyebrow">Find your next session</p>
-          <h1>{profile ? `Welcome, ${profile.name}` : 'Welcome'}</h1>
-        </div>
-        <button
-          className="header-logout-button"
-          type="button"
-          onClick={handleLogout}
-          disabled={isLoggingOut}
-        >
-          {isLoggingOut ? 'Logging out...' : 'Log out'}
-        </button>
+        <p className="eyebrow">Find your next session</p>
+        <h1>{profile ? `Welcome, ${profile.name}` : 'Welcome'}</h1>
+        <p>Explore coaches and sessions across Cairo and Giza.</p>
       </header>
 
-      <section className="discovery-filter-panel" aria-labelledby="filter-title">
-        <div className="filter-panel-heading">
+      <form className="discovery-catalogue" onSubmit={applyFilters}>
+        <div className="discovery-search-bar">
+          <label htmlFor="session-search">Search sessions</label>
           <div>
-            <h2 id="filter-title">Find training that fits you</h2>
-            <p>Search every session, or narrow the results when you need to.</p>
-          </div>
-          <button
-            className={mode === 'nearby' ? 'nearby-button active' : 'nearby-button'}
-            type="button"
-            onClick={useCurrentLocation}
-            disabled={isLocating}
-          >
-            {isLocating ? 'Finding you...' : 'Search near me'}
-          </button>
-        </div>
-
-        <form className="discovery-filter-form" onSubmit={applyFilters}>
-          <label className="search-filter-field">
-            <span>Search</span>
             <input
+              id="session-search"
               type="search"
               value={filters.query}
               onChange={(event) => updateFilter('query', event.target.value)}
-              placeholder="Try swimming, beginner, or a club name"
+              placeholder="Search by sport, session, or club"
               maxLength={100}
             />
-          </label>
+            <button type="submit">Search</button>
+          </div>
+        </div>
 
-          <label>
-            <span>Area</span>
-            <select
-              value={filters.regionId}
-              onChange={(event) => updateFilter('regionId', event.target.value)}
-              disabled={regions.length === 0}
-            >
-              <option value="">All areas</option>
-              {regions.map((region) => (
-                <option key={region.id} value={region.id}>
-                  {region.name}, {region.city}
-                </option>
-              ))}
-            </select>
-          </label>
+        <div className="discovery-catalogue-layout">
+          <aside className="discovery-sidebar" aria-labelledby="filter-title">
+            <div className="sidebar-heading">
+              <div>
+                <p className="sidebar-kicker">Refine results</p>
+                <h2 id="filter-title">Filters</h2>
+              </div>
+              <button className="clear-filters-link" type="button" onClick={clearFilters}>
+                Clear
+              </button>
+            </div>
 
-          <label>
-            <span>Sport</span>
-            <select
-              value={filters.sportId}
-              onChange={(event) => updateFilter('sportId', event.target.value)}
-              disabled={sports.length === 0}
-            >
-              <option value="">All sports</option>
-              {sports.map((sport) => (
-                <option key={sport.id} value={sport.id}>
-                  {sport.name}
-                </option>
-              ))}
-            </select>
-          </label>
+            <div className="sidebar-filter-group">
+              <label htmlFor="region-filter">Area</label>
+              <select
+                id="region-filter"
+                value={filters.regionId}
+                onChange={(event) => updateFilter('regionId', event.target.value)}
+                disabled={regions.length === 0}
+              >
+                <option value="">All areas</option>
+                {regions.map((region) => (
+                  <option key={region.id} value={region.id}>
+                    {region.name}, {region.city}
+                  </option>
+                ))}
+              </select>
+            </div>
 
-          <fieldset className="price-filter">
-            <legend>Price range</legend>
-            <div>
+            <div className="sidebar-filter-group">
+              <label htmlFor="sport-filter">Sport</label>
+              <select
+                id="sport-filter"
+                value={filters.sportId}
+                onChange={(event) => updateFilter('sportId', event.target.value)}
+                disabled={sports.length === 0}
+              >
+                <option value="">All sports</option>
+                {sports.map((sport) => (
+                  <option key={sport.id} value={sport.id}>
+                    {sport.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <fieldset className="sidebar-filter-group price-filter">
+              <legend>Price range</legend>
+              <div className="price-inputs">
               <label>
                 <span>Minimum</span>
                 <input
@@ -458,70 +436,87 @@ function UserHomePage() {
                   placeholder="Any"
                 />
               </label>
-            </div>
-          </fieldset>
+              </div>
+            </fieldset>
 
-          <div className="filter-actions">
             <button className="apply-filters-button" type="submit">
-              Search sessions
+              Apply filters
             </button>
-            <button className="clear-filters-button" type="button" onClick={clearFilters}>
-              Clear filters
-            </button>
-          </div>
-        </form>
 
-        <p className="active-search-label">
-          {mode === 'nearby' && coordinates
-            ? 'Showing sessions nearest to your current location'
-            : selectedRegion || selectedSport || appliedFilters.query
-              ? `Showing ${selectedSport?.name ?? 'sessions'}${selectedRegion ? ` in ${selectedRegion.name}` : ''}${appliedFilters.query ? ` matching “${appliedFilters.query}”` : ''}`
-              : 'Showing all upcoming sessions'}
-          {sessionPage ? ` · ${sessionPage.totalElements} found` : ''}
-        </p>
-      </section>
+            <div className="nearby-filter">
+              <span>Use a different location method</span>
+              <button
+                className={mode === 'nearby' ? 'nearby-button active' : 'nearby-button'}
+                type="button"
+                onClick={useCurrentLocation}
+                disabled={isLocating}
+              >
+                {isLocating ? 'Finding you...' : 'Search near me'}
+              </button>
+            </div>
+          </aside>
 
-      {error && (
-        <p className="discovery-error" role="alert">
-          {error}
-        </p>
-      )}
+          <section className="discovery-results-column">
+            <div className="results-heading">
+              <div>
+                <p className="active-search-label">
+                  {mode === 'nearby' && coordinates
+                    ? 'Nearest sessions'
+                    : selectedRegion || selectedSport || appliedFilters.query
+                      ? `${selectedSport?.name ?? 'Sessions'}${selectedRegion ? ` in ${selectedRegion.name}` : ''}`
+                      : 'All upcoming sessions'}
+                </p>
+                {appliedFilters.query && (
+                  <span>Matching "{appliedFilters.query}"</span>
+                )}
+              </div>
+              {sessionPage && <strong>{sessionPage.totalElements} results</strong>}
+            </div>
 
-      <section className="session-results" aria-live="polite">
-        {isLoadingSessions ? (
-          <p className="session-empty-state">Finding available sessions...</p>
-        ) : sessions.length === 0 ? (
-          <p className="session-empty-state">
-            No sessions match these filters yet. Try clearing one of them.
-          </p>
-        ) : (
-          sessions.map((session) => (
-            <SessionCard key={session.id} session={session} />
-          ))
-        )}
-      </section>
+            {error && (
+              <p className="discovery-error" role="alert">
+                {error}
+              </p>
+            )}
 
-      {sessionPage && sessionPage.totalPages > 1 && (
-        <nav className="session-pagination" aria-label="Session result pages">
-          <button
-            type="button"
-            onClick={() => setPageNumber((current) => current - 1)}
-            disabled={sessionPage.first || isLoadingSessions}
-          >
-            Previous
-          </button>
-          <span>
-            Page {sessionPage.page + 1} of {sessionPage.totalPages}
-          </span>
-          <button
-            type="button"
-            onClick={() => setPageNumber((current) => current + 1)}
-            disabled={sessionPage.last || isLoadingSessions}
-          >
-            Next
-          </button>
-        </nav>
-      )}
+            <div className="session-results" aria-live="polite">
+              {isLoadingSessions ? (
+                <p className="session-empty-state">Finding available sessions...</p>
+              ) : sessions.length === 0 ? (
+                <p className="session-empty-state">
+                  No sessions match these filters yet. Try clearing one of them.
+                </p>
+              ) : (
+                sessions.map((session) => (
+                  <SessionCard key={session.id} session={session} />
+                ))
+              )}
+            </div>
+
+            {sessionPage && sessionPage.totalPages > 1 && (
+              <nav className="session-pagination" aria-label="Session result pages">
+                <button
+                  type="button"
+                  onClick={() => setPageNumber((current) => current - 1)}
+                  disabled={sessionPage.first || isLoadingSessions}
+                >
+                  Previous
+                </button>
+                <span>
+                  Page {sessionPage.page + 1} of {sessionPage.totalPages}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setPageNumber((current) => current + 1)}
+                  disabled={sessionPage.last || isLoadingSessions}
+                >
+                  Next
+                </button>
+              </nav>
+            )}
+          </section>
+        </div>
+      </form>
     </main>
   )
 }
