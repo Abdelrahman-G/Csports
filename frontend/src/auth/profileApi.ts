@@ -10,12 +10,12 @@ export type UserProfile = {
   age: number
   role: AuthRole
   photoUrl: string | null
-  regionId: number
-  regionName: string
-  city: string
-  country: string
-  latitude: number
-  longitude: number
+  regionId: number | null
+  regionName: string | null
+  city: string | null
+  country: string | null
+  latitude: number | null
+  longitude: number | null
 }
 
 export type TrainerProfile = {
@@ -26,10 +26,10 @@ export type TrainerProfile = {
   experienceYears: number
   sportId: number
   sport: string
-  regionId: number
-  regionName: string
-  city: string
-  country: string
+  regionId: number | null
+  regionName: string | null
+  city: string | null
+  country: string | null
 }
 
 async function readProfile<T>(response: Response): Promise<T> {

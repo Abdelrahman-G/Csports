@@ -2,12 +2,11 @@ import { useEffect, useState, type FormEvent } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { ApiError } from '../auth/authApi'
 import {
-  getRegions,
   getSports,
   registerTrainer,
   registerUser,
 } from '../auth/registrationApi'
-import type { Region, Sport } from '../auth/types'
+import type { Sport } from '../auth/types'
 import PasswordInput from '../components/PasswordInput'
 
 type AccountType = 'user' | 'trainer'
@@ -16,19 +15,12 @@ type RegistrationPageProps = {
   accountType: AccountType
 }
 
-type Coordinates = {
-  latitude: number
-  longitude: number
-  accuracy: number
-}
-
 type RegistrationForm = {
   name: string
   email: string
   phoneNumber: string
   password: string
   age: string
-  regionId: string
   bio: string
   experienceYears: string
   sportId: string
@@ -42,8 +34,6 @@ type RegistrationErrors = {
   phoneNumber?: string
   password?: string
   age?: string
-  regionId?: string
-  location?: string
   bio?: string
   experienceYears?: string
   sportId?: string
@@ -70,7 +60,6 @@ const EMPTY_FORM: RegistrationForm = {
   phoneNumber: '',
   password: '',
   age: '',
-  regionId: '',
   bio: '',
   experienceYears: '',
   sportId: '',
@@ -78,11 +67,6 @@ const EMPTY_FORM: RegistrationForm = {
 
 const EGYPTIAN_MOBILE_PATTERN = /^01[0125][0-9]{8}$/
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-const MIN_LATITUDE = 29.75
-const MAX_LATITUDE = 30.35
-const MIN_LONGITUDE = 30.75
-const MAX_LONGITUDE = 31.75
-
 function TextInput({
   id,
   label,
@@ -129,13 +113,10 @@ function RegistrationPage({ accountType }: RegistrationPageProps) {
   const navigate = useNavigate()
   const isTrainer = accountType === 'trainer'
   const [form, setForm] = useState<RegistrationForm>(EMPTY_FORM)
-  const [coordinates, setCoordinates] = useState<Coordinates | null>(null)
-  const [regions, setRegions] = useState<Region[]>([])
   const [sports, setSports] = useState<Sport[]>([])
   const [errors, setErrors] = useState<RegistrationErrors>({})
   const [serverError, setServerError] = useState('')
   const [isLoadingOptions, setIsLoadingOptions] = useState(true)
-  const [isLocating, setIsLocating] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   useEffect(() => {
@@ -145,11 +126,9 @@ function RegistrationPage({ accountType }: RegistrationPageProps) {
       setIsLoadingOptions(true)
 
       try {
-        const loadedRegions = await getRegions()
         const loadedSports = isTrainer ? await getSports() : []
 
         if (!shouldIgnoreResult) {
-          setRegions(loadedRegions)
           setSports(loadedSports)
           setServerError('')
         }
@@ -181,59 +160,6 @@ function RegistrationPage({ accountType }: RegistrationPageProps) {
     setServerError('')
   }
 
-  function captureCurrentLocation() {
-    setErrors((current) => ({ ...current, location: undefined }))
-    setServerError('')
-
-    if (!navigator.geolocation) {
-      setErrors((current) => ({
-        ...current,
-        location: 'This browser does not support location access.',
-      }))
-      return
-    }
-
-    setIsLocating(true)
-
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        const { latitude, longitude, accuracy } = position.coords
-        const insideServiceArea =
-          latitude >= MIN_LATITUDE &&
-          latitude <= MAX_LATITUDE &&
-          longitude >= MIN_LONGITUDE &&
-          longitude <= MAX_LONGITUDE
-
-        if (!insideServiceArea) {
-          setCoordinates(null)
-          setErrors((current) => ({
-            ...current,
-            location: 'Your current location is outside Cairo and Giza.',
-          }))
-        } else {
-          setCoordinates({ latitude, longitude, accuracy })
-        }
-
-        setIsLocating(false)
-      },
-      (error) => {
-        const message =
-          error.code === error.PERMISSION_DENIED
-            ? 'Location permission was denied. Please allow it and try again.'
-            : 'Your current location could not be detected. Please try again.'
-
-        setCoordinates(null)
-        setErrors((current) => ({ ...current, location: message }))
-        setIsLocating(false)
-      },
-      {
-        enableHighAccuracy: true,
-        timeout: 10000,
-        maximumAge: 300000,
-      },
-    )
-  }
-
   function validateForm(): RegistrationErrors {
     const nextErrors: RegistrationErrors = {}
     const age = Number(form.age)
@@ -257,14 +183,6 @@ function RegistrationPage({ accountType }: RegistrationPageProps) {
 
     if (!form.age || !Number.isInteger(age) || age < minimumAge || age > 100) {
       nextErrors.age = `Age must be between ${minimumAge} and 100.`
-    }
-
-    if (!form.regionId) {
-      nextErrors.regionId = 'Choose your region.'
-    }
-
-    if (!coordinates) {
-      nextErrors.location = 'Allow location access to capture your current location.'
     }
 
     if (isTrainer) {
@@ -297,7 +215,7 @@ function RegistrationPage({ accountType }: RegistrationPageProps) {
     const nextErrors = validateForm()
     setErrors(nextErrors)
 
-    if (Object.keys(nextErrors).length > 0 || !coordinates) {
+    if (Object.keys(nextErrors).length > 0) {
       setServerError('')
       return
     }
@@ -311,9 +229,6 @@ function RegistrationPage({ accountType }: RegistrationPageProps) {
       phoneNumber: form.phoneNumber.trim(),
       password: form.password,
       age: Number(form.age),
-      regionId: Number(form.regionId),
-      latitude: coordinates.latitude,
-      longitude: coordinates.longitude,
     }
 
     try {
@@ -342,9 +257,6 @@ function RegistrationPage({ accountType }: RegistrationPageProps) {
           phoneNumber: error.fieldErrors.phoneNumber,
           password: error.fieldErrors.password,
           age: error.fieldErrors.age,
-          regionId: error.fieldErrors.regionId,
-          location:
-            error.fieldErrors.latitude ?? error.fieldErrors.longitude,
           bio: error.fieldErrors.bio,
           experienceYears: error.fieldErrors.experienceYears,
           sportId: error.fieldErrors.sportId,
@@ -362,10 +274,6 @@ function RegistrationPage({ accountType }: RegistrationPageProps) {
   }
 
   const formDisabled = isSubmitting || isLoadingOptions
-  const locationMapUrl = coordinates
-    ? `https://www.google.com/maps?q=${coordinates.latitude},${coordinates.longitude}`
-    : null
-
   return (
     <main className="placeholder-page registration-page">
       <section className="placeholder-card registration-card">
@@ -376,7 +284,7 @@ function RegistrationPage({ accountType }: RegistrationPageProps) {
         <p>
           {isTrainer
             ? 'Put your experience where motivated athletes can find it.'
-            : 'Tell us where you are and bring the right training closer.'}
+            : 'Create your profile, then explore training around you.'}
         </p>
 
         <form
@@ -499,80 +407,10 @@ function RegistrationPage({ accountType }: RegistrationPageProps) {
             </>
           )}
 
-          <fieldset className="training-location-section full-width">
-            <legend>Where will you train?</legend>
-            <p>Choose your region, then confirm your current location.</p>
-
-            <div className="training-location-grid">
-              <div className="form-field region-field">
-                <label htmlFor="regionId">Region</label>
-                <select
-                  id="regionId"
-                  name="regionId"
-                  value={form.regionId}
-                  onChange={(event) => updateField('regionId', event.target.value)}
-                  disabled={formDisabled}
-                  aria-invalid={Boolean(errors.regionId)}
-                  aria-describedby={errors.regionId ? 'regionId-error' : undefined}
-                >
-                  <option value="">
-                    {isLoadingOptions ? 'Loading regions...' : 'Choose your region'}
-                  </option>
-                  {regions.map((region) => (
-                    <option key={region.id} value={region.id}>
-                      {region.name}, {region.city}
-                    </option>
-                  ))}
-                </select>
-                {errors.regionId && (
-                  <span className="field-error" id="regionId-error">
-                    {errors.regionId}
-                  </span>
-                )}
-              </div>
-
-              <div className="location-field">
-                <div>
-                  <strong>Current location</strong>
-                  <span>
-                    We use this to show sessions close to you.
-                  </span>
-                </div>
-                <button
-                  className="location-button"
-                  type="button"
-                  onClick={captureCurrentLocation}
-                  disabled={isLocating || isSubmitting}
-                >
-                  {isLocating
-                    ? 'Detecting location...'
-                    : coordinates
-                      ? 'Update location'
-                      : 'Use my location'}
-                </button>
-                {coordinates && locationMapUrl && (
-                  <div className="location-result" role="status">
-                    <span>
-                      Location detected within about {Math.round(coordinates.accuracy)} metres.
-                    </span>
-                    <a href={locationMapUrl} target="_blank" rel="noreferrer">
-                      Check it on Google Maps
-                    </a>
-                  </div>
-                )}
-                {errors.location && (
-                  <span className="field-error" role="alert">
-                    {errors.location}
-                  </span>
-                )}
-              </div>
-            </div>
-          </fieldset>
-
           <button
             className="submit-button full-width"
             type="submit"
-            disabled={formDisabled || isLocating}
+            disabled={formDisabled}
           >
             {isSubmitting
               ? 'Building your profile...'

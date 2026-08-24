@@ -74,12 +74,14 @@ function TrainerHomePage() {
               <dt>Experience</dt>
               <dd>{profile.experienceYears} years</dd>
             </div>
-            <div>
-              <dt>Region</dt>
-              <dd>
-                {profile.regionName}, {profile.city}
-              </dd>
-            </div>
+            {profile.regionName && profile.city && (
+              <div>
+                <dt>Region</dt>
+                <dd>
+                  {profile.regionName}, {profile.city}
+                </dd>
+              </div>
+            )}
             {profile.bio && (
               <div>
                 <dt>Bio</dt>

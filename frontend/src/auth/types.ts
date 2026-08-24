@@ -11,9 +11,6 @@ export type UserRegistrationRequest = {
   phoneNumber: string
   password: string
   age: number
-  regionId: number
-  latitude: number
-  longitude: number
 }
 
 export type TrainerRegistrationRequest = UserRegistrationRequest & {
@@ -36,13 +33,6 @@ export type ApiErrorResponse = {
   path: string
   timestamp: string
   fieldErrors: Record<string, string>
-}
-
-export type Region = {
-  id: number
-  name: string
-  city: string
-  country: string
 }
 
 export type Sport = {
