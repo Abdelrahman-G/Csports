@@ -1,7 +1,6 @@
 import { ApiError } from './authApi'
 import type {
   ApiErrorResponse,
-  Region,
   Sport,
   TrainerRegistrationRequest,
   UserRegistrationRequest,
@@ -65,10 +64,6 @@ export function registerTrainer(
   request: TrainerRegistrationRequest,
 ): Promise<void> {
   return postRegistration('/api/v1/auth/register/trainer', request)
-}
-
-export function getRegions(): Promise<Region[]> {
-  return getReferenceData<Region[]>('/api/v1/regions')
 }
 
 export function getSports(): Promise<Sport[]> {
