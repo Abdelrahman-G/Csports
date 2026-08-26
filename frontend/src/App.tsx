@@ -7,6 +7,7 @@ import SignupPage from './pages/SignupPage'
 import RegistrationPage from './pages/RegistrationPage'
 import TrainerHomePage from './pages/TrainerHomePage'
 import UserHomePage from './pages/UserHomePage'
+import SessionDetailsPage from './pages/SessionDetailsPage'
 import RequireRole from './auth/RequireRole'
 
 function App() {
@@ -28,6 +29,14 @@ function App() {
         element={
           <RequireRole allowedRole="USER">
             <UserHomePage />
+          </RequireRole>
+        }
+      />
+      <Route
+        path="/user/sessions/:sessionId"
+        element={
+          <RequireRole allowedRole="USER">
+            <SessionDetailsPage />
           </RequireRole>
         }
       />

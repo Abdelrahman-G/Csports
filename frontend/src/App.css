@@ -646,24 +646,6 @@
   outline: 3px solid #d7eee1;
 }
 
-.price-inputs {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 8px;
-}
-
-.price-inputs label {
-  min-width: 0;
-}
-
-.price-inputs span {
-  display: block;
-  margin-bottom: 6px;
-  color: #718279;
-  font-size: 0.75rem;
-  font-weight: 650;
-}
-
 .apply-filters-button,
 .session-pagination button {
   min-height: 44px;
@@ -769,12 +751,32 @@
   gap: 18px;
 }
 
+.session-card-link {
+  height: 100%;
+  border-radius: 14px;
+  color: inherit;
+  text-decoration: none;
+}
+
 .session-card {
+  height: 100%;
   padding: 22px;
+  display: flex;
+  flex-direction: column;
   border: 1px solid #d5e8dc;
   border-radius: 14px;
   background: #ffffff;
   box-shadow: 0 10px 25px rgba(24, 89, 56, 0.06);
+  transition:
+    border-color 160ms ease,
+    box-shadow 160ms ease,
+    transform 160ms ease;
+}
+
+.session-card-link:hover .session-card {
+  border-color: #8ac6a6;
+  box-shadow: 0 15px 32px rgba(24, 89, 56, 0.12);
+  transform: translateY(-3px);
 }
 
 .session-card-heading {
@@ -819,20 +821,28 @@
   color: #6a7d72;
 }
 
-.session-schedule {
+.session-start {
   margin-top: 20px;
   padding: 14px 16px;
   display: grid;
-  gap: 4px;
-  border-left: 4px solid #238654;
-  border-radius: 0 10px 10px 0;
-  background: #f2f8f5;
+  gap: 3px;
+  border: 1px solid #b9ddc9;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #eef8f2, #ffffff);
 }
 
-.session-date {
+.session-start-label {
+  color: #238654;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.session-start strong {
   color: #16251d;
-  font-size: 1rem;
-  font-weight: 750;
+  font-size: 1.08rem;
+  font-weight: 800;
 }
 
 .session-time {
@@ -840,8 +850,24 @@
   font-size: 0.88rem;
 }
 
+.session-days {
+  margin-top: 12px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.session-days span {
+  padding: 5px 9px;
+  border-radius: 999px;
+  color: #365446;
+  background: #edf4f0;
+  font-size: 0.77rem;
+  font-weight: 700;
+}
+
 .session-summary {
-  margin: 20px 0;
+  margin: 18px 0;
   display: grid;
   gap: 12px;
 }
@@ -871,6 +897,181 @@
   border-radius: 14px;
   color: #53685c;
   background: #ffffff;
+  text-align: center;
+}
+
+.session-card-footer {
+  margin-top: auto;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.session-card-footer .session-distance {
+  margin-right: auto;
+}
+
+.session-details-link {
+  color: #176f45;
+  font-size: 0.86rem;
+  font-weight: 800;
+}
+
+.session-details-page {
+  width: min(1120px, calc(100% - 40px));
+  min-height: 100vh;
+  margin: 0 auto;
+  padding: 42px 0 72px;
+}
+
+.session-details-back {
+  display: inline-block;
+  margin-bottom: 24px;
+  color: #238654;
+  font-weight: 750;
+  text-decoration: none;
+}
+
+.session-details-back::before {
+  content: "←";
+  margin-right: 8px;
+}
+
+.session-details-hero {
+  padding: 30px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+  border: 1px solid #d5e8dc;
+  border-radius: 18px;
+  background: #ffffff;
+  box-shadow: 0 12px 32px rgba(24, 89, 56, 0.07);
+}
+
+.session-details-hero h1 {
+  margin: 10px 0 6px;
+  color: #16251d;
+  font-size: clamp(1.8rem, 4vw, 2.7rem);
+  line-height: 1.1;
+}
+
+.session-details-hero p {
+  margin: 0;
+  color: #607369;
+}
+
+.session-details-layout {
+  margin-top: 24px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 360px;
+  align-items: start;
+  gap: 24px;
+}
+
+.session-details-main {
+  display: grid;
+  gap: 18px;
+}
+
+.details-section,
+.session-booking-summary,
+.session-details-state {
+  padding: 26px;
+  border: 1px solid #d5e8dc;
+  border-radius: 16px;
+  background: #ffffff;
+}
+
+.details-section h2 {
+  margin: 4px 0 8px;
+}
+
+.details-section > p:last-child {
+  margin-bottom: 0;
+  color: #50665a;
+  line-height: 1.65;
+}
+
+.details-label {
+  margin: 0 0 8px;
+  color: #238654;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.session-booking-summary {
+  position: sticky;
+  top: 24px;
+}
+
+.details-first-session {
+  padding: 16px;
+  border-radius: 12px;
+  background: #eef8f2;
+}
+
+.details-first-session span,
+.session-detail-price span {
+  display: block;
+  color: #238654;
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+.details-first-session strong {
+  display: block;
+  margin-top: 5px;
+  font-size: 1.05rem;
+}
+
+.details-first-session p {
+  margin: 4px 0 0;
+  color: #53685c;
+}
+
+.session-booking-summary dl {
+  margin: 20px 0;
+  display: grid;
+  gap: 15px;
+}
+
+.session-booking-summary dl div {
+  display: grid;
+  gap: 3px;
+}
+
+.session-booking-summary dt {
+  color: #718278;
+  font-size: 0.78rem;
+}
+
+.session-booking-summary dd {
+  margin: 0;
+  color: #263c30;
+  font-weight: 700;
+}
+
+.session-detail-price {
+  padding-top: 18px;
+  border-top: 1px solid #dce9e1;
+}
+
+.session-detail-price strong {
+  display: block;
+  margin-top: 4px;
+  color: #16251d;
+  font-size: 1.55rem;
+}
+
+.session-details-state {
+  max-width: 680px;
+  margin: 80px auto;
   text-align: center;
 }
 
@@ -971,6 +1172,24 @@
 @media (min-width: 761px) and (max-width: 1000px) {
   .session-results {
     grid-template-columns: 1fr;
+  }
+
+  .session-details-page {
+    width: min(100% - 32px, 1120px);
+    padding-top: 28px;
+  }
+
+  .session-details-hero {
+    padding: 24px;
+    flex-direction: column;
+  }
+
+  .session-details-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .session-booking-summary {
+    position: static;
   }
 }
 

@@ -1,13 +1,17 @@
 import type { ApiErrorResponse } from '../auth/types'
-import type { NearbyCoordinates, Region, SessionPage, Sport } from './types'
+import type {
+  NearbyCoordinates,
+  Region,
+  SessionPage,
+  Sport,
+  TrainingSessionDetails,
+} from './types'
 
 type SearchByRegion = {
   mode: 'region'
   query?: string
   regionId?: number
   sportId?: number
-  minPrice?: number
-  maxPrice?: number
 }
 
 type SearchNearby = {
@@ -59,12 +63,6 @@ export async function searchSessions(
     if (search.sportId !== undefined) {
       parameters.set('sportId', String(search.sportId))
     }
-    if (search.minPrice !== undefined) {
-      parameters.set('minPrice', String(search.minPrice))
-    }
-    if (search.maxPrice !== undefined) {
-      parameters.set('maxPrice', String(search.maxPrice))
-    }
   } else {
     parameters.set('latitude', String(search.coordinates.latitude))
     parameters.set('longitude', String(search.coordinates.longitude))
@@ -74,4 +72,15 @@ export async function searchSessions(
 
   const response = await fetch(`/api/v1/sessions?${parameters}`, { signal })
   return readJson<SessionPage>(response, 'Sessions could not be loaded.')
+}
+
+export async function getSessionDetails(
+  sessionId: number,
+  signal?: AbortSignal,
+): Promise<TrainingSessionDetails> {
+  const response = await fetch(`/api/v1/sessions/${sessionId}`, { signal })
+  return readJson<TrainingSessionDetails>(
+    response,
+    'Session details could not be loaded.',
+  )
 }

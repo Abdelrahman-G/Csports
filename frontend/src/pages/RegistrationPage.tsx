@@ -66,7 +66,7 @@ const EMPTY_FORM: RegistrationForm = {
 }
 
 const EGYPTIAN_MOBILE_PATTERN = /^01[0125][0-9]{8}$/
-const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+const GMAIL_PATTERN = /^[a-z0-9._%+-]+@gmail\.com$/i
 function TextInput({
   id,
   label,
@@ -169,8 +169,8 @@ function RegistrationPage({ accountType }: RegistrationPageProps) {
       nextErrors.name = 'Name must contain at least 2 characters.'
     }
 
-    if (!EMAIL_PATTERN.test(form.email.trim())) {
-      nextErrors.email = 'Enter a valid email address.'
+    if (!GMAIL_PATTERN.test(form.email.trim())) {
+      nextErrors.email = 'Enter a Gmail address ending in @gmail.com.'
     }
 
     if (!EGYPTIAN_MOBILE_PATTERN.test(form.phoneNumber.trim())) {
@@ -309,6 +309,7 @@ function RegistrationPage({ accountType }: RegistrationPageProps) {
             onChange={(value) => updateField('email', value)}
             error={errors.email}
             autoComplete="email"
+            placeholder="name@gmail.com"
             disabled={formDisabled}
           />
           <TextInput

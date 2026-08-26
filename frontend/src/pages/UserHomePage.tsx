@@ -1,4 +1,5 @@
 import { useEffect, useState, type FormEvent } from 'react'
+import { Link } from 'react-router-dom'
 import { useAuth } from '../auth/authContext'
 import { getMyUserProfile, type UserProfile } from '../auth/profileApi'
 import {
@@ -14,6 +15,7 @@ import type {
   Sport,
   TrainingSession,
 } from '../discovery/types'
+import { orderedDayLabels } from '../discovery/sessionFormatting'
 
 const REGION_STORAGE_KEY = 'csports.discovery.regionId'
 const MIN_LATITUDE = 29.75
@@ -28,16 +30,12 @@ type DiscoveryFilters = {
   query: string
   regionId: string
   sportId: string
-  minPrice: string
-  maxPrice: string
 }
 
 const EMPTY_FILTERS: DiscoveryFilters = {
   query: '',
   regionId: '',
   sportId: '',
-  minPrice: '',
-  maxPrice: '',
 }
 
 const sessionDateFormatter = new Intl.DateTimeFormat('en-EG', {
@@ -77,7 +75,8 @@ function formatDistance(distanceMeters: number | null) {
 
 function SessionCard({ session }: { session: TrainingSession }) {
   const distance = formatDistance(session.distanceMeters)
-  const start = new Date(`${session.startDate}T${session.startTime}`)
+  const firstTraining = new Date(session.bookingClosesAt)
+  const trainingDays = orderedDayLabels(session.days)
   const availability =
     session.remainingSeats === 0
       ? 'Fully booked'
@@ -86,7 +85,8 @@ function SessionCard({ session }: { session: TrainingSession }) {
         : 'Booking closed'
 
   return (
-    <article className="session-card">
+    <Link className="session-card-link" to={`/user/sessions/${session.id}`}>
+      <article className="session-card">
       <div className="session-card-heading">
         <span className="session-sport">{session.sport}</span>
         <span
@@ -103,11 +103,19 @@ function SessionCard({ session }: { session: TrainingSession }) {
       <h2>{session.title}</h2>
       <p className="session-trainer">with {session.trainerName}</p>
 
-      <div className="session-schedule">
-        <span className="session-date">{sessionDateFormatter.format(start)}</span>
+      <div className="session-start">
+        <span className="session-start-label">First session</span>
+        <strong>{sessionDateFormatter.format(firstTraining)}</strong>
         <span className="session-time">
-          {sessionTimeFormatter.format(start)} · {session.durationMinutes} minutes
+          {sessionTimeFormatter.format(firstTraining)} for{' '}
+          {session.durationMinutes} minutes
         </span>
+      </div>
+
+      <div className="session-days" aria-label="Training days">
+        {trainingDays.map((day) => (
+          <span key={day}>{day}</span>
+        ))}
       </div>
 
       <dl className="session-summary">
@@ -117,14 +125,14 @@ function SessionCard({ session }: { session: TrainingSession }) {
             {session.locationName}, {session.regionName}
           </dd>
         </div>
-        <div>
-          <dt>Price</dt>
-          <dd>{session.price} EGP</dd>
-        </div>
       </dl>
 
-      {distance && <span className="session-distance">{distance}</span>}
-    </article>
+      <div className="session-card-footer">
+        {distance && <span className="session-distance">{distance}</span>}
+        <span className="session-details-link">View details</span>
+      </div>
+      </article>
+    </Link>
   )
 }
 
@@ -193,8 +201,6 @@ function UserHomePage() {
         query: appliedFilters.query || undefined,
         regionId: optionalNumber(appliedFilters.regionId),
         sportId: optionalNumber(appliedFilters.sportId),
-        minPrice: optionalNumber(appliedFilters.minPrice),
-        maxPrice: optionalNumber(appliedFilters.maxPrice),
       }
     } else {
       if (!coordinates) {
@@ -248,25 +254,6 @@ function UserHomePage() {
 
   function applyFilters(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
-
-    const minPrice = optionalNumber(filters.minPrice)
-    const maxPrice = optionalNumber(filters.maxPrice)
-
-    if (
-      (minPrice !== undefined && minPrice < 0) ||
-      (maxPrice !== undefined && maxPrice < 0)
-    ) {
-      setError('Prices cannot be negative.')
-      return
-    }
-    if (
-      minPrice !== undefined &&
-      maxPrice !== undefined &&
-      minPrice > maxPrice
-    ) {
-      setError('The maximum price cannot be lower than the minimum price.')
-      return
-    }
 
     const nextFilters = { ...filters, query: filters.query.trim() }
     setFilters(nextFilters)
@@ -412,32 +399,6 @@ function UserHomePage() {
                 ))}
               </select>
             </div>
-
-            <fieldset className="sidebar-filter-group price-filter">
-              <legend>Price range</legend>
-              <div className="price-inputs">
-              <label>
-                <span>Minimum</span>
-                <input
-                  type="number"
-                  min="0"
-                  value={filters.minPrice}
-                  onChange={(event) => updateFilter('minPrice', event.target.value)}
-                  placeholder="0"
-                />
-              </label>
-              <label>
-                <span>Maximum</span>
-                <input
-                  type="number"
-                  min="0"
-                  value={filters.maxPrice}
-                  onChange={(event) => updateFilter('maxPrice', event.target.value)}
-                  placeholder="Any"
-                />
-              </label>
-              </div>
-            </fieldset>
 
             <button className="apply-filters-button" type="submit">
               Apply filters
