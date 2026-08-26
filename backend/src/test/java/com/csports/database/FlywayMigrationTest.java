@@ -216,10 +216,7 @@ class FlywayMigrationTest {
                                   "email": "invalid-email",
                                   "phoneNumber": "12",
                                   "password": "short",
-                                  "age": 10,
-                                  "regionId": 1,
-                                  "latitude": 28.0,
-                                  "longitude": 32.0
+                                  "age": 10
                                 }
                                 """
                         ))
@@ -230,10 +227,64 @@ class FlywayMigrationTest {
         assertThat(validationResponse.body()).contains(
                 "\"code\":\"VALIDATION_FAILED\"",
                 "\"fieldErrors\"",
-                "\"latitude\"",
-                "\"longitude\"",
                 "\"email\""
         );
+    }
+
+    @Test
+    void userAndTrainerSignupDoNotRequireAHomeLocation() throws Exception {
+        HttpClient client = HttpClient.newHttpClient();
+
+        HttpResponse<String> userResponse = client.send(
+                HttpRequest.newBuilder(uri("/api/v1/auth/register/user"))
+                        .header("Content-Type", "application/json")
+                        .POST(HttpRequest.BodyPublishers.ofString(
+                                """
+                                {
+                                  "name": "Location Free User",
+                                  "email": "location.free.user@gmail.com",
+                                  "phoneNumber": "01100000011",
+                                  "password": "StrongPassword123!",
+                                  "age": 24
+                                }
+                                """))
+                        .build(),
+                HttpResponse.BodyHandlers.ofString());
+
+        HttpResponse<String> trainerResponse = client.send(
+                HttpRequest.newBuilder(uri("/api/v1/auth/register/trainer"))
+                        .header("Content-Type", "application/json")
+                        .POST(HttpRequest.BodyPublishers.ofString(
+                                """
+                                {
+                                  "name": "Location Free Trainer",
+                                  "email": "location.free.trainer@gmail.com",
+                                  "phoneNumber": "01200000011",
+                                  "password": "StrongPassword123!",
+                                  "age": 30,
+                                  "bio": "Patient swimming coach.",
+                                  "experienceYears": 5,
+                                  "sportId": 1
+                                }
+                                """))
+                        .build(),
+                HttpResponse.BodyHandlers.ofString());
+
+        Integer savedLocations = jdbcTemplate.queryForObject(
+                """
+                select count(*)
+                from user_location location
+                join users account on account.id = location.user_id
+                where account.email in (
+                    'location.free.user@gmail.com',
+                    'location.free.trainer@gmail.com'
+                )
+                """,
+                Integer.class);
+
+        assertThat(userResponse.statusCode()).isEqualTo(200);
+        assertThat(trainerResponse.statusCode()).isEqualTo(200);
+        assertThat(savedLocations).isZero();
     }
 
     private URI uri(String path) {

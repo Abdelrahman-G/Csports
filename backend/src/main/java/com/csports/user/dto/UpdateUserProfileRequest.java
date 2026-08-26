@@ -1,6 +1,7 @@
 package com.csports.user.dto;
 
 import com.csports.common.validation.EgyptianPhoneNumber;
+import com.csports.common.validation.GmailAddress;
 import com.csports.common.validation.ServiceArea;
 
 import jakarta.validation.constraints.DecimalMax;
@@ -24,6 +25,7 @@ public record UpdateUserProfileRequest(
 
         @Pattern(regexp = "(?s).*\\S.*", message = "Email must not be blank")
         @Email(message = "Email must have a valid format")
+        @Pattern(regexp = GmailAddress.REGEX, message = GmailAddress.MESSAGE)
         @Size(max = 255, message = "Email must not exceed 255 characters")
         String email,
 

@@ -1,5 +1,7 @@
 package com.csports.user;
 
+import java.util.Locale;
+
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -42,6 +44,9 @@ public class UserService {
     @Transactional
     public UserProfileResponse updateMyProfile(UpdateUserProfileRequest request) {
         User user = getManagedCurrentUser();
+        String normalizedEmail = request.email() == null
+                ? null
+                : request.email().trim().toLowerCase(Locale.ROOT);
 
         if (!request.hasEditableFields()) {
             throw new InvalidProfileUpdateException(
@@ -54,9 +59,9 @@ public class UserService {
                     "A trainer must be at least 18 years old.");
         }
 
-        if (request.email() != null
-                && !request.email().equals(user.getEmail())
-                && userRepository.existsByEmailAndIdNot(request.email(), user.getId())) {
+        if (normalizedEmail != null
+                && !normalizedEmail.equals(user.getEmail())
+                && userRepository.existsByEmailAndIdNot(normalizedEmail, user.getId())) {
             throw new EmailAlreadyExistsException("Email already exists.");
         }
         if (request.phoneNumber() != null
@@ -71,8 +76,8 @@ public class UserService {
         if (request.name() != null) {
             user.setName(request.name().trim());
         }
-        if (request.email() != null) {
-            user.setEmail(request.email().trim());
+        if (normalizedEmail != null) {
+            user.setEmail(normalizedEmail);
         }
         if (request.phoneNumber() != null) {
             user.setPhoneNumber(request.phoneNumber());

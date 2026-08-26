@@ -9,8 +9,10 @@ import java.util.Locale;
 
 import org.springframework.format.annotation.DateTimeFormat;
 
+import com.csports.common.validation.ServiceArea;
 import com.csports.session.exception.InvalidSessionSearchException;
 
+import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
@@ -38,6 +40,18 @@ public record SessionSearchRequest(
         @Positive(message = "Region id must be positive")
         Long regionId,
 
+        @DecimalMin(value = ServiceArea.MIN_LATITUDE, message = "Latitude must be within the Cairo and Giza service area")
+        @DecimalMax(value = ServiceArea.MAX_LATITUDE, message = "Latitude must be within the Cairo and Giza service area")
+        Double latitude,
+
+        @DecimalMin(value = ServiceArea.MIN_LONGITUDE, message = "Longitude must be within the Cairo and Giza service area")
+        @DecimalMax(value = ServiceArea.MAX_LONGITUDE, message = "Longitude must be within the Cairo and Giza service area")
+        Double longitude,
+
+        @DecimalMin(value = "1.0", message = "Search radius must be at least 1 kilometre")
+        @DecimalMax(value = "50.0", message = "Search radius must not exceed 50 kilometres")
+        Double radiusKm,
+
         @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
         LocalDate fromDate,
 
@@ -53,8 +67,8 @@ public record SessionSearchRequest(
         Boolean availableOnly,
 
         @Pattern(
-                regexp = "(?i)^(startDate|price|createdAt)$",
-                message = "Sort field must be startDate, price, or createdAt")
+                regexp = "(?i)^(startDate|price|createdAt|distance)$",
+                message = "Sort field must be startDate, price, createdAt, or distance")
         String sortBy,
 
         @Pattern(
@@ -72,7 +86,10 @@ public record SessionSearchRequest(
     public SessionSearchRequest {
         q = normalizeQuery(q);
         availableOnly = availableOnly != null && availableOnly;
-        sortBy = sortBy == null || sortBy.isBlank() ? "startDate" : sortBy;
+        boolean hasNearbyParameter = latitude != null || longitude != null || radiusKm != null;
+        sortBy = sortBy == null || sortBy.isBlank()
+                ? (hasNearbyParameter ? "distance" : "startDate")
+                : sortBy;
         direction = direction == null || direction.isBlank()
                 ? "asc"
                 : direction.toLowerCase(Locale.ROOT);
@@ -93,6 +110,32 @@ public record SessionSearchRequest(
             throw new InvalidSessionSearchException(
                     "Maximum price cannot be lower than minimum price.");
         }
+        boolean anyNearbyParameter = latitude != null || longitude != null || radiusKm != null;
+        boolean allNearbyParameters = latitude != null && longitude != null && radiusKm != null;
+        if (anyNearbyParameter && !allNearbyParameters) {
+            throw new InvalidSessionSearchException(
+                    "Latitude, longitude, and radiusKm must be provided together.");
+        }
+        if (allNearbyParameters && regionId != null) {
+            throw new InvalidSessionSearchException(
+                    "Choose either a region search or a nearby search, not both.");
+        }
+        if (nearby() && !"distance".equalsIgnoreCase(sortBy)) {
+            throw new InvalidSessionSearchException(
+                    "Nearby searches must be sorted by distance.");
+        }
+        if (!nearby() && "distance".equalsIgnoreCase(sortBy)) {
+            throw new InvalidSessionSearchException(
+                    "Distance sorting requires latitude, longitude, and radiusKm.");
+        }
+    }
+
+    public boolean nearby() {
+        return latitude != null && longitude != null && radiusKm != null;
+    }
+
+    public double radiusMeters() {
+        return radiusKm * 1_000.0;
     }
 
     /**
@@ -108,6 +151,9 @@ public record SessionSearchRequest(
                 value(sportId),
                 value(trainerId),
                 value(regionId),
+                value(latitude),
+                value(longitude),
+                value(radiusKm),
                 value(effectiveFromDate()),
                 value(toDate),
                 value(minPrice),

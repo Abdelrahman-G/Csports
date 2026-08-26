@@ -37,6 +37,8 @@ import com.csports.location.Region;
 import com.csports.location.RegionRepository;
 import com.csports.session.TrainingSession;
 import com.csports.session.TrainingSessionRepository;
+import com.csports.session.TrainingSessionService;
+import com.csports.session.dto.SessionSearchRequest;
 import com.csports.session.dto.TrainingSessionResponse;
 import com.csports.sport.Sport;
 import com.csports.sport.SportRepository;
@@ -58,7 +60,9 @@ class InfrastructureContainersIT {
     @Container
     @ServiceConnection
     static final PostgreSQLContainer postgres =
-            new PostgreSQLContainer(DockerImageName.parse("postgres:17"));
+            new PostgreSQLContainer(
+                    DockerImageName.parse("postgis/postgis:17-3.5")
+                            .asCompatibleSubstituteFor("postgres"));
 
     @Container
     @ServiceConnection(name = "redis")
@@ -86,6 +90,9 @@ class InfrastructureContainersIT {
 
     @Autowired
     private TrainingSessionRepository trainingSessionRepository;
+
+    @Autowired
+    private TrainingSessionService trainingSessionService;
 
     @Autowired
     private UserRepository userRepository;
@@ -129,6 +136,53 @@ class InfrastructureContainersIT {
 
         assertThat(actual).isEqualTo(expected);
         cache.evict("integration-test");
+    }
+
+    @Test
+    void postgisNearbySearchReturnsSessionsInDistanceOrder() {
+        String unique = UUID.randomUUID().toString();
+        User trainer = saveUser("Nearby Trainer", "nearby-" + unique, Role.TRAINER);
+        Sport sport = sportRepository.saveAndFlush(Sport.builder()
+                .name("Nearby Sport " + unique)
+                .build());
+        Region region = regionRepository.saveAndFlush(Region.builder()
+                .name("Nearby Region " + unique)
+                .city("Cairo")
+                .country("Egypt")
+                .latitude(30.05)
+                .longitude(31.25)
+                .build());
+
+        TrainingSession nearest = saveSearchSession(
+                trainer, sport, region, "Nearby Search " + unique + " A", 30.051, 31.251);
+        TrainingSession farther = saveSearchSession(
+                trainer, sport, region, "Nearby Search " + unique + " B", 30.10, 31.30);
+
+        PageResponse<TrainingSessionResponse> result = trainingSessionService.searchSessions(
+                new SessionSearchRequest(
+                        "Nearby Search " + unique,
+                        null,
+                        null,
+                        null,
+                        30.05,
+                        31.25,
+                        20.0,
+                        null,
+                        null,
+                        null,
+                        null,
+                        true,
+                        "distance",
+                        "asc",
+                        0,
+                        10));
+
+        assertThat(result.content()).extracting(TrainingSessionResponse::id)
+                .containsExactly(nearest.getId(), farther.getId());
+        assertThat(result.content()).allSatisfy(
+                session -> assertThat(session.distanceMeters()).isNotNull().isPositive());
+        assertThat(result.content().getFirst().distanceMeters())
+                .isLessThan(result.content().getLast().distanceMeters());
     }
 
     @Test
@@ -235,6 +289,34 @@ class InfrastructureContainersIT {
                 .password("not-used")
                 .age(30)
                 .role(role)
+                .build());
+    }
+
+    private TrainingSession saveSearchSession(
+            User trainer,
+            Sport sport,
+            Region region,
+            String title,
+            double latitude,
+            double longitude) {
+        LocalDate sessionDate = LocalDate.now().plusDays(20);
+        return trainingSessionRepository.saveAndFlush(TrainingSession.builder()
+                .trainer(trainer)
+                .sport(sport)
+                .region(region)
+                .title(title)
+                .description("PostGIS nearby integration test")
+                .locationName(region.getName())
+                .latitude(latitude)
+                .longitude(longitude)
+                .startDate(sessionDate)
+                .endDate(sessionDate.plusDays(30))
+                .startTime(LocalTime.of(18, 0))
+                .durationMinutes(60)
+                .days(Set.of(sessionDate.getDayOfWeek()))
+                .maxParticipants(10)
+                .currentParticipants(0)
+                .price(300.0)
                 .build());
     }
 }
