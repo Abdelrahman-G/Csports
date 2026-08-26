@@ -37,6 +37,15 @@ export type TrainingSession = {
   distanceMeters: number | null
 }
 
+export type TrainingSessionDetails = Omit<TrainingSession, 'distanceMeters'> & {
+  description: string | null
+  trainerBio: string | null
+  trainerExperienceYears: number | null
+  cancelledAt: string | null
+  lastUpdateReason: string | null
+  cancellationReason: string | null
+}
+
 export type SessionPage = {
   content: TrainingSession[]
   page: number

@@ -1,0 +1,188 @@
+import { useEffect, useState } from 'react'
+import { Link, useParams } from 'react-router-dom'
+import { getSessionDetails } from '../discovery/discoveryApi'
+import { orderedDayLabels } from '../discovery/sessionFormatting'
+import type { TrainingSessionDetails } from '../discovery/types'
+
+const longDateFormatter = new Intl.DateTimeFormat('en-EG', {
+  weekday: 'long',
+  day: 'numeric',
+  month: 'long',
+  year: 'numeric',
+})
+
+const timeFormatter = new Intl.DateTimeFormat('en-EG', {
+  hour: 'numeric',
+  minute: '2-digit',
+})
+
+function formatPrice(price: number) {
+  return price === 0 ? 'Free' : `${price.toLocaleString('en-EG')} EGP`
+}
+
+function SessionDetailsPage() {
+  const { sessionId } = useParams()
+  const numericSessionId = Number(sessionId)
+  const hasValidSessionId =
+    Number.isInteger(numericSessionId) && numericSessionId > 0
+  const [session, setSession] = useState<TrainingSessionDetails | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState('')
+
+  useEffect(() => {
+    if (!hasValidSessionId) {
+      return
+    }
+
+    const controller = new AbortController()
+
+    async function loadSession() {
+      setIsLoading(true)
+      setError('')
+
+      try {
+        const loadedSession = await getSessionDetails(
+          numericSessionId,
+          controller.signal,
+        )
+        setSession(loadedSession)
+      } catch (requestError) {
+        if (!controller.signal.aborted) {
+          setError(
+            requestError instanceof Error
+              ? requestError.message
+              : 'Session details could not be loaded.',
+          )
+        }
+      } finally {
+        if (!controller.signal.aborted) {
+          setIsLoading(false)
+        }
+      }
+    }
+
+    void loadSession()
+    return () => controller.abort()
+  }, [hasValidSessionId, numericSessionId])
+
+  if (!hasValidSessionId) {
+    return (
+      <main className="session-details-page">
+        <section className="session-details-state">
+          <h1>We could not open this session.</h1>
+          <p>This session address is invalid.</p>
+          <Link to="/user/home">Back to session discovery</Link>
+        </section>
+      </main>
+    )
+  }
+
+  if (isLoading) {
+    return (
+      <main className="session-details-page">
+        <p className="session-details-state">Loading session details...</p>
+      </main>
+    )
+  }
+
+  if (error || !session) {
+    return (
+      <main className="session-details-page">
+        <section className="session-details-state">
+          <h1>We could not open this session.</h1>
+          <p>{error}</p>
+          <Link to="/user/home">Back to session discovery</Link>
+        </section>
+      </main>
+    )
+  }
+
+  const firstTraining = new Date(session.bookingClosesAt)
+  const trainingDays = orderedDayLabels(session.days)
+  const availability = session.bookingOpen
+    ? `${session.remainingSeats} places left`
+    : session.remainingSeats === 0
+      ? 'Fully booked'
+      : 'Booking closed'
+
+  return (
+    <main className="session-details-page">
+      <Link className="session-details-back" to="/user/home">
+        Back to sessions
+      </Link>
+
+      <section className="session-details-hero">
+        <div>
+          <span className="session-sport">{session.sport}</span>
+          <h1>{session.title}</h1>
+          <p>Coached by {session.trainerName}</p>
+        </div>
+        <span
+          className={
+            session.bookingOpen
+              ? 'session-availability open'
+              : 'session-availability closed'
+          }
+        >
+          {availability}
+        </span>
+      </section>
+
+      <div className="session-details-layout">
+        <section className="session-details-main">
+          <div className="details-section">
+            <p className="details-label">About this training</p>
+            <p>{session.description || 'The trainer has not added a description yet.'}</p>
+          </div>
+
+          <div className="details-section">
+            <p className="details-label">Your coach</p>
+            <h2>{session.trainerName}</h2>
+            <p>
+              {session.trainerExperienceYears !== null
+                ? `${session.trainerExperienceYears} years of coaching experience.`
+                : 'Coaching experience has not been provided.'}
+            </p>
+            <p>{session.trainerBio || 'This trainer has not added a coaching story yet.'}</p>
+          </div>
+        </section>
+
+        <aside className="session-booking-summary">
+          <div className="details-first-session">
+            <span>First session</span>
+            <strong>{longDateFormatter.format(firstTraining)}</strong>
+            <p>{timeFormatter.format(firstTraining)}</p>
+          </div>
+
+          <dl>
+            <div>
+              <dt>Training days</dt>
+              <dd>{trainingDays.join(', ')}</dd>
+            </div>
+            <div>
+              <dt>Duration</dt>
+              <dd>{session.durationMinutes} minutes</dd>
+            </div>
+            <div>
+              <dt>Runs until</dt>
+              <dd>{longDateFormatter.format(new Date(`${session.endDate}T12:00:00`))}</dd>
+            </div>
+            <div>
+              <dt>Location</dt>
+              <dd>
+                {session.locationName}, {session.regionName}
+              </dd>
+            </div>
+          </dl>
+
+          <div className="session-detail-price">
+            <span>Price</span>
+            <strong>{formatPrice(session.price)}</strong>
+          </div>
+        </aside>
+      </div>
+    </main>
+  )
+}
+
+export default SessionDetailsPage
