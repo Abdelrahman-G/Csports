@@ -73,7 +73,6 @@ class CacheConfigTest {
                 "Nasr City",
                 "Cairo",
                 "Egypt",
-                "https://www.google.com/maps?q=30.05,31.25",
                 LocalDate.of(2026, 10, 1),
                 LocalDate.of(2026, 12, 1),
                 LocalTime.of(9, 0),
@@ -86,6 +85,7 @@ class CacheConfigTest {
                 LocalDate.of(2026, 10, 5).atTime(9, 0),
                 true,
                 TrainingSessionStatus.SCHEDULED,
+                null,
                 null,
                 null);
         PageResponse<TrainingSessionResponse> page = new PageResponse<>(

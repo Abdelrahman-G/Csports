@@ -14,6 +14,12 @@ import com.csports.session.TrainingSession;
 public class TrainingSessionMapper {
 
     public TrainingSessionResponse toResponse(TrainingSession session) {
+        return toResponse(session, null);
+    }
+
+    public TrainingSessionResponse toResponse(
+            TrainingSession session,
+            Double distanceMeters) {
         LocalDateTime bookingClosesAt = SessionSchedule.firstStart(session);
         boolean bookingOpen = isBookingOpen(session, bookingClosesAt);
 
@@ -29,7 +35,6 @@ public class TrainingSessionMapper {
                 session.getRegion().getName(),
                 session.getRegion().getCity(),
                 session.getRegion().getCountry(),
-                session.getGoogleMapsUrl(),
                 session.getStartDate(),
                 session.getEndDate(),
                 session.getStartTime(),
@@ -43,7 +48,8 @@ public class TrainingSessionMapper {
                 bookingOpen,
                 session.getStatus(),
                 session.getCancelledAt(),
-                session.getCancellationReason()
+                session.getCancellationReason(),
+                distanceMeters
         );
     }
 
@@ -80,8 +86,6 @@ public class TrainingSessionMapper {
                 session.getRegion().getCity(),
 
                 session.getRegion().getCountry(),
-
-                session.getGoogleMapsUrl(),
 
                 session.getStartDate(),
 

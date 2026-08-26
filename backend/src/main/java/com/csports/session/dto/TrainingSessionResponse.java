@@ -32,8 +32,6 @@ public record TrainingSessionResponse(
 
         String country,
 
-        String googleMapsUrl,
-
         LocalDate startDate,
 
         LocalDate endDate,
@@ -60,6 +58,8 @@ public record TrainingSessionResponse(
 
         LocalDateTime cancelledAt,
 
-        String cancellationReason
+        String cancellationReason,
+
+        Double distanceMeters
 
 ) {}

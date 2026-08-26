@@ -125,6 +125,7 @@ class SessionDiscoveryApiTest {
                 .contains("\"regionId\":" + matchingRegion.getId())
                 .contains("\"regionName\":\"" + matchingRegion.getName() + "\"")
                 .contains("\"remainingSeats\":4")
+                .doesNotContain("googleMapsUrl")
                 .doesNotContain("\"id\":" + fullSession.getId())
                 .doesNotContain("\"id\":" + otherSession.getId());
     }

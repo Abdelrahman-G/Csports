@@ -113,6 +113,7 @@ class BookingLifecycleApiTest {
                 .contains("\"bookingStatus\":\"CONFIRMED\"")
                 .contains("\"sessionId\":" + session.getId())
                 .contains("\"bookingOpen\":true")
+                .contains("\"googleMapsUrl\":")
                 .contains("\"remainingSeats\":1");
 
         HttpResponse<String> duplicate = request(

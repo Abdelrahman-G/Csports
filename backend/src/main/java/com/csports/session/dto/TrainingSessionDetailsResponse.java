@@ -38,8 +38,6 @@ public record TrainingSessionDetailsResponse(
 
         String country,
 
-        String googleMapsUrl,
-
         LocalDate startDate,
 
         LocalDate endDate,
