@@ -558,7 +558,7 @@
 
 .discovery-catalogue-layout {
   display: grid;
-  grid-template-columns: 240px minmax(0, 1fr);
+  grid-template-columns: 260px minmax(0, 1fr);
   align-items: start;
   gap: 26px;
 }
@@ -640,10 +640,59 @@
   font: inherit;
 }
 
+.filter-select-control {
+  position: relative;
+}
+
+.filter-select-control::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  right: 14px;
+  width: 7px;
+  height: 7px;
+  border-right: 2px solid #263c30;
+  border-bottom: 2px solid #263c30;
+  pointer-events: none;
+  transform: translateY(-65%) rotate(45deg);
+}
+
+.filter-select-control:focus-within::after {
+  border-color: #238654;
+}
+
+.sidebar-filter-group select {
+  appearance: none;
+  padding-right: 42px;
+  cursor: pointer;
+}
+
+.sidebar-filter-group select:disabled {
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+
 .sidebar-filter-group select:focus,
 .sidebar-filter-group input:focus {
   border-color: #238654;
   outline: 3px solid #d7eee1;
+}
+
+.location-choice-divider {
+  margin: 12px 0;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  color: #809087;
+  font-size: 0.75rem;
+}
+
+.location-choice-divider::before,
+.location-choice-divider::after {
+  content: '';
+  height: 1px;
+  flex: 1;
+  background: #e3ece7;
 }
 
 .apply-filters-button,
@@ -683,25 +732,18 @@
 
 .nearby-button:hover,
 .nearby-button.active {
-  color: #ffffff;
-  background: #238654;
+  color: #196d43;
+  border-color: #7eb697;
+  background: #edf8f1;
+}
+
+.nearby-button.active {
+  box-shadow: inset 0 0 0 1px rgba(35, 134, 84, 0.08);
 }
 
 .nearby-button:disabled {
   cursor: wait;
   opacity: 0.65;
-}
-
-.nearby-filter {
-  margin-top: 18px;
-  display: grid;
-  gap: 8px;
-}
-
-.nearby-filter > span {
-  color: #718279;
-  font-size: 0.78rem;
-  line-height: 1.35;
 }
 
 .discovery-results-column {

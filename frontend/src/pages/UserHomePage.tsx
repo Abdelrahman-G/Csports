@@ -358,7 +358,7 @@ function UserHomePage() {
               type="search"
               value={filters.query}
               onChange={(event) => updateFilter('query', event.target.value)}
-              placeholder="Search by sport, session, or club"
+              placeholder="Search sessions or training locations"
               maxLength={100}
             />
             <button type="submit">Search</button>
@@ -379,53 +379,62 @@ function UserHomePage() {
 
             <div className="sidebar-filter-group">
               <label htmlFor="region-filter">Area</label>
-              <select
-                id="region-filter"
-                value={filters.regionId}
-                onChange={(event) => updateFilter('regionId', event.target.value)}
-                disabled={regions.length === 0}
-              >
-                <option value="">All areas</option>
-                {regions.map((region) => (
-                  <option key={region.id} value={region.id}>
-                    {region.name}, {region.city}
-                  </option>
-                ))}
-              </select>
-            </div>
+              <div className="filter-select-control">
+                <select
+                  id="region-filter"
+                  value={filters.regionId}
+                  onChange={(event) => updateFilter('regionId', event.target.value)}
+                  disabled={regions.length === 0}
+                >
+                  <option value="">All areas</option>
+                  {regions.map((region) => (
+                    <option key={region.id} value={region.id}>
+                      {region.name}, {region.city}
+                    </option>
+                  ))}
+                </select>
+              </div>
 
-            <div className="sidebar-filter-group">
-              <label htmlFor="sport-filter">Sport</label>
-              <select
-                id="sport-filter"
-                value={filters.sportId}
-                onChange={(event) => updateFilter('sportId', event.target.value)}
-                disabled={sports.length === 0}
-              >
-                <option value="">All sports</option>
-                {sports.map((sport) => (
-                  <option key={sport.id} value={sport.id}>
-                    {sport.name}
-                  </option>
-                ))}
-              </select>
-            </div>
+              <div className="location-choice-divider" aria-hidden="true">
+                <span>or</span>
+              </div>
 
-            <button className="apply-filters-button" type="submit">
-              Apply filters
-            </button>
-
-            <div className="nearby-filter">
-              <span>Use a different location method</span>
               <button
                 className={mode === 'nearby' ? 'nearby-button active' : 'nearby-button'}
                 type="button"
                 onClick={useCurrentLocation}
                 disabled={isLocating}
               >
-                {isLocating ? 'Finding you...' : 'Search near me'}
+                {isLocating
+                  ? 'Finding location...'
+                  : mode === 'nearby'
+                    ? 'Using current location'
+                    : 'Use current location'}
               </button>
             </div>
+
+            <div className="sidebar-filter-group">
+              <label htmlFor="sport-filter">Sport</label>
+              <div className="filter-select-control">
+                <select
+                  id="sport-filter"
+                  value={filters.sportId}
+                  onChange={(event) => updateFilter('sportId', event.target.value)}
+                  disabled={sports.length === 0}
+                >
+                  <option value="">All sports</option>
+                  {sports.map((sport) => (
+                    <option key={sport.id} value={sport.id}>
+                      {sport.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            <button className="apply-filters-button" type="submit">
+              Apply filters
+            </button>
           </aside>
 
           <section className="discovery-results-column">
