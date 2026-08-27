@@ -16,6 +16,8 @@ type SearchByRegion = {
 
 type SearchNearby = {
   mode: 'nearby'
+  query?: string
+  sportId?: number
   coordinates: NearbyCoordinates
   radiusKm: number
 }
@@ -53,15 +55,16 @@ export async function searchSessions(
     size: '12',
   })
 
+  if (search.query) {
+    parameters.set('q', search.query)
+  }
+  if (search.sportId !== undefined) {
+    parameters.set('sportId', String(search.sportId))
+  }
+
   if (search.mode === 'region') {
-    if (search.query) {
-      parameters.set('q', search.query)
-    }
     if (search.regionId !== undefined) {
       parameters.set('regionId', String(search.regionId))
-    }
-    if (search.sportId !== undefined) {
-      parameters.set('sportId', String(search.sportId))
     }
   } else {
     parameters.set('latitude', String(search.coordinates.latitude))
