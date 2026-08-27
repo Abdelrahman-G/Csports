@@ -22,7 +22,7 @@ const MIN_LATITUDE = 29.75
 const MAX_LATITUDE = 30.35
 const MIN_LONGITUDE = 30.75
 const MAX_LONGITUDE = 31.75
-const NEARBY_RADIUS_KM = 10
+const NEARBY_RADIUS_KM = 50
 
 type DiscoveryMode = 'region' | 'nearby'
 
@@ -208,6 +208,8 @@ function UserHomePage() {
       }
       search = {
         mode: 'nearby',
+        query: appliedFilters.query || undefined,
+        sportId: optionalNumber(appliedFilters.sportId),
         coordinates,
         radiusKm: NEARBY_RADIUS_KM,
       }
@@ -285,6 +287,12 @@ function UserHomePage() {
       return
     }
 
+    const nearbyFilters = {
+      ...filters,
+      query: filters.query.trim(),
+      regionId: '',
+    }
+
     setIsLocating(true)
     navigator.geolocation.getCurrentPosition(
       (position) => {
@@ -301,6 +309,9 @@ function UserHomePage() {
           return
         }
 
+        localStorage.removeItem(REGION_STORAGE_KEY)
+        setFilters(nearbyFilters)
+        setAppliedFilters(nearbyFilters)
         setCoordinates({ latitude, longitude, accuracy })
         setMode('nearby')
         setPageNumber(0)
