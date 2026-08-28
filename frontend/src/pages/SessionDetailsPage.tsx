@@ -1,5 +1,11 @@
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
+import { useAuth } from '../auth/authContext'
+import {
+  bookSession,
+  getConfirmedBookingForSession,
+} from '../booking/bookingApi'
+import type { BookedSession } from '../booking/types'
 import { getSessionDetails } from '../discovery/discoveryApi'
 import { orderedDayLabels } from '../discovery/sessionFormatting'
 import type { TrainingSessionDetails } from '../discovery/types'
@@ -21,6 +27,7 @@ function formatPrice(price: number) {
 }
 
 function SessionDetailsPage() {
+  const { authenticatedFetch } = useAuth()
   const { sessionId } = useParams()
   const numericSessionId = Number(sessionId)
   const hasValidSessionId =
@@ -28,6 +35,11 @@ function SessionDetailsPage() {
   const [session, setSession] = useState<TrainingSessionDetails | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState('')
+  const [booking, setBooking] = useState<BookedSession | null>(null)
+  const [isLoadingBooking, setIsLoadingBooking] = useState(true)
+  const [bookingLookupError, setBookingLookupError] = useState('')
+  const [isBooking, setIsBooking] = useState(false)
+  const [bookingActionError, setBookingActionError] = useState('')
 
   useEffect(() => {
     if (!hasValidSessionId) {
@@ -65,6 +77,46 @@ function SessionDetailsPage() {
     return () => controller.abort()
   }, [hasValidSessionId, numericSessionId])
 
+  useEffect(() => {
+    if (!hasValidSessionId) {
+      return
+    }
+
+    const controller = new AbortController()
+
+    async function loadBooking() {
+      setIsLoadingBooking(true)
+      setBooking(null)
+      setBookingLookupError('')
+      setBookingActionError('')
+
+      try {
+        const loadedBooking = await getConfirmedBookingForSession(
+          authenticatedFetch,
+          numericSessionId,
+          controller.signal,
+        )
+        setBooking(loadedBooking)
+      } catch (requestError) {
+        if (!controller.signal.aborted) {
+          setBooking(null)
+          setBookingLookupError(
+            requestError instanceof Error
+              ? requestError.message
+              : 'Your booking status could not be loaded.',
+          )
+        }
+      } finally {
+        if (!controller.signal.aborted) {
+          setIsLoadingBooking(false)
+        }
+      }
+    }
+
+    void loadBooking()
+    return () => controller.abort()
+  }, [authenticatedFetch, hasValidSessionId, numericSessionId])
+
   if (!hasValidSessionId) {
     return (
       <main className="session-details-page">
@@ -97,6 +149,51 @@ function SessionDetailsPage() {
     )
   }
 
+  async function reservePlace() {
+    if (
+      !session ||
+      booking ||
+      isBooking ||
+      isLoadingBooking ||
+      bookingLookupError ||
+      !session.bookingOpen
+    ) {
+      return
+    }
+
+    setIsBooking(true)
+    setBookingActionError('')
+
+    try {
+      const confirmedBooking = await bookSession(
+        authenticatedFetch,
+        numericSessionId,
+      )
+
+      setBooking(confirmedBooking)
+      setSession((currentSession) => {
+        if (!currentSession) {
+          return currentSession
+        }
+
+        return {
+          ...currentSession,
+          currentParticipants: confirmedBooking.currentParticipants,
+          remainingSeats: confirmedBooking.remainingSeats,
+          bookingOpen: confirmedBooking.bookingOpen,
+        }
+      })
+    } catch (requestError) {
+      setBookingActionError(
+        requestError instanceof Error
+          ? requestError.message
+          : 'This session could not be booked.',
+      )
+    } finally {
+      setIsBooking(false)
+    }
+  }
+
   const firstTraining = new Date(session.bookingClosesAt)
   const trainingDays = orderedDayLabels(session.days)
   const availability = session.bookingOpen
@@ -104,6 +201,28 @@ function SessionDetailsPage() {
     : session.remainingSeats === 0
       ? 'Fully booked'
       : 'Booking closed'
+  const bookingStatusClassName = booking
+    ? 'session-booking-status confirmed'
+    : bookingLookupError
+      ? 'session-booking-status error'
+      : 'session-booking-status'
+  const bookingButtonLabel = isLoadingBooking
+    ? 'Checking booking...'
+    : booking
+      ? 'Booked'
+      : isBooking
+        ? 'Booking...'
+        : session.remainingSeats === 0
+          ? 'Fully booked'
+          : !session.bookingOpen
+            ? 'Booking closed'
+            : 'Reserve my place'
+  const bookingButtonDisabled =
+    isLoadingBooking ||
+    isBooking ||
+    booking !== null ||
+    bookingLookupError !== '' ||
+    !session.bookingOpen
 
   return (
     <main className="session-details-page">
@@ -179,6 +298,42 @@ function SessionDetailsPage() {
             <span>Price</span>
             <strong>{formatPrice(session.price)}</strong>
           </div>
+
+          <div className={bookingStatusClassName} aria-live="polite">
+            {isLoadingBooking
+              ? 'Checking your booking...'
+              : booking
+                ? 'Your place is confirmed.'
+                : bookingLookupError || 'You have not booked this session yet.'}
+          </div>
+
+          <button
+            className="session-booking-button"
+            type="button"
+            onClick={reservePlace}
+            disabled={bookingButtonDisabled}
+          >
+            {bookingButtonLabel}
+          </button>
+
+          {bookingActionError && (
+            <p className="session-booking-action-error" role="alert">
+              {bookingActionError}
+            </p>
+          )}
+
+          {booking && (
+            <div className="session-booked-location">
+              <span>Exact location</span>
+              <a
+                href={booking.googleMapsUrl}
+                target="_blank"
+                rel="noreferrer"
+              >
+                Open in Google Maps
+              </a>
+            </div>
+          )}
         </aside>
       </div>
     </main>
