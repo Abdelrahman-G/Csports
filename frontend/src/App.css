@@ -1111,6 +1111,90 @@
   font-size: 1.55rem;
 }
 
+.session-booking-status {
+  margin: 18px 0 0;
+  padding: 12px 14px;
+  border: 1px solid #dce9e1;
+  border-radius: 10px;
+  color: #53685c;
+  background: #f7faf8;
+  font-size: 0.88rem;
+  line-height: 1.4;
+}
+
+.session-booking-status.confirmed {
+  border-color: #a9d3ba;
+  color: #196d43;
+  background: #edf8f1;
+  font-weight: 700;
+}
+
+.session-booking-status.error {
+  border-color: #e7b8b8;
+  color: #9a3030;
+  background: #fff4f4;
+}
+
+.session-booking-button {
+  width: 100%;
+  min-height: 46px;
+  margin-top: 12px;
+  padding: 11px 16px;
+  border: 1px solid #238654;
+  border-radius: 9px;
+  color: #ffffff;
+  background: #238654;
+  font: inherit;
+  font-weight: 750;
+  cursor: pointer;
+}
+
+.session-booking-button:hover:not(:disabled) {
+  background: #196d43;
+}
+
+.session-booking-button:focus-visible {
+  outline: 3px solid #bfe4ce;
+  outline-offset: 2px;
+}
+
+.session-booking-button:disabled {
+  border-color: #aac0b3;
+  color: #61736a;
+  background: #e7eee9;
+  cursor: not-allowed;
+}
+
+.session-booking-action-error {
+  margin: 10px 0 0;
+  color: #9a3030;
+  font-size: 0.84rem;
+  line-height: 1.4;
+}
+
+.session-booked-location {
+  margin-top: 14px;
+  padding-top: 14px;
+  display: grid;
+  gap: 5px;
+  border-top: 1px solid #dce9e1;
+}
+
+.session-booked-location span {
+  color: #718278;
+  font-size: 0.78rem;
+}
+
+.session-booked-location a {
+  width: fit-content;
+  color: #196d43;
+  font-weight: 750;
+}
+
+.session-booked-location a:hover {
+  text-decoration-thickness: 2px;
+}
+
 .session-details-state {
   max-width: 680px;
   margin: 80px auto;
