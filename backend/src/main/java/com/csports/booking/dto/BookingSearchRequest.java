@@ -5,10 +5,14 @@ import com.csports.booking.BookingView;
 
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.Positive;
 
 public record BookingSearchRequest(
         BookingStatus status,
         BookingView view,
+
+        @Positive(message = "Session id must be positive")
+        Long sessionId,
 
         @Min(value = 0, message = "Page must be zero or greater")
         Integer page,

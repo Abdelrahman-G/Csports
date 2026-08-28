@@ -130,6 +130,21 @@ class BookingLifecycleApiTest {
                 .contains("\"bookingStatus\":\"CONFIRMED\"")
                 .contains("\"totalElements\":1");
 
+        HttpResponse<String> bookingForSession = request(
+                "GET",
+                "/api/v1/bookings/me?view=ALL&status=CONFIRMED&sessionId="
+                        + session.getId());
+        assertThat(bookingForSession.statusCode()).isEqualTo(200);
+        assertThat(bookingForSession.body())
+                .contains("\"sessionId\":" + session.getId())
+                .contains("\"totalElements\":1");
+
+        HttpResponse<String> bookingForAnotherSession = request(
+                "GET",
+                "/api/v1/bookings/me?view=ALL&status=CONFIRMED&sessionId=999999");
+        assertThat(bookingForAnotherSession.statusCode()).isEqualTo(200);
+        assertThat(bookingForAnotherSession.body()).contains("\"totalElements\":0");
+
         HttpResponse<String> cancelled = request(
                 "DELETE",
                 "/api/v1/bookings/" + session.getId());
