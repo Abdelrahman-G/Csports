@@ -27,6 +27,11 @@ final class BookingSpecifications {
             if (request.status() != null) {
                 predicates.add(criteriaBuilder.equal(root.get("status"), request.status()));
             }
+            if (request.sessionId() != null) {
+                predicates.add(criteriaBuilder.equal(
+                        root.get("session").get("id"),
+                        request.sessionId()));
+            }
 
             switch (request.view()) {
                 case UPCOMING -> {

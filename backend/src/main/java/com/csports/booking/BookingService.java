@@ -83,6 +83,7 @@ public class BookingService {
         return getMyBookings(new BookingSearchRequest(
                 null,
                 BookingView.UPCOMING,
+                null,
                 page,
                 size));
     }
