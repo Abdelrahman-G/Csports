@@ -1,7 +1,7 @@
 import { ApiError } from '../auth/authApi'
 import type { AuthenticatedFetch } from '../auth/authContext'
 import type { ApiErrorResponse } from '../auth/types'
-import type { BookedSession, BookingPage } from './types'
+import type { BookedSession, BookingPage, BookingSearch } from './types'
 
 async function readBookingJson<T>(
   response: Response,
@@ -71,6 +71,51 @@ export async function bookSession(
     booking.bookingStatus !== 'CONFIRMED'
   ) {
     throw new Error('The server returned an unexpected booking response.')
+  }
+
+  return booking
+}
+
+export async function getMyBookings(
+  authenticatedFetch: AuthenticatedFetch,
+  search: BookingSearch,
+  signal?: AbortSignal,
+): Promise<BookingPage> {
+  const parameters = new URLSearchParams({
+    view: search.view,
+    page: String(search.page),
+    size: String(search.size),
+  })
+
+  const response = await authenticatedFetch(
+    `/api/v1/bookings/me?${parameters}`,
+    { signal },
+  )
+
+  return readBookingJson<BookingPage>(
+    response,
+    'Your bookings could not be loaded.',
+  )
+}
+
+export async function cancelBooking(
+  authenticatedFetch: AuthenticatedFetch,
+  sessionId: number,
+): Promise<BookedSession> {
+  const response = await authenticatedFetch(`/api/v1/bookings/${sessionId}`, {
+    method: 'DELETE',
+  })
+
+  const booking = await readBookingJson<BookedSession>(
+    response,
+    'This booking could not be cancelled.',
+  )
+
+  if (
+    booking.sessionId !== sessionId ||
+    booking.bookingStatus !== 'CANCELLED_BY_USER'
+  ) {
+    throw new Error('The server returned an unexpected cancellation response.')
   }
 
   return booking

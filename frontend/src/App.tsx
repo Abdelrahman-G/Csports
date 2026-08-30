@@ -8,6 +8,7 @@ import RegistrationPage from './pages/RegistrationPage'
 import TrainerHomePage from './pages/TrainerHomePage'
 import UserHomePage from './pages/UserHomePage'
 import SessionDetailsPage from './pages/SessionDetailsPage'
+import MyBookingsPage from './pages/MyBookingsPage'
 import RequireRole from './auth/RequireRole'
 
 function App() {
@@ -37,6 +38,14 @@ function App() {
         element={
           <RequireRole allowedRole="USER">
             <SessionDetailsPage />
+          </RequireRole>
+        }
+      />
+      <Route
+        path="/user/bookings"
+        element={
+          <RequireRole allowedRole="USER">
+            <MyBookingsPage />
           </RequireRole>
         }
       />

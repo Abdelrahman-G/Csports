@@ -5,6 +5,14 @@ export type BookingStatus =
 
 export type SessionStatus = 'SCHEDULED' | 'CANCELLED' | 'COMPLETED'
 
+export type BookingView = 'UPCOMING' | 'HISTORY'
+
+export type BookingSearch = {
+  view: BookingView
+  page: number
+  size: number
+}
+
 export type BookedSession = {
   bookingId: number
   bookingStatus: BookingStatus
@@ -21,7 +29,7 @@ export type BookedSession = {
   regionName: string
   city: string
   country: string
-  googleMapsUrl: string
+  googleMapsUrl: string | null
   startDate: string
   endDate: string
   startTime: string

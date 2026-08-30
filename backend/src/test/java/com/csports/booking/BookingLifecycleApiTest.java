@@ -151,6 +151,7 @@ class BookingLifecycleApiTest {
         assertThat(cancelled.statusCode()).isEqualTo(200);
         assertThat(cancelled.body())
                 .contains("\"bookingStatus\":\"CANCELLED_BY_USER\"")
+                .contains("\"googleMapsUrl\":null")
                 .containsPattern("\"cancelledAt\":\"[^\"]+\"");
 
         HttpResponse<String> emptyUpcoming = request(
@@ -164,6 +165,7 @@ class BookingLifecycleApiTest {
         assertThat(history.statusCode()).isEqualTo(200);
         assertThat(history.body())
                 .contains("\"bookingStatus\":\"CANCELLED_BY_USER\"")
+                .contains("\"googleMapsUrl\":null")
                 .contains("\"totalElements\":1");
 
         HttpResponse<String> rebooked = request(

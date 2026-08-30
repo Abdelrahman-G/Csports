@@ -55,7 +55,9 @@ public class BookingMapper {
 
                 session.getRegion().getCountry(),
 
-                session.getGoogleMapsUrl(),
+                booking.getStatus() == BookingStatus.CONFIRMED
+                        ? session.getGoogleMapsUrl()
+                        : null,
 
                 session.getStartDate(),
 
