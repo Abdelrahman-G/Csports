@@ -197,27 +197,34 @@ function SessionDetailsPage() {
 
   const firstTraining = new Date(session.bookingClosesAt)
   const trainingDays = orderedDayLabels(session.days)
-  const availability = session.bookingOpen
-    ? `${session.remainingSeats} places left`
-    : session.remainingSeats === 0
-      ? 'Fully booked'
-      : 'Booking closed'
-  const bookingStatusClassName = booking
-    ? 'session-booking-status confirmed'
-    : bookingLookupError
-      ? 'session-booking-status error'
-      : 'session-booking-status'
-  const bookingButtonLabel = isLoadingBooking
-    ? 'Checking booking...'
+  const isCancelled = session.status === 'CANCELLED'
+  const availability = isCancelled
+    ? 'Session cancelled'
+    : session.bookingOpen
+      ? `${session.remainingSeats} places left`
+      : session.remainingSeats === 0
+        ? 'Fully booked'
+        : 'Booking closed'
+  const bookingStatusClassName = isCancelled
+    ? 'session-booking-status cancelled'
     : booking
-      ? 'Booked'
-      : isBooking
-        ? 'Booking...'
-        : session.remainingSeats === 0
-          ? 'Fully booked'
-          : !session.bookingOpen
-            ? 'Booking closed'
-            : 'Reserve my place'
+      ? 'session-booking-status confirmed'
+      : bookingLookupError
+        ? 'session-booking-status error'
+        : 'session-booking-status'
+  const bookingButtonLabel = isCancelled
+    ? 'Session cancelled'
+    : isLoadingBooking
+      ? 'Checking booking...'
+      : booking
+        ? 'Booked'
+        : isBooking
+          ? 'Booking...'
+          : session.remainingSeats === 0
+            ? 'Fully booked'
+            : !session.bookingOpen
+              ? 'Booking closed'
+              : 'Reserve my place'
   const bookingButtonDisabled =
     isLoadingBooking ||
     isBooking ||
@@ -249,6 +256,15 @@ function SessionDetailsPage() {
           {availability}
         </span>
       </section>
+
+      {isCancelled && (
+        <section className="session-cancellation-notice" role="status">
+          <strong>This session has been cancelled.</strong>
+          <p>
+            Reason: {session.cancellationReason || 'No reason was provided.'}
+          </p>
+        </section>
+      )}
 
       <div className="session-details-layout">
         <section className="session-details-main">
@@ -303,7 +319,9 @@ function SessionDetailsPage() {
           </div>
 
           <div className={bookingStatusClassName} aria-live="polite">
-            {isLoadingBooking
+            {isCancelled
+              ? 'This session is no longer available for booking.'
+              : isLoadingBooking
               ? 'Checking your booking...'
               : booking
                 ? 'Your place is confirmed.'

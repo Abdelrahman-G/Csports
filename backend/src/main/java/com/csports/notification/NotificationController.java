@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.csports.common.pagination.PageResponse;
 import com.csports.common.web.ApiPaths;
 import com.csports.notification.dto.NotificationResponse;
+import com.csports.notification.dto.UnreadNotificationCountResponse;
 
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
@@ -28,7 +29,7 @@ public class NotificationController {
         this.notificationService = notificationService;
     }
 
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("hasRole('USER')")
     @GetMapping
     public PageResponse<NotificationResponse> getMyNotifications(
             @RequestParam(defaultValue = "0") @Min(0) int page,
@@ -36,7 +37,13 @@ public class NotificationController {
         return notificationService.getMyNotifications(page, size);
     }
 
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("hasRole('USER')")
+    @GetMapping("/unread-count")
+    public UnreadNotificationCountResponse getMyUnreadCount() {
+        return notificationService.getMyUnreadCount();
+    }
+
+    @PreAuthorize("hasRole('USER')")
     @PatchMapping("/{notificationId}/read")
     public NotificationResponse markAsRead(@PathVariable @Positive Long notificationId) {
         return notificationService.markAsRead(notificationId);
