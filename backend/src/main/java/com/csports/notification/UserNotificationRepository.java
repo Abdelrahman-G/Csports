@@ -13,4 +13,6 @@ public interface UserNotificationRepository extends JpaRepository<UserNotificati
     Page<UserNotification> findByRecipient(User recipient, Pageable pageable);
 
     Optional<UserNotification> findByIdAndRecipient(Long id, User recipient);
+
+    long countByRecipientAndReadFalse(User recipient);
 }

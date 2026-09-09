@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.csports.common.exception.ResourceNotFoundException;
 import com.csports.common.pagination.PageResponse;
 import com.csports.notification.dto.NotificationResponse;
+import com.csports.notification.dto.UnreadNotificationCountResponse;
 import com.csports.user.User;
 import com.csports.user.UserService;
 
@@ -42,6 +43,13 @@ public class NotificationService {
                 response.getTotalPages(),
                 response.isFirst(),
                 response.isLast());
+    }
+
+    @Transactional(readOnly = true)
+    public UnreadNotificationCountResponse getMyUnreadCount() {
+        User currentUser = userService.getCurrentUser();
+        return new UnreadNotificationCountResponse(
+                notificationRepository.countByRecipientAndReadFalse(currentUser));
     }
 
     @Transactional

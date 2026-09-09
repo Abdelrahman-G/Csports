@@ -9,6 +9,7 @@ import TrainerHomePage from './pages/TrainerHomePage'
 import UserHomePage from './pages/UserHomePage'
 import SessionDetailsPage from './pages/SessionDetailsPage'
 import MyBookingsPage from './pages/MyBookingsPage'
+import NotificationsPage from './pages/NotificationsPage'
 import RequireRole from './auth/RequireRole'
 
 function App() {
@@ -46,6 +47,14 @@ function App() {
         element={
           <RequireRole allowedRole="USER">
             <MyBookingsPage />
+          </RequireRole>
+        }
+      />
+      <Route
+        path="/user/notifications"
+        element={
+          <RequireRole allowedRole="USER">
+            <NotificationsPage />
           </RequireRole>
         }
       />
