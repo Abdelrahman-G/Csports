@@ -16,6 +16,7 @@ import type {
   TrainingSession,
 } from '../discovery/types'
 import { orderedDayLabels } from '../discovery/sessionFormatting'
+import UserNavigation from '../components/UserNavigation'
 
 const REGION_STORAGE_KEY = 'csports.discovery.regionId'
 const MIN_LATITUDE = 29.75
@@ -342,7 +343,9 @@ function UserHomePage() {
   const sessions = sessionPage?.content ?? []
 
   return (
-    <main className="discovery-page">
+    <>
+      <UserNavigation />
+      <main className="discovery-page">
       <header className="discovery-header">
         <p className="eyebrow">Find your next session</p>
         <h1>{profile ? `Welcome, ${profile.name}` : 'Welcome'}</h1>
@@ -498,7 +501,8 @@ function UserHomePage() {
           </section>
         </div>
       </form>
-    </main>
+      </main>
+    </>
   )
 }
 

@@ -9,6 +9,7 @@ import type { BookedSession } from '../booking/types'
 import { getSessionDetails } from '../discovery/discoveryApi'
 import { orderedDayLabels } from '../discovery/sessionFormatting'
 import type { TrainingSessionDetails } from '../discovery/types'
+import UserNavigation from '../components/UserNavigation'
 
 const longDateFormatter = new Intl.DateTimeFormat('en-EG', {
   weekday: 'long',
@@ -225,7 +226,9 @@ function SessionDetailsPage() {
     !session.bookingOpen
 
   return (
-    <main className="session-details-page">
+    <>
+      <UserNavigation />
+      <main className="session-details-page">
       <Link className="session-details-back" to="/user/home">
         Back to sessions
       </Link>
@@ -322,7 +325,7 @@ function SessionDetailsPage() {
             </p>
           )}
 
-          {booking && (
+          {booking?.googleMapsUrl && (
             <div className="session-booked-location">
               <span>Exact location</span>
               <a
@@ -336,7 +339,8 @@ function SessionDetailsPage() {
           )}
         </aside>
       </div>
-    </main>
+      </main>
+    </>
   )
 }
 
