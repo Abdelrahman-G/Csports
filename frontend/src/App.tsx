@@ -11,6 +11,8 @@ import SessionDetailsPage from './pages/SessionDetailsPage'
 import MyBookingsPage from './pages/MyBookingsPage'
 import NotificationsPage from './pages/NotificationsPage'
 import RequireRole from './auth/RequireRole'
+import CreateTrainerSessionPage from './pages/CreateTrainerSessionPage'
+import ManageTrainerSessionPage from './pages/ManageTrainerSessionPage'
 
 function App() {
   return (
@@ -63,6 +65,22 @@ function App() {
         element={
           <RequireRole allowedRole="TRAINER">
             <TrainerHomePage />
+          </RequireRole>
+        }
+      />
+      <Route
+        path="/trainer/sessions/new"
+        element={
+          <RequireRole allowedRole="TRAINER">
+            <CreateTrainerSessionPage />
+          </RequireRole>
+        }
+      />
+      <Route
+        path="/trainer/sessions/:sessionId/manage"
+        element={
+          <RequireRole allowedRole="TRAINER">
+            <ManageTrainerSessionPage />
           </RequireRole>
         }
       />

@@ -12,6 +12,7 @@ public final class ApiPaths {
     public static final String TRAINERS = V1 + "/trainers";
     public static final String USERS = V1 + "/users";
     public static final String NOTIFICATIONS = V1 + "/notifications";
+    public static final String LOCATIONS = V1 + "/locations";
 
     public static final String LEGACY_AUTH = "/auth";
     public static final String LEGACY_BOOKINGS = "/bookings";
