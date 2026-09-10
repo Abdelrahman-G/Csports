@@ -13,6 +13,7 @@ import NotificationsPage from './pages/NotificationsPage'
 import RequireRole from './auth/RequireRole'
 import CreateTrainerSessionPage from './pages/CreateTrainerSessionPage'
 import ManageTrainerSessionPage from './pages/ManageTrainerSessionPage'
+import ProfilePage from './pages/ProfilePage'
 
 function App() {
   return (
@@ -61,6 +62,14 @@ function App() {
         }
       />
       <Route
+        path="/user/profile"
+        element={
+          <RequireRole allowedRole="USER">
+            <ProfilePage />
+          </RequireRole>
+        }
+      />
+      <Route
         path="/trainer/home"
         element={
           <RequireRole allowedRole="TRAINER">
@@ -81,6 +90,14 @@ function App() {
         element={
           <RequireRole allowedRole="TRAINER">
             <ManageTrainerSessionPage />
+          </RequireRole>
+        }
+      />
+      <Route
+        path="/trainer/profile"
+        element={
+          <RequireRole allowedRole="TRAINER">
+            <ProfilePage />
           </RequireRole>
         }
       />

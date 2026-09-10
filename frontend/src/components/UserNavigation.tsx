@@ -1,13 +1,11 @@
 import { useEffect, useState } from 'react'
-import { NavLink, useNavigate } from 'react-router-dom'
+import { NavLink } from 'react-router-dom'
 import csportsLogo from '../assets/csports-logo-v3.png'
 import { useAuth } from '../auth/authContext'
 import { getUnreadNotificationCount } from '../notifications/notificationApi'
 
 function UserNavigation() {
-  const navigate = useNavigate()
-  const { authenticatedFetch, logout } = useAuth()
-  const [isLoggingOut, setIsLoggingOut] = useState(false)
+  const { authenticatedFetch } = useAuth()
   const [unreadCount, setUnreadCount] = useState(0)
 
   useEffect(() => {
@@ -21,22 +19,6 @@ function UserNavigation() {
 
     return () => controller.abort()
   }, [authenticatedFetch])
-
-  async function handleLogout() {
-    if (isLoggingOut) {
-      return
-    }
-
-    setIsLoggingOut(true)
-
-    try {
-      await logout()
-    } catch {
-      // AuthProvider removes the browser session even if the API is unavailable.
-    } finally {
-      navigate('/login', { replace: true })
-    }
-  }
 
   return (
     <header className="user-navigation">
@@ -89,14 +71,7 @@ function UserNavigation() {
             )}
           </NavLink>
 
-          <button
-            className="user-navigation-logout"
-            type="button"
-            onClick={handleLogout}
-            disabled={isLoggingOut}
-          >
-            {isLoggingOut ? 'Logging out...' : 'Log out'}
-          </button>
+          <NavLink className="user-profile-link" to="/user/profile">Profile</NavLink>
         </div>
       </div>
     </header>
