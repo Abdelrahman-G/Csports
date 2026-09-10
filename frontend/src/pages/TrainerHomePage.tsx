@@ -1,106 +1,99 @@
 import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import { useAuth } from '../auth/authContext'
 import { getMyTrainerProfile, type TrainerProfile } from '../auth/profileApi'
+import TrainerNavigation from '../components/TrainerNavigation'
+import { orderedDayLabels } from '../discovery/sessionFormatting'
+import { getMySessions } from '../trainer/trainerSessionApi'
+import type { TrainingSession } from '../trainer/types'
 
 function TrainerHomePage() {
-  const navigate = useNavigate()
-  const { authenticatedFetch, logout } = useAuth()
+  const { authenticatedFetch } = useAuth()
   const [profile, setProfile] = useState<TrainerProfile | null>(null)
+  const [sessions, setSessions] = useState<TrainingSession[]>([])
+  const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState('')
-  const [isLoggingOut, setIsLoggingOut] = useState(false)
 
   useEffect(() => {
-    let shouldIgnoreResult = false
+    const controller = new AbortController()
 
-    async function loadProfile() {
+    async function loadDashboard() {
+      setIsLoading(true)
+      setError('')
+
       try {
-        const loadedProfile = await getMyTrainerProfile(authenticatedFetch)
-
-        if (!shouldIgnoreResult) {
-          setProfile(loadedProfile)
-        }
+        const [loadedProfile, loadedSessions] = await Promise.all([
+          getMyTrainerProfile(authenticatedFetch),
+          getMySessions(authenticatedFetch, controller.signal),
+        ])
+        setProfile(loadedProfile)
+        setSessions(loadedSessions.content)
       } catch (requestError) {
-        if (!shouldIgnoreResult) {
+        if (!controller.signal.aborted) {
           setError(
             requestError instanceof Error
               ? requestError.message
-              : 'Your profile could not be loaded.',
+              : 'Your coaching dashboard could not be loaded.',
           )
         }
+      } finally {
+        if (!controller.signal.aborted) setIsLoading(false)
       }
     }
 
-    void loadProfile()
-
-    return () => {
-      shouldIgnoreResult = true
-    }
+    void loadDashboard()
+    return () => controller.abort()
   }, [authenticatedFetch])
 
-  async function handleLogout() {
-    setIsLoggingOut(true)
-
-    try {
-      await logout()
-    } catch {
-      // AuthProvider still removes the local session if the server is unavailable.
-    } finally {
-      navigate('/login', { replace: true })
-    }
-  }
-
   return (
-    <main className="placeholder-page">
-      <section className="placeholder-card dashboard-card">
-        <p className="eyebrow">Your coaching space</p>
-        <h1>
-          {profile ? `Ready to lead, ${profile.name}?` : 'Preparing your space...'}
-        </h1>
+    <>
+      <TrainerNavigation />
+      <main className="trainer-page">
+        <section className="trainer-dashboard-header">
+          <div>
+            <p className="eyebrow">Your coaching space</p>
+            <h1>{profile ? `Welcome back, ${profile.name}` : 'My sessions'}</h1>
+            <p>
+              {profile
+                ? `${profile.sport} coach · ${profile.experienceYears} years of experience`
+                : 'Create and manage your training sessions.'}
+            </p>
+          </div>
+          <Link className="trainer-primary-action" to="/trainer/sessions/new">Create a session</Link>
+        </section>
 
-        {error && (
-          <p className="form-error-message" role="alert">
-            {error}
-          </p>
+        {isLoading && <p className="trainer-state">Loading your sessions...</p>}
+        {error && <p className="trainer-state error" role="alert">{error}</p>}
+
+        {!isLoading && !error && sessions.length === 0 && (
+          <section className="trainer-empty-state">
+            <h2>Your first session starts here</h2>
+            <p>Create a schedule and make it available to athletes.</p>
+            <Link to="/trainer/sessions/new">Create a session</Link>
+          </section>
         )}
 
-        {profile && (
-          <dl className="profile-details">
-            <div>
-              <dt>Sport</dt>
-              <dd>{profile.sport}</dd>
-            </div>
-            <div>
-              <dt>Experience</dt>
-              <dd>{profile.experienceYears} years</dd>
-            </div>
-            {profile.regionName && profile.city && (
-              <div>
-                <dt>Region</dt>
-                <dd>
-                  {profile.regionName}, {profile.city}
-                </dd>
-              </div>
-            )}
-            {profile.bio && (
-              <div>
-                <dt>Bio</dt>
-                <dd>{profile.bio}</dd>
-              </div>
-            )}
-          </dl>
+        {!isLoading && !error && sessions.length > 0 && (
+          <section className="trainer-session-grid" aria-label="Your sessions">
+            {sessions.map((session) => (
+              <article className="trainer-session-card" key={session.id}>
+                <div className="trainer-session-card-heading">
+                  <span className={`trainer-status ${session.status.toLowerCase()}`}>{session.status}</span>
+                  <span>{session.currentParticipants}/{session.maxParticipants} booked</span>
+                </div>
+                <h2>{session.title}</h2>
+                <p>{session.locationName}</p>
+                <dl>
+                  <div><dt>Starts</dt><dd>{session.startDate}</dd></div>
+                  <div><dt>Schedule</dt><dd>{orderedDayLabels(session.days).join(', ')}</dd></div>
+                </dl>
+                <Link to={`/trainer/sessions/${session.id}/manage`}>Manage session</Link>
+              </article>
+            ))}
+          </section>
         )}
-
-        <button
-          className="secondary-action-button"
-          type="button"
-          onClick={handleLogout}
-          disabled={isLoggingOut}
-        >
-          {isLoggingOut ? 'Signing you out...' : 'Log out'}
-        </button>
-      </section>
-    </main>
+      </main>
+    </>
   )
 }
 

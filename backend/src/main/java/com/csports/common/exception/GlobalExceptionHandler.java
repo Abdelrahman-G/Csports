@@ -38,6 +38,7 @@ import com.csports.sport.exception.SportNotFoundException;
 import com.csports.trainer.exception.TrainerProfileAlreadyExistsException;
 import com.csports.trainer.exception.TrainerProfileNotFoundException;
 import com.csports.user.exception.InvalidProfileUpdateException;
+import com.csports.location.exception.InvalidGoogleMapsLocationException;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolation;
@@ -195,7 +196,8 @@ public class GlobalExceptionHandler {
             InvalidSessionSearchException.class,
             SessionEndedException.class,
             CannotBookOwnSessionException.class,
-            InvalidProfileUpdateException.class
+            InvalidProfileUpdateException.class,
+            InvalidGoogleMapsLocationException.class
     })
     public ResponseEntity<ErrorResponse> handleBusinessValidation(
             RuntimeException ex,
