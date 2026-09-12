@@ -1,32 +1,36 @@
 # Csports
 
-Csports is a Spring Boot backend for discovering trainers, publishing recurring
-training sessions, and booking sports activities. It is a modular monolith built
-as a long-term system-design practice project.
+Csports is a full-stack platform for discovering and managing sports training
+sessions. Trainers can publish recurring sessions, while participants can
+search, book, cancel, and receive in-app notifications.
 
-## Main lifecycle
+## Architecture
 
-1. Users and trainers register and authenticate with access and rotating refresh
-   tokens.
-2. Trainers create scheduled sessions for their sport and region.
-3. Users search sessions by keyword, sport, trainer, region, date, price, and
-   availability.
-4. Users book or cancel. A per-session Redis lock, JPA optimistic locking, and
-   PostgreSQL constraints protect the final seat.
-5. Trainers can move, cancel, or restore eligible sessions. Affected users
-   receive in-app notifications.
-6. Flyway records every schema and reference-data change, while Redis provides
-   caching, token revocation, and booking coordination.
+```text
+Browser -> Nginx (React SPA + /api reverse proxy) -> Spring Boot
+                                                       |-- PostgreSQL/PostGIS
+                                                       `-- Redis
+```
 
-## Technology
+## Technical highlights
 
-- Java 21 and Spring Boot
-- Spring Security with JWT
-- PostgreSQL and Flyway
-- Redis
-- Docker Compose
-- OpenAPI/Swagger
-- Maven, JUnit, Testcontainers, and GitHub Actions
+- A modular **Java 21 and Spring Boot** REST API with versioned endpoints,
+  request validation, consistent errors, OpenAPI, and role-based access through
+  **Spring Security**.
+- Short-lived **JWT** access tokens, atomic one-time refresh-token rotation, and
+  Redis-backed access-token revocation.
+- Filtered session discovery using JPA specifications, database indexes,
+  **PostGIS** distance queries, and **Redis-cached** search results.
+- Concurrency-safe booking using a per-session **Redis distributed lock**, JPA
+  optimistic locking, PostgreSQL constraints, and transactional fallback.
+- A **React and TypeScript** single-page application with protected routes,
+  shared authentication state, automatic token refresh, and an **Nginx** API
+  reverse proxy.
+- Versioned **Flyway** migrations and multi-stage Docker builds for the Spring
+  and React applications, orchestrated with **Docker Compose** health checks and
+  persistent PostgreSQL and Redis volumes.
+- **GitHub Actions** CI runs JUnit and Testcontainers integration tests, frontend
+  linting and production builds, and Docker image builds.
 
 ## Run with Docker
 
@@ -37,53 +41,26 @@ cd infrastructure
 cp .env.example .env
 ```
 
-Generate a 64-character hexadecimal JWT secret and place it after `JWT_SECRET=`
-inside `.env`:
+Set `JWT_SECRET` in `.env` to a 64-character hexadecimal value, then run:
 
 ```bash
-openssl rand -hex 32
-```
-
-PowerShell alternative:
-
-```powershell
-$bytes = New-Object byte[] 32
-$rng = [Security.Cryptography.RandomNumberGenerator]::Create()
-$rng.GetBytes($bytes)
-($bytes | ForEach-Object { $_.ToString("x2") }) -join ""
-$rng.Dispose()
-```
-
-Then start the complete application:
-
-```bash
-docker compose up --build -d
-docker compose ps
+docker compose up -d --build
 ```
 
 Open:
 
-- API: `http://localhost:8080`
-- Swagger UI: `http://localhost:8080/swagger-ui/index.html`
-- Health: `http://localhost:8080/actuator/health`
+- Application: http://localhost:3000
+- Swagger UI: http://localhost:8080/swagger-ui/index.html
+- Backend health: http://localhost:8080/actuator/health
 
-The first startup creates a fresh PostgreSQL schema and inserts the supported
-sports and Cairo/Giza regions through Flyway.
+Flyway creates the database schema and reference data on the first startup.
+PostgreSQL and Redis data are preserved in Docker volumes.
 
-Follow backend logs:
-
-```bash
-docker compose logs -f backend
-```
-
-Stop without deleting PostgreSQL or Redis data:
+Stop the application without deleting its data:
 
 ```bash
 docker compose down
 ```
-
-The `.env` file is ignored by Git. The checked-in `.env.example` contains names
-and safe local defaults, never a real signing key.
 
 ## License
 
