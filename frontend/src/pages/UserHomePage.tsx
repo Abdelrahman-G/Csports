@@ -463,9 +463,16 @@ function UserHomePage() {
               </p>
             )}
 
-            <div className="session-results" aria-live="polite">
+            <div className="session-results" aria-live="polite" aria-busy={isLoadingSessions}>
               {isLoadingSessions ? (
-                <p className="session-empty-state">Finding available sessions...</p>
+                <>
+                  <span className="motion-sr-only" role="status">Finding available sessions...</span>
+                  {Array.from({ length: 4 }, (_, index) => (
+                    <div className="session-skeleton" key={index} aria-hidden="true">
+                      <span /><span /><span /><span />
+                    </div>
+                  ))}
+                </>
               ) : sessions.length === 0 ? (
                 <p className="session-empty-state">
                   No sessions match these filters yet. Try clearing one of them.

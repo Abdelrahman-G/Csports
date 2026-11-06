@@ -286,6 +286,14 @@ function SessionDetailsPage() {
         </section>
 
         <aside className="session-booking-summary">
+          <div className="session-capacity">
+            <span>{session.remainingSeats} of {session.maxParticipants} places available</span>
+            <div className="capacity-track" aria-hidden="true">
+              <span style={{ width: `${session.currentParticipants / session.maxParticipants * 100}%` }} />
+            </div>
+            <meter className="motion-sr-only" min={0} max={session.maxParticipants} value={session.currentParticipants}
+              aria-label="Booked places" />
+          </div>
           <div className="details-first-session">
             <span>First session</span>
             <strong>{longDateFormatter.format(firstTraining)}</strong>
@@ -319,6 +327,7 @@ function SessionDetailsPage() {
           </div>
 
           <div className={bookingStatusClassName} aria-live="polite">
+            {booking && !isCancelled && <span className="booking-check" aria-hidden="true">✓</span>}
             {isCancelled
               ? 'This session is no longer available for booking.'
               : isLoadingBooking
@@ -334,6 +343,7 @@ function SessionDetailsPage() {
             onClick={reservePlace}
             disabled={bookingButtonDisabled}
           >
+            {isBooking && <span className="booking-spinner" aria-hidden="true" />}
             {bookingButtonLabel}
           </button>
 

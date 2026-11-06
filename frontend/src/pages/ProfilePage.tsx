@@ -194,47 +194,34 @@ function ProfilePage() {
 
         {pageError && <p className="profile-error" role="alert">{pageError}</p>}
 
-        <div className="profile-layout">
-          <div className="profile-sections">
+        <div className="profile-sections">
+          <section className="profile-card">
+            <div className="profile-card-heading"><div><h2>Account details</h2><p>Your personal and contact information.</p></div></div>
+            {accountMessage && <p className="profile-success" role="status">✓ {accountMessage}</p>}
+            <form className="profile-form" onSubmit={saveAccount} noValidate>
+              <ProfileField id="profile-name" label="Name" value={accountForm.name} error={accountErrors.name} disabled={isSavingAccount} onChange={(value) => updateAccountField('name', value)} />
+              <div className="form-field"><label htmlFor="profile-email">Email</label><input id="profile-email" value={profile.email} disabled /><span className="field-hint">Email changes are not available yet.</span></div>
+              <ProfileField id="profile-phone" label="Phone number" type="tel" value={accountForm.phoneNumber} error={accountErrors.phoneNumber} disabled={isSavingAccount} onChange={(value) => updateAccountField('phoneNumber', value)} />
+              <ProfileField id="profile-age" label="Age" type="number" value={accountForm.age} error={accountErrors.age} disabled={isSavingAccount} onChange={(value) => updateAccountField('age', value)} />
+              <button className="profile-save-button" type="submit" disabled={isSavingAccount}>{isSavingAccount ? 'Saving...' : 'Save account details'}</button>
+            </form>
+          </section>
+
+          {isTrainer && trainerProfile && coachingForm && (
             <section className="profile-card">
-              <div className="profile-card-heading"><div><h2>Account details</h2><p>Your personal and contact information.</p></div></div>
-              {accountMessage && <p className="profile-success" role="status">✓ {accountMessage}</p>}
-              <form className="profile-form" onSubmit={saveAccount} noValidate>
-                <ProfileField id="profile-name" label="Name" value={accountForm.name} error={accountErrors.name} disabled={isSavingAccount} onChange={(value) => updateAccountField('name', value)} />
-                <div className="form-field"><label htmlFor="profile-email">Email</label><input id="profile-email" value={profile.email} disabled /><span className="field-hint">Email changes are not available yet.</span></div>
-                <ProfileField id="profile-phone" label="Phone number" type="tel" value={accountForm.phoneNumber} error={accountErrors.phoneNumber} disabled={isSavingAccount} onChange={(value) => updateAccountField('phoneNumber', value)} />
-                <ProfileField id="profile-age" label="Age" type="number" value={accountForm.age} error={accountErrors.age} disabled={isSavingAccount} onChange={(value) => updateAccountField('age', value)} />
-                <button className="profile-save-button" type="submit" disabled={isSavingAccount}>{isSavingAccount ? 'Saving...' : 'Save account details'}</button>
+              <div className="profile-card-heading"><div><h2>Coaching profile</h2><p>Help athletes understand your experience.</p></div><span>{trainerProfile.sport}</span></div>
+              {coachingMessage && <p className="profile-success" role="status">✓ {coachingMessage}</p>}
+              <form className="profile-form" onSubmit={saveCoachingProfile} noValidate>
+                <div className="form-field full-width"><label htmlFor="profile-bio">Coaching story</label><textarea id="profile-bio" value={coachingForm.bio} maxLength={1000} disabled={isSavingCoaching} onChange={(event) => updateCoachingField('bio', event.target.value)} placeholder="Describe your coaching approach and the athletes you work with." />{coachingErrors.bio && <span className="field-error">{coachingErrors.bio}</span>}</div>
+                <ProfileField id="profile-experience" label="Years of experience" type="number" value={coachingForm.experienceYears} error={coachingErrors.experienceYears} disabled={isSavingCoaching} onChange={(value) => updateCoachingField('experienceYears', value)} />
+                <button className="profile-save-button" type="submit" disabled={isSavingCoaching}>{isSavingCoaching ? 'Saving...' : 'Save coaching profile'}</button>
               </form>
             </section>
+          )}
 
-            {isTrainer && trainerProfile && coachingForm && (
-              <section className="profile-card">
-                <div className="profile-card-heading"><div><h2>Coaching profile</h2><p>Help athletes understand your experience.</p></div><span>{trainerProfile.sport}</span></div>
-                {coachingMessage && <p className="profile-success" role="status">✓ {coachingMessage}</p>}
-                <form className="profile-form" onSubmit={saveCoachingProfile} noValidate>
-                  <div className="form-field full-width"><label htmlFor="profile-bio">Coaching story</label><textarea id="profile-bio" value={coachingForm.bio} maxLength={1000} disabled={isSavingCoaching} onChange={(event) => updateCoachingField('bio', event.target.value)} placeholder="Describe your coaching approach and the athletes you work with." />{coachingErrors.bio && <span className="field-error">{coachingErrors.bio}</span>}</div>
-                  <ProfileField id="profile-experience" label="Years of experience" type="number" value={coachingForm.experienceYears} error={coachingErrors.experienceYears} disabled={isSavingCoaching} onChange={(value) => updateCoachingField('experienceYears', value)} />
-                  <button className="profile-save-button" type="submit" disabled={isSavingCoaching}>{isSavingCoaching ? 'Saving...' : 'Save coaching profile'}</button>
-                </form>
-              </section>
-            )}
+          <div className="profile-logout">
+            <button type="button" onClick={handleLogout} disabled={isLoggingOut}>{isLoggingOut ? 'Logging out...' : 'Log out'}</button>
           </div>
-
-          <aside className="profile-sidebar">
-            <section className="profile-card">
-              <h2>Profile summary</h2>
-              <dl>
-                <div><dt>Role</dt><dd>{isTrainer ? 'Trainer' : 'Athlete'}</dd></div>
-                {trainerProfile && <div><dt>Sport</dt><dd>{trainerProfile.sport}</dd></div>}
-                {profile.regionName && <div><dt>Area</dt><dd>{profile.regionName}</dd></div>}
-              </dl>
-            </section>
-            <section className="profile-card profile-logout-card">
-              <h2>Account access</h2><p>Sign out of Csports on this device.</p>
-              <button type="button" onClick={handleLogout} disabled={isLoggingOut}>{isLoggingOut ? 'Logging out...' : 'Log out'}</button>
-            </section>
-          </aside>
         </div>
       </main>
     </>
