@@ -4,6 +4,9 @@ import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.ZoneId;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 import com.csports.session.exception.InvalidSessionScheduleException;
@@ -13,7 +16,31 @@ import com.csports.session.exception.InvalidSessionScheduleException;
  */
 public final class SessionSchedule {
 
+    public static final ZoneId TIME_ZONE = ZoneId.of("Africa/Cairo");
+
     private SessionSchedule() {
+    }
+
+    public static List<CourseOccurrence> occurrencesBetween(
+            TrainingSession course, LocalDate from, LocalDate to) {
+        if (!from.isBefore(to)) {
+            throw new IllegalArgumentException("The occurrence window must have a positive length.");
+        }
+        var windowStart = from.atStartOfDay(TIME_ZONE);
+        var windowEnd = to.atStartOfDay(TIME_ZONE);
+        // An earlier start can extend into this window, including across a DST transition.
+        LocalDate earliestStart = windowStart.minusMinutes(course.getDurationMinutes()).toLocalDate();
+        LocalDate candidate = nextOccurrenceOnOrAfter(course, earliestStart);
+        List<CourseOccurrence> occurrences = new ArrayList<>();
+        while (candidate != null && candidate.isBefore(to)) {
+            var startsAt = candidate.atTime(course.getStartTime()).atZone(TIME_ZONE);
+            var endsAt = startsAt.plusMinutes(course.getDurationMinutes());
+            if (startsAt.isBefore(windowEnd) && endsAt.isAfter(windowStart)) {
+                occurrences.add(new CourseOccurrence(startsAt, endsAt));
+            }
+            candidate = nextOccurrenceOnOrAfter(course, candidate.plusDays(1));
+        }
+        return List.copyOf(occurrences);
     }
 
     public static LocalDate firstOccurrence(
