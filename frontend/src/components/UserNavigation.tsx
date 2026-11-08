@@ -33,6 +33,12 @@ function UserNavigation() {
 
         <nav aria-label="Participant navigation">
           <NavLink
+            className={({ isActive }) => isActive ? 'user-navigation-link active' : 'user-navigation-link'}
+            to="/user/schedule"
+          >
+            My schedule
+          </NavLink>
+          <NavLink
             className={({ isActive }) =>
               isActive ? 'user-navigation-link active' : 'user-navigation-link'
             }

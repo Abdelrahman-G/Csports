@@ -14,6 +14,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.csports.booking.dto.BookedSessionResponse;
 import com.csports.booking.dto.BookingSearchRequest;
+import com.csports.booking.dto.ScheduleRequest;
+import com.csports.booking.dto.ScheduleResponse;
 import com.csports.common.pagination.PageResponse;
 import com.csports.common.web.ApiPaths;
 
@@ -26,10 +28,12 @@ import jakarta.validation.constraints.Positive;
 public class BookingController {
 
     private final BookingService bookingService;
+    private final BookingScheduleService bookingScheduleService;
 
-    public BookingController(BookingService bookingService) {
+    public BookingController(BookingService bookingService, BookingScheduleService bookingScheduleService) {
 
         this.bookingService = bookingService;
+        this.bookingScheduleService = bookingScheduleService;
     }
 
     @PreAuthorize("hasRole('USER')")
@@ -47,6 +51,12 @@ public class BookingController {
             @Valid @ModelAttribute BookingSearchRequest request) {
 
         return bookingService.getMyBookings(request);
+    }
+
+    @PreAuthorize("hasRole('USER')")
+    @GetMapping("/me/schedule")
+    public ScheduleResponse getMySchedule(@Valid @ModelAttribute ScheduleRequest request) {
+        return bookingScheduleService.getMySchedule(request);
     }
 
     @PreAuthorize("hasRole('USER')")

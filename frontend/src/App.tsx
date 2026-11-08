@@ -14,6 +14,7 @@ import RequireRole from './auth/RequireRole'
 import CreateTrainerSessionPage from './pages/CreateTrainerSessionPage'
 import ManageTrainerSessionPage from './pages/ManageTrainerSessionPage'
 import ProfilePage from './pages/ProfilePage'
+import MySchedulePage from './pages/MySchedulePage'
 
 function App() {
   return (
@@ -44,6 +45,10 @@ function App() {
             <SessionDetailsPage />
           </RequireRole>
         }
+      />
+      <Route
+        path="/user/schedule"
+        element={<RequireRole allowedRole="USER"><MySchedulePage /></RequireRole>}
       />
       <Route
         path="/user/bookings"
