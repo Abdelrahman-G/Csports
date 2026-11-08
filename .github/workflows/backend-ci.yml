@@ -65,6 +65,10 @@ jobs:
         working-directory: frontend
         run: npm run lint && npm run build
 
+      - name: Check schedule date calculations
+        working-directory: frontend
+        run: npm run test:schedule
+
   docker:
     runs-on: ubuntu-latest
     timeout-minutes: 15
