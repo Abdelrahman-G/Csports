@@ -5,9 +5,7 @@ export type ScheduleEntry = {
   courseId: number
   title: string
   sport: string
-  trainerName: string
   locationName: string
-  regionName: string
   startsAt: string
   endsAt: string
 }

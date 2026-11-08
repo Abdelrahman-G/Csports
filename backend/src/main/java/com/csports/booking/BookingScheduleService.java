@@ -43,7 +43,7 @@ public class BookingScheduleService {
                         && !occurrence.startsAt().isBefore(cancelledAt.atZone(SessionSchedule.TIME_ZONE))) continue;
                 entries.add(new ScheduleResponse.Entry(
                         booking.getId(), course.getId(), course.getTitle(), course.getSport().getName(),
-                        course.getTrainer().getName(), course.getLocationName(), course.getRegion().getName(),
+                        course.getLocationName(),
                         occurrence.startsAt(), occurrence.endsAt()));
             }
         }

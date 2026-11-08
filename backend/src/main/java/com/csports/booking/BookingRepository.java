@@ -57,9 +57,7 @@ public interface BookingRepository
     @Query("""
             select distinct b from Booking b
             join fetch b.session s
-            join fetch s.trainer
             join fetch s.sport
-            join fetch s.region
             join fetch s.days
             where b.user.id = :userId and s.startDate < :to
             """)

@@ -11,6 +11,6 @@ public record ScheduleResponse(
 
     public record Entry(
             Long bookingId, Long courseId, String title, String sport,
-            String trainerName, String locationName, String regionName,
+            String locationName,
             ZonedDateTime startsAt, ZonedDateTime endsAt) {}
 }
