@@ -74,11 +74,27 @@ class BookingScheduleApiTest {
         booking(trainee, LocalDateTime.of(2026, 11, 9, 18, 30));
         var response = get(trainee, "from=2026-11-07&to=2026-11-14");
         assertThat(response.statusCode()).isEqualTo(200);
+        assertThat(response.body()).contains("\"locationName\":\"Test venue\"")
+                .doesNotContain("\"trainerName\"", "\"regionName\"");
         assertThat(response.body()).contains("2026-11-09T18:00:00", "Africa/Cairo").doesNotContain("2026-11-12T18:00:00");
         var booking = bookings.findAllBySessionAndStatus(course, BookingStatus.CANCELLED_BY_USER).getFirst();
         booking.setCancelledAt(LocalDateTime.of(2026, 11, 9, 18, 0));
         bookings.saveAndFlush(booking);
         assertThat(get(trainee, "from=2026-11-07&to=2026-11-14").body()).contains("\"entries\":[]");
+    }
+
+    @Test
+    void overnightTrainingIsReturnedOnceWhenItContinuesIntoTheRequestedDay() throws Exception {
+        course.setDays(Set.of(DayOfWeek.FRIDAY));
+        course.setStartTime(LocalTime.of(23, 0));
+        course = courses.saveAndFlush(course);
+        booking(trainee, null);
+
+        var response = get(trainee, "from=2026-11-07&to=2026-11-08");
+
+        assertThat(response.statusCode()).isEqualTo(200);
+        assertThat(response.body()).contains("2026-11-06T23:00:00+02:00", "2026-11-07T00:30:00+02:00");
+        assertThat(response.body().split("\"bookingId\":", -1)).hasSize(2);
     }
 
     @Test

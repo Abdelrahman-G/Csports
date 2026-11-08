@@ -6,8 +6,8 @@ import {
 } from '../src/schedule/schedule.ts'
 
 const entry: ScheduleEntry = {
-  bookingId: 1, courseId: 1, title: 'Football', sport: 'Football', trainerName: 'Coach',
-  locationName: 'Club', regionName: 'Cairo', startsAt: '2026-11-06T23:00:00+02:00', endsAt: '2026-11-07T01:00:00+02:00',
+  bookingId: 1, courseId: 1, title: 'Football', sport: 'Football',
+  locationName: 'Club', startsAt: '2026-11-06T23:00:00+02:00', endsAt: '2026-11-07T01:00:00+02:00',
 }
 
 test('calendar positions use Cairo wall time and clip overnight training to each day', () => {

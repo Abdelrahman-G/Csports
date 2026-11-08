@@ -6,6 +6,9 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
+import java.sql.Connection;
+import java.sql.SQLException;
+import javax.sql.DataSource;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -62,7 +65,9 @@ class InfrastructureContainersIT {
     static final PostgreSQLContainer postgres =
             new PostgreSQLContainer(
                     DockerImageName.parse("postgis/postgis:17-3.5")
-                            .asCompatibleSubstituteFor("postgres"));
+                            .asCompatibleSubstituteFor("postgres"))
+                    // A different server default proves that the application's pool setting takes effect.
+                    .withCommand("postgres", "-c", "default_transaction_isolation=repeatable read");
 
     @Container
     @ServiceConnection(name = "redis")
@@ -72,6 +77,9 @@ class InfrastructureContainersIT {
 
     @Autowired
     private JdbcTemplate jdbcTemplate;
+
+    @Autowired
+    private DataSource dataSource;
 
     @Autowired
     private RedisConnectionFactory redisConnectionFactory;
@@ -102,6 +110,13 @@ class InfrastructureContainersIT {
 
     @Autowired
     private RegionRepository regionRepository;
+
+    @Test
+    void applicationConnectionsUseReadCommittedDespiteTheServerDefault() throws SQLException {
+        try (Connection connection = dataSource.getConnection()) {
+            assertThat(connection.getTransactionIsolation()).isEqualTo(Connection.TRANSACTION_READ_COMMITTED);
+        }
+    }
 
     @Test
     void flywayAndRedisAreAvailableWithRealInfrastructure() {
