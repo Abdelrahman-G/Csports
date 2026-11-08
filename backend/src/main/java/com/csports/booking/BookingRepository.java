@@ -2,6 +2,7 @@ package com.csports.booking;
 
 import java.util.Optional;
 import java.util.List;
+import java.time.LocalDate;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -51,6 +52,16 @@ public interface BookingRepository
     List<Booking> findAllBySessionAndStatus(
             TrainingSession session,
             BookingStatus status);
+
+    // shortcut: loads historical candidates; add an interval prefilter if large booking histories make this slow.
+    @Query("""
+            select distinct b from Booking b
+            join fetch b.session s
+            join fetch s.sport
+            join fetch s.days
+            where b.user.id = :userId and s.startDate < :to
+            """)
+    List<Booking> findScheduleCandidates(@Param("userId") Long userId, @Param("to") LocalDate to);
 
     @Query("""
             select b.user.id
