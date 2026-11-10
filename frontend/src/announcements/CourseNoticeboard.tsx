@@ -56,6 +56,14 @@ export default function CourseNoticeboard({ courseId }: { courseId: number }) {
     return () => controller.abort()
   }, [authenticatedFetch, courseId, page, reload, linkedId])
 
+  useEffect(() => {
+    if (!loading && linkedId > 0) {
+      document.getElementById(`announcement-${linkedId}`)?.scrollIntoView({
+        block: 'start', behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth',
+      })
+    }
+  }, [loading, linkedId])
+
   async function publish(event: FormEvent) {
     event.preventDefault()
     if (submitting.current || !title.trim() || !content.trim()) return
