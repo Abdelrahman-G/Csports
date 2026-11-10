@@ -65,9 +65,9 @@ jobs:
         working-directory: frontend
         run: npm run lint && npm run build
 
-      - name: Check schedule date calculations
+      - name: Test frontend behavior
         working-directory: frontend
-        run: npm run test:schedule
+        run: npm test
 
   docker:
     runs-on: ubuntu-latest
