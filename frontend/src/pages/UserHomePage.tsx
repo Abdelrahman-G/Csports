@@ -1,7 +1,5 @@
-import { useEffect, useState, type FormEvent } from 'react'
+import { useCallback, useEffect, useRef, useState, type FormEvent } from 'react'
 import { Link } from 'react-router-dom'
-import { useAuth } from '../auth/authContext'
-import { getMyUserProfile, type UserProfile } from '../auth/profileApi'
 import {
   getRegions,
   getSports,
@@ -17,6 +15,9 @@ import type {
 } from '../discovery/types'
 import { orderedDayLabels } from '../discovery/courseFormatting'
 import UserNavigation from '../components/UserNavigation'
+import SportWheel from '../discovery/SportWheel'
+import AreaSelector from '../discovery/AreaSelector'
+import '../discovery/discover.css'
 
 const REGION_STORAGE_KEY = 'csports.discovery.regionId'
 const MIN_LATITUDE = 29.75
@@ -138,8 +139,9 @@ function CourseCard({ course }: { course: TrainingCourse }) {
 }
 
 function UserHomePage() {
-  const { authenticatedFetch } = useAuth()
-  const [profile, setProfile] = useState<UserProfile | null>(null)
+  const [referenceError, setReferenceError] = useState('')
+  const [referenceReload, setReferenceReload] = useState(0)
+  const [loadingReference, setLoadingReference] = useState(true)
   const [regions, setRegions] = useState<Region[]>([])
   const [sports, setSports] = useState<Sport[]>([])
   const [filters, setFilters] = useState<DiscoveryFilters>(initialFilters)
@@ -151,20 +153,24 @@ function UserHomePage() {
   const [coursePage, setCoursePage] = useState<CoursePage | null>(null)
   const [isLoadingCourses, setIsLoadingCourses] = useState(false)
   const [isLocating, setIsLocating] = useState(false)
+  const locationAttempt = useRef(0)
   const [error, setError] = useState('')
+
+  useEffect(() => () => { locationAttempt.current += 1 }, [])
 
   useEffect(() => {
     const controller = new AbortController()
 
     async function loadPageData() {
+      setLoadingReference(true)
+      setReferenceError('')
       try {
-        const [loadedProfile, loadedRegions, loadedSports] = await Promise.all([
-          getMyUserProfile(authenticatedFetch),
+        const [loadedRegions, loadedSports] = await Promise.all([
           getRegions(controller.signal),
           getSports(controller.signal),
         ])
 
-        setProfile(loadedProfile)
+        if (controller.signal.aborted) return
         setRegions(loadedRegions)
         setSports(loadedSports)
 
@@ -180,18 +186,20 @@ function UserHomePage() {
         }
       } catch (requestError) {
         if (!controller.signal.aborted) {
-          setError(
+          setReferenceError(
             requestError instanceof Error
               ? requestError.message
               : 'Your training space could not be loaded.',
           )
         }
+      } finally {
+        if (!controller.signal.aborted) setLoadingReference(false)
       }
     }
 
     void loadPageData()
     return () => controller.abort()
-  }, [authenticatedFetch])
+  }, [referenceReload])
 
   useEffect(() => {
     let search: CourseSearch
@@ -228,7 +236,7 @@ function UserHomePage() {
           pageNumber,
           controller.signal,
         )
-        setCoursePage(loadedPage)
+        if (!controller.signal.aborted) setCoursePage(loadedPage)
       } catch (requestError) {
         if (!controller.signal.aborted) {
           setCoursePage(null)
@@ -255,13 +263,29 @@ function UserHomePage() {
     setError('')
   }
 
+  const selectSport = useCallback((sportId: string) => {
+    setFilters(current => ({ ...current, sportId }))
+    setAppliedFilters(current => ({ ...current, sportId }))
+    setPageNumber(0)
+  }, [])
+
+  function selectArea(regionId: string) {
+    locationAttempt.current += 1
+    setIsLocating(false)
+    setFilters(current => ({ ...current, regionId }))
+    setAppliedFilters(current => ({ ...current, regionId }))
+    setMode('region')
+    setPageNumber(0)
+    if (regionId) localStorage.setItem(REGION_STORAGE_KEY, regionId)
+    else localStorage.removeItem(REGION_STORAGE_KEY)
+  }
+
   function applyFilters(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
 
     const nextFilters = { ...filters, query: filters.query.trim() }
     setFilters(nextFilters)
     setAppliedFilters(nextFilters)
-    setMode('region')
     setPageNumber(0)
 
     if (nextFilters.regionId) {
@@ -272,6 +296,8 @@ function UserHomePage() {
   }
 
   function clearFilters() {
+    locationAttempt.current += 1
+    setIsLocating(false)
     localStorage.removeItem(REGION_STORAGE_KEY)
     setFilters(EMPTY_FILTERS)
     setAppliedFilters(EMPTY_FILTERS)
@@ -288,15 +314,12 @@ function UserHomePage() {
       return
     }
 
-    const nearbyFilters = {
-      ...filters,
-      query: filters.query.trim(),
-      regionId: '',
-    }
+    const attempt = ++locationAttempt.current
 
     setIsLocating(true)
     navigator.geolocation.getCurrentPosition(
       (position) => {
+        if (attempt !== locationAttempt.current) return
         const { latitude, longitude, accuracy } = position.coords
         const insideServiceArea =
           latitude >= MIN_LATITUDE &&
@@ -311,14 +334,15 @@ function UserHomePage() {
         }
 
         localStorage.removeItem(REGION_STORAGE_KEY)
-        setFilters(nearbyFilters)
-        setAppliedFilters(nearbyFilters)
+        setFilters(current => ({ ...current, regionId: '' }))
+        setAppliedFilters(current => ({ ...current, regionId: '' }))
         setCoordinates({ latitude, longitude, accuracy })
         setMode('nearby')
         setPageNumber(0)
         setIsLocating(false)
       },
       (locationError) => {
+        if (attempt !== locationAttempt.current) return
         setError(
           locationError.code === locationError.PERMISSION_DENIED
             ? 'Location permission was denied. Allow it in your browser and try again.'
@@ -345,101 +369,19 @@ function UserHomePage() {
   return (
     <>
       <UserNavigation />
-      <main className="discovery-page">
-      <header className="discovery-header">
-        <p className="eyebrow">Find your next course</p>
-        <h1>{profile ? `Welcome, ${profile.name}` : 'Welcome'}</h1>
-        <p>Explore coaches and courses across Cairo and Giza.</p>
-      </header>
-
-      <form className="discovery-catalogue" onSubmit={applyFilters}>
-        <div className="discovery-search-bar">
-          <label htmlFor="course-search">Search courses</label>
-          <div>
-            <input
-              id="course-search"
-              type="search"
-              value={filters.query}
-              onChange={(event) => updateFilter('query', event.target.value)}
-              placeholder="Search courses or training locations"
-              maxLength={100}
-            />
-            <button type="submit">Search</button>
-          </div>
-        </div>
-
-        <div className="discovery-catalogue-layout">
-          <aside className="discovery-sidebar" aria-labelledby="filter-title">
-            <div className="sidebar-heading">
-              <div>
-                <p className="sidebar-kicker">Refine results</p>
-                <h2 id="filter-title">Filters</h2>
-              </div>
-              <button className="clear-filters-link" type="button" onClick={clearFilters}>
-                Clear
-              </button>
-            </div>
-
-            <div className="sidebar-filter-group">
-              <label htmlFor="region-filter">Area</label>
-              <div className="filter-select-control">
-                <select
-                  id="region-filter"
-                  value={filters.regionId}
-                  onChange={(event) => updateFilter('regionId', event.target.value)}
-                  disabled={regions.length === 0}
-                >
-                  <option value="">All areas</option>
-                  {regions.map((region) => (
-                    <option key={region.id} value={region.id}>
-                      {region.name}, {region.city}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="location-choice-divider" aria-hidden="true">
-                <span>or</span>
-              </div>
-
-              <button
-                className={mode === 'nearby' ? 'nearby-button active' : 'nearby-button'}
-                type="button"
-                onClick={useCurrentLocation}
-                disabled={isLocating}
-              >
-                {isLocating
-                  ? 'Finding location...'
-                  : mode === 'nearby'
-                    ? 'Using current location'
-                    : 'Use current location'}
-              </button>
-            </div>
-
-            <div className="sidebar-filter-group">
-              <label htmlFor="sport-filter">Sport</label>
-              <div className="filter-select-control">
-                <select
-                  id="sport-filter"
-                  value={filters.sportId}
-                  onChange={(event) => updateFilter('sportId', event.target.value)}
-                  disabled={sports.length === 0}
-                >
-                  <option value="">All sports</option>
-                  {sports.map((sport) => (
-                    <option key={sport.id} value={sport.id}>
-                      {sport.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
-
-            <button className="apply-filters-button" type="submit">
-              Apply filters
-            </button>
-          </aside>
-
+      <main className="discovery-page wheel-discovery">
+        <header className="discovery-header">
+          <div><p className="eyebrow">Cairo &amp; Giza / Discover</p><h1>Choose your sport.</h1></div>
+          <p className="discovery-intro-note">Explore courses from coaches across your city.</p>
+        </header>
+        {referenceError && <p className="discovery-reference-error" role="alert">{referenceError}<button type="button" onClick={() => setReferenceReload(n => n + 1)}>Try again</button></p>}
+        <SportWheel sports={sports} value={filters.sportId} onChange={selectSport} loading={loadingReference} />
+        <AreaSelector regions={regions} value={filters.regionId} onChange={selectArea} onNearby={useCurrentLocation} locating={isLocating} nearby={mode === 'nearby'} />
+        <form className="discovery-query" onSubmit={applyFilters}>
+          <label htmlFor="course-search">Looking for something specific?<input id="course-search" type="search" value={filters.query} onChange={event => updateFilter('query', event.target.value)} placeholder="Search course titles or venues" maxLength={100} /></label>
+          <button type="submit">Find courses ↗</button>
+          <button className="discovery-reset" type="button" onClick={clearFilters}>Reset</button>
+        </form>
           <section className="discovery-results-column">
             <div className="results-heading">
               <div>
@@ -506,8 +448,6 @@ function UserHomePage() {
               </nav>
             )}
           </section>
-        </div>
-      </form>
       </main>
     </>
   )
