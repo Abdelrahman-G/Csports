@@ -111,6 +111,60 @@ class InfrastructureContainersIT {
     @Autowired
     private RegionRepository regionRepository;
 
+    @Autowired
+    private com.csports.announcement.CourseAnnouncementService announcementService;
+
+    @Autowired
+    private com.csports.announcement.CourseAnnouncementRepository announcementRepository;
+
+    @Autowired
+    private org.springframework.transaction.PlatformTransactionManager transactionManager;
+
+    @Test
+    void publicationWaitsForConcurrentCancellationAndThenRejectsTheClosedCourse() throws Exception {
+        String unique = UUID.randomUUID().toString();
+        User trainer = saveUser("Notice Trainer", unique, Role.TRAINER);
+        Sport sport = sportRepository.saveAndFlush(Sport.builder().name("Notice " + unique).build());
+        Region region = regionRepository.saveAndFlush(Region.builder().name("Notice " + unique)
+                .city("Cairo").country("Egypt").latitude(30.05).longitude(31.25).build());
+        TrainingCourse course = saveSearchCourse(trainer, sport, region, "Concurrent notice", 30.05, 31.25);
+        var locked = new CountDownLatch(1);
+        var release = new CountDownLatch(1);
+        var publishing = new CountDownLatch(1);
+        var executor = Executors.newFixedThreadPool(2);
+        try {
+            var cancelling = executor.submit(() -> new org.springframework.transaction.support.TransactionTemplate(transactionManager)
+                    .executeWithoutResult(status -> {
+                        var managed = trainingCourseRepository.findForAnnouncement(course.getId()).orElseThrow();
+                        managed.setStatus(com.csports.course.TrainingCourseStatus.CANCELLED);
+                        locked.countDown();
+                        try {
+                            if (!release.await(10, java.util.concurrent.TimeUnit.SECONDS)) throw new IllegalStateException("Test release timed out");
+                        } catch (InterruptedException exception) {
+                            Thread.currentThread().interrupt(); throw new IllegalStateException(exception);
+                        }
+                    }));
+            assertThat(locked.await(10, java.util.concurrent.TimeUnit.SECONDS)).isTrue();
+            var posting = executor.submit(() -> {
+                SecurityContextHolder.getContext().setAuthentication(new UsernamePasswordAuthenticationToken(trainer, null, trainer.getAuthorities()));
+                publishing.countDown();
+                try {
+                    announcementService.publish(course.getId(), new com.csports.announcement.PublishAnnouncementRequest("Notice", "Too late"));
+                    return "PUBLISHED";
+                } catch (com.csports.course.exception.CourseStateConflictException expected) {
+                    return "CLOSED";
+                } finally { SecurityContextHolder.clearContext(); }
+            });
+            assertThat(publishing.await(10, java.util.concurrent.TimeUnit.SECONDS)).isTrue();
+            assertThatThrownBy(() -> posting.get(200, java.util.concurrent.TimeUnit.MILLISECONDS))
+                    .isInstanceOf(java.util.concurrent.TimeoutException.class);
+            release.countDown();
+            cancelling.get(10, java.util.concurrent.TimeUnit.SECONDS);
+            assertThat(posting.get(10, java.util.concurrent.TimeUnit.SECONDS)).isEqualTo("CLOSED");
+            assertThat(announcementRepository.findResponsesByCourseId(course.getId(), org.springframework.data.domain.PageRequest.of(0,10))).isEmpty();
+        } finally { release.countDown(); executor.shutdownNow(); }
+    }
+
     @Test
     void applicationConnectionsUseReadCommittedDespiteTheServerDefault() throws SQLException {
         try (Connection connection = dataSource.getConnection()) {

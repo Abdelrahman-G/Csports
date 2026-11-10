@@ -43,6 +43,8 @@ public class UserNotification {
     @Column(name = "course_id", nullable = false)
     private Long courseId;
 
+    private Long announcementId;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 32)
     private NotificationType type;

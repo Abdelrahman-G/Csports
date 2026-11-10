@@ -1,0 +1,25 @@
+.course-noticeboard{background:#fff;border:1px solid #d5e8dc;border-radius:20px;padding:28px;min-width:0;margin-top:24px}
+.noticeboard-heading{display:flex;align-items:center;justify-content:space-between;gap:20px;margin-bottom:22px}
+.noticeboard-heading h2{font-size:1.6rem;letter-spacing:-.04em;margin:6px 0 0}
+.noticeboard-heading>span{font-size:2rem;color:#238654}
+.notice-composer{display:grid;gap:10px;background:#f3f8f5;border-radius:12px;padding:20px;margin-bottom:24px}
+.notice-composer label{font-size:.85rem;font-weight:600}
+.notice-composer input,.notice-composer textarea{font:inherit;border:1px solid #b9d2c2;border-radius:8px;padding:12px;width:100%;min-width:0;background:#fff;color:#16251d}
+.notice-composer textarea{resize:vertical}
+.notice-composer-actions{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.notice-composer small,.notice-empty{color:#53685c}
+.notice-composer button,.notice-pagination button,.notice-error button{font:inherit;border-radius:8px;border:1px solid #b9d2c2;padding:10px 14px;background:white;cursor:pointer}
+.notice-composer button{background:#196d43;color:white;border-color:#196d43}
+.course-noticeboard button:disabled{opacity:.5;cursor:default}
+.course-notice{padding:22px 0;border-top:1px solid #e0eae3;overflow-wrap:anywhere;animation:notice-arrive .35s ease-out both;scroll-margin-top:30px}
+.course-notice header{display:flex;gap:12px;justify-content:space-between;flex-wrap:wrap;font-size:.75rem;color:#53685c}
+.course-notice header span{color:#196d43;font-weight:600}
+.course-notice h3{font-size:1.1rem;margin:12px 0 8px}
+.course-notice p{white-space:pre-wrap;line-height:1.7;margin:0}
+.course-notice footer{font-size:.8rem;color:#53685c;margin-top:14px}
+.course-notice.is-highlighted{background:#eff8f1;padding:20px;border-radius:10px;border:1px solid #93c7a5;margin-bottom:12px}
+.notice-pagination{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:20px;font-size:.8rem}
+.notice-error{color:#9a3412}.notice-success{color:#196d43}
+@keyframes notice-arrive{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@media(max-width:600px){.course-noticeboard{padding:20px}.notice-composer{padding:14px}.notice-composer button{width:100%}}
+@media(prefers-reduced-motion:reduce){.course-notice{animation:none}}

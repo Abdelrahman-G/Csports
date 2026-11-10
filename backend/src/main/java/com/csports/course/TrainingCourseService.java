@@ -242,6 +242,12 @@ public class TrainingCourseService {
                 || !Objects.equals(course.getLatitude(), updatedLatitude)
                 || !Objects.equals(course.getLongitude(), updatedLongitude);
 
+        boolean scheduleChanged = !Objects.equals(course.getStartDate(), updatedStartDate)
+                || !Objects.equals(course.getEndDate(), updatedEndDate)
+                || !Objects.equals(course.getStartTime(), updatedStartTime)
+                || !Objects.equals(course.getDurationMinutes(), updatedDurationMinutes)
+                || !Objects.equals(course.getDays(), updatedDays);
+
         course.setTitle(updatedTitle);
         course.setDescription(updatedDescription);
         course.setLocationName(updatedLocationName);
@@ -256,11 +262,16 @@ public class TrainingCourseService {
         course.setMaxParticipants(updatedMaxParticipants);
         course.setLastUpdateReason(request.reason());
 
-        if (locationChanged) {
+        if (locationChanged || scheduleChanged) {
             publishCourseChange(
                     course,
                     NotificationType.COURSE_UPDATED,
-                    request.reason(),
+                    "Training course updated",
+                    (locationChanged ? "Venue: " + updatedLocationName + ". " : "")
+                            + (scheduleChanged ? "Schedule: " + updatedStartDate + " to " + updatedEndDate
+                                    + ", " + updatedDays.stream().sorted().toList() + " at " + updatedStartTime
+                                    + " for " + updatedDurationMinutes + " minutes. " : "")
+                            + "Reason: " + request.reason(),
                     bookingRepository.findBookedUserIdsByCourseId(course.getId()));
         }
 
@@ -310,7 +321,8 @@ public class TrainingCourseService {
         publishCourseChange(
                 course,
                 NotificationType.COURSE_CANCELLED,
-                request.reason(),
+                "Training course cancelled",
+                "This course was cancelled by its trainer. Reason: " + request.reason(),
                 recipientIds);
     }
 
@@ -338,6 +350,8 @@ public class TrainingCourseService {
         course.setCancelledAt(null);
         course.setCancellationReason(null);
         course.setCurrentParticipants(0);
+        publishCourseChange(course, NotificationType.COURSE_UPDATED, "Course reopened",
+                "The trainer reopened this course. Previous cancelled bookings remain cancelled.", List.of());
     }
 
     /**
@@ -392,17 +406,11 @@ public class TrainingCourseService {
     private void publishCourseChange(
             TrainingCourse course,
             NotificationType type,
-            String reason,
+            String title,
+            String content,
             List<Long> recipientIds) {
-        if (!recipientIds.isEmpty()) {
-            eventPublisher.publishEvent(new CourseChangedEvent(
-                    course.getId(),
-                    course.getTitle(),
-                    type,
-                    reason,
-                    List.copyOf(recipientIds),
-                    Instant.now()));
-        }
+        eventPublisher.publishEvent(new CourseChangedEvent(course.getId(), type, title, content,
+                List.copyOf(recipientIds), Instant.now()));
     }
 
     private void validateSchedule(
