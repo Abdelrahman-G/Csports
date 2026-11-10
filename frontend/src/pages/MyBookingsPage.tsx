@@ -3,12 +3,12 @@ import { Link } from 'react-router-dom'
 import { useAuth } from '../auth/authContext'
 import { cancelBooking, getMyBookings } from '../booking/bookingApi'
 import type {
-  BookedSession,
+  BookedCourse,
   BookingPage,
   BookingView,
 } from '../booking/types'
 import UserNavigation from '../components/UserNavigation'
-import { orderedDayLabels } from '../discovery/sessionFormatting'
+import { orderedDayLabels } from '../discovery/courseFormatting'
 
 const PAGE_SIZE = 6
 
@@ -28,18 +28,18 @@ function formatPrice(price: number) {
   return price === 0 ? 'Free' : `${price.toLocaleString('en-EG')} EGP`
 }
 
-function bookingStatusLabel(booking: BookedSession) {
+function bookingStatusLabel(booking: BookedCourse) {
   if (booking.bookingStatus === 'CANCELLED_BY_USER') {
     return 'Cancelled by you'
   }
   if (booking.bookingStatus === 'CANCELLED_BY_TRAINER') {
     return 'Cancelled by trainer'
   }
-  if (booking.sessionStatus === 'COMPLETED') {
+  if (booking.courseStatus === 'COMPLETED') {
     return 'Completed'
   }
-  if (booking.sessionStatus === 'CANCELLED') {
-    return 'Session cancelled'
+  if (booking.courseStatus === 'CANCELLED') {
+    return 'Course cancelled'
   }
   return 'Confirmed'
 }
@@ -51,10 +51,10 @@ function MyBookingsPage() {
   const [bookingPage, setBookingPage] = useState<BookingPage | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState('')
-  const [confirmationSessionId, setConfirmationSessionId] = useState<
+  const [confirmationCourseId, setConfirmationCourseId] = useState<
     number | null
   >(null)
-  const [cancellingSessionId, setCancellingSessionId] = useState<number | null>(
+  const [cancellingCourseId, setCancellingCourseId] = useState<number | null>(
     null,
   )
   const [refreshVersion, setRefreshVersion] = useState(0)
@@ -105,21 +105,21 @@ function MyBookingsPage() {
 
     setView(nextView)
     setPageNumber(0)
-    setConfirmationSessionId(null)
+    setConfirmationCourseId(null)
     setError('')
   }
 
-  async function confirmCancellation(sessionId: number) {
-    if (cancellingSessionId !== null) {
+  async function confirmCancellation(courseId: number) {
+    if (cancellingCourseId !== null) {
       return
     }
 
-    setCancellingSessionId(sessionId)
+    setCancellingCourseId(courseId)
     setError('')
 
     try {
-      await cancelBooking(authenticatedFetch, sessionId)
-      setConfirmationSessionId(null)
+      await cancelBooking(authenticatedFetch, courseId)
+      setConfirmationCourseId(null)
       setBookingPage((currentPage) => {
         if (!currentPage) {
           return currentPage
@@ -128,7 +128,7 @@ function MyBookingsPage() {
         return {
           ...currentPage,
           content: currentPage.content.filter(
-            (booking) => booking.sessionId !== sessionId,
+            (booking) => booking.courseId !== courseId,
           ),
           totalElements: Math.max(0, currentPage.totalElements - 1),
         }
@@ -146,7 +146,7 @@ function MyBookingsPage() {
           : 'This booking could not be cancelled.',
       )
     } finally {
-      setCancellingSessionId(null)
+      setCancellingCourseId(null)
     }
   }
 
@@ -159,7 +159,7 @@ function MyBookingsPage() {
         <header className="bookings-header">
           <p className="eyebrow">Your training schedule</p>
           <h1>My bookings</h1>
-          <p>Keep track of your upcoming sessions and booking history.</p>
+          <p>Keep track of your upcoming courses and booking history.</p>
         </header>
 
         <div className="booking-view-switch" aria-label="Booking views">
@@ -199,29 +199,29 @@ function MyBookingsPage() {
               </h2>
               <p>
                 {view === 'UPCOMING'
-                  ? 'Discover a session and reserve your next place.'
+                  ? 'Discover a course and reserve your next place.'
                   : 'Completed and cancelled bookings will appear here.'}
               </p>
               {view === 'UPCOMING' && (
-                <Link to="/user/home">Discover sessions</Link>
+                <Link to="/user/home">Discover courses</Link>
               )}
             </div>
           ) : (
             bookings.map((booking) => {
               const firstTraining = new Date(booking.bookingClosesAt)
               const isAwaitingConfirmation =
-                confirmationSessionId === booking.sessionId
-              const isCancelling = cancellingSessionId === booking.sessionId
+                confirmationCourseId === booking.courseId
+              const isCancelling = cancellingCourseId === booking.courseId
               const canCancel =
                 view === 'UPCOMING' &&
                 booking.bookingStatus === 'CONFIRMED' &&
-                booking.sessionStatus === 'SCHEDULED'
+                booking.courseStatus === 'SCHEDULED'
 
               return (
                 <article className="booking-card" key={booking.bookingId}>
                   <div className="booking-card-main">
                     <div className="booking-card-heading">
-                      <span className="session-sport">{booking.sport}</span>
+                      <span className="course-sport">{booking.sport}</span>
                       <span
                         className={`booking-state ${booking.bookingStatus.toLowerCase()}`}
                       >
@@ -230,7 +230,7 @@ function MyBookingsPage() {
                     </div>
 
                     <h2>{booking.title}</h2>
-                    <p className="session-trainer">
+                    <p className="course-trainer">
                       with {booking.trainerName}
                     </p>
 
@@ -264,8 +264,8 @@ function MyBookingsPage() {
                   </div>
 
                   <footer className="booking-card-actions">
-                    <Link to={`/user/sessions/${booking.sessionId}`}>
-                      View session
+                    <Link to={`/user/courses/${booking.courseId}`}>
+                      View course
                     </Link>
 
                     {canCancel && booking.googleMapsUrl && (
@@ -283,9 +283,9 @@ function MyBookingsPage() {
                         className="booking-cancel-button"
                         type="button"
                         onClick={() =>
-                          setConfirmationSessionId(booking.sessionId)
+                          setConfirmationCourseId(booking.courseId)
                         }
-                        disabled={cancellingSessionId !== null}
+                        disabled={cancellingCourseId !== null}
                       >
                         Cancel booking
                       </button>
@@ -293,13 +293,13 @@ function MyBookingsPage() {
 
                     {canCancel && isAwaitingConfirmation && (
                       <div className="booking-cancel-confirmation">
-                        <p>Cancel your place in this session?</p>
+                        <p>Cancel your place in this course?</p>
                         <div>
                           <button
                             className="confirm-cancellation-button"
                             type="button"
                             onClick={() =>
-                              void confirmCancellation(booking.sessionId)
+                              void confirmCancellation(booking.courseId)
                             }
                             disabled={isCancelling}
                           >
@@ -307,7 +307,7 @@ function MyBookingsPage() {
                           </button>
                           <button
                             type="button"
-                            onClick={() => setConfirmationSessionId(null)}
+                            onClick={() => setConfirmationCourseId(null)}
                             disabled={isCancelling}
                           >
                             Keep booking
@@ -323,7 +323,7 @@ function MyBookingsPage() {
         </section>
 
         {bookingPage && bookingPage.totalPages > 1 && (
-          <nav className="session-pagination" aria-label="Booking pages">
+          <nav className="course-pagination" aria-label="Booking pages">
             <button
               type="button"
               onClick={() => setPageNumber((current) => current - 1)}

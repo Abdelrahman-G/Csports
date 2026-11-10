@@ -28,12 +28,12 @@ import com.csports.auth.exception.InvalidCredentialsException;
 import com.csports.auth.exception.PhoneNumberAlreadyExistsException;
 import com.csports.booking.exception.AlreadyBookedException;
 import com.csports.booking.exception.BookingOperationInProgressException;
-import com.csports.booking.exception.CannotBookOwnSessionException;
-import com.csports.booking.exception.SessionFullException;
-import com.csports.session.exception.InvalidSessionScheduleException;
-import com.csports.session.exception.InvalidSessionSearchException;
-import com.csports.session.exception.SessionEndedException;
-import com.csports.session.exception.SessionStateConflictException;
+import com.csports.booking.exception.CannotBookOwnCourseException;
+import com.csports.booking.exception.CourseFullException;
+import com.csports.course.exception.InvalidCourseScheduleException;
+import com.csports.course.exception.InvalidCourseSearchException;
+import com.csports.course.exception.CourseEndedException;
+import com.csports.course.exception.CourseStateConflictException;
 import com.csports.sport.exception.SportNotFoundException;
 import com.csports.trainer.exception.TrainerProfileAlreadyExistsException;
 import com.csports.trainer.exception.TrainerProfileNotFoundException;
@@ -157,8 +157,8 @@ public class GlobalExceptionHandler {
             PhoneNumberAlreadyExistsException.class,
             AlreadyBookedException.class,
             BookingOperationInProgressException.class,
-            SessionFullException.class,
-            SessionStateConflictException.class,
+            CourseFullException.class,
+            CourseStateConflictException.class,
             ObjectOptimisticLockingFailureException.class,
             DataIntegrityViolationException.class
     })
@@ -192,10 +192,10 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler({
-            InvalidSessionScheduleException.class,
-            InvalidSessionSearchException.class,
-            SessionEndedException.class,
-            CannotBookOwnSessionException.class,
+            InvalidCourseScheduleException.class,
+            InvalidCourseSearchException.class,
+            CourseEndedException.class,
+            CannotBookOwnCourseException.class,
             InvalidProfileUpdateException.class,
             InvalidGoogleMapsLocationException.class
     })

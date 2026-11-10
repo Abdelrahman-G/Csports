@@ -41,11 +41,11 @@ class FlywayMigrationTest {
     void allMigrationsBuildSchemaThatHibernateCanValidate() {
         Integer migrationCount = jdbcTemplate.queryForObject(
                 "select count(*) from flyway_schema_history "
-                        + "where version in ('1', '2', '3', '4', '5', '6') and success = true",
+                        + "where version in ('1', '2', '3', '4', '5', '6', '9') and success = true",
                 Integer.class
         );
 
-        assertThat(migrationCount).isEqualTo(6);
+        assertThat(migrationCount).isEqualTo(7);
 
         Integer notificationTableCount = jdbcTemplate.queryForObject(
                 "select count(*) from information_schema.tables "
@@ -61,21 +61,21 @@ class FlywayMigrationTest {
         );
         assertThat(bookingStatusColumnCount).isEqualTo(1);
 
-        Integer sessionRegionColumnCount = jdbcTemplate.queryForObject(
+        Integer courseRegionColumnCount = jdbcTemplate.queryForObject(
                 "select count(*) from information_schema.columns "
-                        + "where table_name = 'training_session' and column_name = 'region_id'",
+                        + "where table_name = 'training_course' and column_name = 'region_id'",
                 Integer.class
         );
-        assertThat(sessionRegionColumnCount).isEqualTo(1);
+        assertThat(courseRegionColumnCount).isEqualTo(1);
 
         Integer discoveryIndexCount = jdbcTemplate.queryForObject(
                 "select count(*) from information_schema.indexes "
                         + "where upper(index_name) in ("
-                        + "'IDX_TRAINING_SESSION_STATUS_END_START', "
-                        + "'IDX_TRAINING_SESSION_SPORT_STATUS_START', "
-                        + "'IDX_TRAINING_SESSION_REGION_STATUS_START', "
-                        + "'IDX_TRAINING_SESSION_TRAINER_START', "
-                        + "'IDX_TRAINING_SESSION_STATUS_PRICE')",
+                        + "'IDX_TRAINING_COURSE_STATUS_END_START', "
+                        + "'IDX_TRAINING_COURSE_SPORT_STATUS_START', "
+                        + "'IDX_TRAINING_COURSE_REGION_STATUS_START', "
+                        + "'IDX_TRAINING_COURSE_TRAINER_START', "
+                        + "'IDX_TRAINING_COURSE_STATUS_PRICE')",
                 Integer.class
         );
         assertThat(discoveryIndexCount).isEqualTo(5);
@@ -91,11 +91,42 @@ class FlywayMigrationTest {
         Integer bookingIntegrityIndexCount = jdbcTemplate.queryForObject(
                 "select count(*) from information_schema.indexes "
                         + "where upper(index_name) in ("
-                        + "'UQ_BOOKING_CONFIRMED_USER_SESSION', "
+                        + "'UQ_BOOKING_CONFIRMED_USER_COURSE', "
                         + "'IDX_BOOKING_USER_STATUS_BOOKED_AT')",
                 Integer.class
         );
         assertThat(bookingIntegrityIndexCount).isEqualTo(2);
+    }
+
+    @Test
+    void courseRenamePreservesExistingBookingsAndNotificationHistory() {
+        String url = "jdbc:h2:mem:rename-upgrade;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DB_CLOSE_DELAY=-1;NON_KEYWORDS=DAY";
+        var source = new org.springframework.jdbc.datasource.SingleConnectionDataSource(url, "sa", "", true);
+        org.flywaydb.core.Flyway.configure().dataSource(source)
+                .locations("classpath:db/migration").target("6").load().migrate();
+        var database = new JdbcTemplate(source);
+        database.update("insert into users (id,name,phone_number,email,password,age,role) values (900,'Trainer','900','rename@test','unused',30,'TRAINER')");
+        database.update("""
+                insert into training_session (id,trainer_id,sport_id,region_id,title,version,location_name,
+                    latitude,longitude,start_date,end_date,start_time,duration_minutes,max_participants,current_participants,price,created_at)
+                values (900,900,(select min(id) from sport),(select min(id) from region),'Preserved course',0,'Club',30,31,
+                    '2030-01-01','2030-02-01','18:00',60,10,1,100,current_timestamp)
+                """);
+        database.update("insert into training_session_days (session_id,day) values (900,'TUESDAY')");
+        database.update("insert into booking (user_id,session_id,booked_at,version,status) values (900,900,current_timestamp,0,'CONFIRMED')");
+        database.update("""
+                insert into user_notification (recipient_id,session_id,type,title,message,created_at)
+                values (900,900,'SESSION_UPDATED','Old title','Old message',current_timestamp)
+                """);
+        org.flywaydb.core.Flyway.configure().dataSource(source)
+                .locations("classpath:db/migration").load().migrate();
+        assertThat(database.queryForObject("select title from training_course where id=900", String.class)).isEqualTo("Preserved course");
+        assertThat(database.queryForObject("select course_id from booking where user_id=900", Long.class)).isEqualTo(900L);
+        assertThat(database.queryForObject("select day from training_course_days where course_id=900", String.class)).isEqualTo("TUESDAY");
+        assertThat(database.queryForMap("select course_id,type,title,message from user_notification where recipient_id=900"))
+                .containsEntry("course_id", 900L).containsEntry("type", "COURSE_UPDATED")
+                .containsEntry("title", "Old title").containsEntry("message", "Old message");
+        source.destroy();
     }
 
     @Test
@@ -179,7 +210,7 @@ class FlywayMigrationTest {
         assertThat(invalidTokenResponse.body()).contains("\"code\":\"AUTHENTICATION_REQUIRED\"");
 
         HttpResponse<String> forbiddenResponse = client.send(
-                HttpRequest.newBuilder(uri("/api/v1/sessions"))
+                HttpRequest.newBuilder(uri("/api/v1/courses"))
                         .header("Authorization", "Bearer " + tokenMatch.group(1))
                         .header("Content-Type", "application/json")
                         .POST(HttpRequest.BodyPublishers.ofString(

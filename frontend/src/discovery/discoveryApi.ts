@@ -2,9 +2,9 @@ import type { ApiErrorResponse } from '../auth/types'
 import type {
   NearbyCoordinates,
   Region,
-  SessionPage,
+  CoursePage,
   Sport,
-  TrainingSessionDetails,
+  TrainingCourseDetails,
 } from './types'
 
 type SearchByRegion = {
@@ -22,7 +22,7 @@ type SearchNearby = {
   radiusKm: number
 }
 
-export type SessionSearch = SearchByRegion | SearchNearby
+export type CourseSearch = SearchByRegion | SearchNearby
 
 async function readJson<T>(response: Response, fallback: string): Promise<T> {
   const body: unknown = await response.json().catch(() => null)
@@ -45,11 +45,11 @@ export async function getSports(signal?: AbortSignal): Promise<Sport[]> {
   return readJson<Sport[]>(response, 'Sports could not be loaded.')
 }
 
-export async function searchSessions(
-  search: SessionSearch,
+export async function searchCourses(
+  search: CourseSearch,
   page: number,
   signal?: AbortSignal,
-): Promise<SessionPage> {
+): Promise<CoursePage> {
   const parameters = new URLSearchParams({
     page: String(page),
     size: '12',
@@ -73,17 +73,17 @@ export async function searchSessions(
     parameters.set('sortBy', 'distance')
   }
 
-  const response = await fetch(`/api/v1/sessions?${parameters}`, { signal })
-  return readJson<SessionPage>(response, 'Sessions could not be loaded.')
+  const response = await fetch(`/api/v1/courses?${parameters}`, { signal })
+  return readJson<CoursePage>(response, 'Courses could not be loaded.')
 }
 
-export async function getSessionDetails(
-  sessionId: number,
+export async function getCourseDetails(
+  courseId: number,
   signal?: AbortSignal,
-): Promise<TrainingSessionDetails> {
-  const response = await fetch(`/api/v1/sessions/${sessionId}`, { signal })
-  return readJson<TrainingSessionDetails>(
+): Promise<TrainingCourseDetails> {
+  const response = await fetch(`/api/v1/courses/${courseId}`, { signal })
+  return readJson<TrainingCourseDetails>(
     response,
-    'Session details could not be loaded.',
+    'Course details could not be loaded.',
   )
 }

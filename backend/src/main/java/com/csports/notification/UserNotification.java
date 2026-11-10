@@ -40,8 +40,8 @@ public class UserNotification {
     @JoinColumn(name = "recipient_id", nullable = false)
     private User recipient;
 
-    @Column(name = "session_id", nullable = false)
-    private Long sessionId;
+    @Column(name = "course_id", nullable = false)
+    private Long courseId;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 32)

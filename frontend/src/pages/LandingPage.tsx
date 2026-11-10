@@ -42,7 +42,7 @@ function LandingPage() {
           <p className="eyebrow">Your city. Your sport. Your people.</p>
           <h1 ref={heading}>Train for the person you want to become.</h1>
           <p className="hero-description">
-            Discover serious coaches and nearby sessions that match your goals.
+            Discover serious coaches and nearby courses that match your goals.
             Show up, stay consistent, and make every week count.
           </p>
 
@@ -57,7 +57,7 @@ function LandingPage() {
         </section>
 
         <section className="hero-visual" aria-label="Csports highlights">
-          <h2>Momentum starts with one session.</h2>
+          <h2>Momentum starts with one course.</h2>
           <p>
             Find the right coach, claim your place, and turn intention into
             progress.

@@ -1,0 +1,70 @@
+package com.csports.course.dto;
+
+import java.time.DayOfWeek;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.LocalDateTime;
+import java.util.Set;
+
+import com.csports.course.TrainingCourseStatus;
+
+public record TrainingCourseDetailsResponse(
+
+        Long id,
+
+        String title,
+
+        String description,
+
+        Long trainerId,
+
+        String trainerName,
+
+        String trainerBio,
+
+        Integer trainerExperienceYears,
+
+        Long sportId,
+
+        String sport,
+
+        String locationName,
+
+        Long regionId,
+
+        String regionName,
+
+        String city,
+
+        String country,
+
+        LocalDate startDate,
+
+        LocalDate endDate,
+
+        LocalTime startTime,
+
+        Integer durationMinutes,
+
+        Set<DayOfWeek> days,
+
+        Double price,
+
+        Integer currentParticipants,
+
+        Integer maxParticipants,
+
+        Integer remainingSeats,
+
+        LocalDateTime bookingClosesAt,
+
+        boolean bookingOpen,
+
+        TrainingCourseStatus status,
+
+        LocalDateTime cancelledAt,
+
+        String lastUpdateReason,
+
+        String cancellationReason
+) {}

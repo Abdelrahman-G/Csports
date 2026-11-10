@@ -2,8 +2,8 @@ package com.csports.trainer;
 
 import com.csports.common.web.ApiPaths;
 import com.csports.common.pagination.PageResponse;
-import com.csports.session.dto.TrainingSessionResponse;
-import com.csports.session.TrainingSessionService;
+import com.csports.course.dto.TrainingCourseResponse;
+import com.csports.course.TrainingCourseService;
 import com.csports.trainer.dto.TrainerProfileResponse;
 import com.csports.trainer.dto.UpdateTrainerProfileRequest;
 
@@ -21,13 +21,13 @@ import jakarta.validation.Valid;
 @Validated
 public class TrainerController {
 
-    private final TrainingSessionService trainingSessionService;
+    private final TrainingCourseService trainingCourseService;
     private final TrainerProfileService trainerProfileService;
 
     public TrainerController(
-            TrainingSessionService trainingSessionService,
+            TrainingCourseService trainingCourseService,
             TrainerProfileService trainerProfileService) {
-        this.trainingSessionService = trainingSessionService;
+        this.trainingCourseService = trainingCourseService;
         this.trainerProfileService = trainerProfileService;
     }
 
@@ -51,11 +51,11 @@ public class TrainerController {
     }
 
     @PreAuthorize("hasRole('TRAINER')")
-    @GetMapping("/sessions")
-    public PageResponse<TrainingSessionResponse> getMySessions(
+    @GetMapping("/courses")
+    public PageResponse<TrainingCourseResponse> getMyCourses(
             @RequestParam(defaultValue = "0") @Min(0) int page,
             @RequestParam(defaultValue = "10") @Min(1) @Max(100) int size) {
 
-        return trainingSessionService.getTrainerSessions(page,size);
+        return trainingCourseService.getTrainerCourses(page,size);
     }
 }

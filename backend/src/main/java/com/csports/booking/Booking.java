@@ -4,7 +4,7 @@ import java.time.LocalDateTime;
 
 import org.hibernate.annotations.CreationTimestamp;
 
-import com.csports.session.TrainingSession;
+import com.csports.course.TrainingCourse;
 import com.csports.user.User;
 
 import jakarta.persistence.*;
@@ -30,8 +30,8 @@ public class Booking {
     private User user;
 
     @ManyToOne (fetch = FetchType.LAZY)
-    @JoinColumn(name = "session_id", nullable = false)
-    private TrainingSession session;
+    @JoinColumn(name = "course_id", nullable = false)
+    private TrainingCourse course;
 
     @Builder.Default
     @Enumerated(EnumType.STRING)
@@ -47,7 +47,7 @@ public class Booking {
     /**
      * A nullable marker used by the database's unique index. Confirmed
      * bookings use 1; historical bookings use NULL, allowing a user to book
-     * the same session again after cancelling while still preventing two
+     * the same course again after cancelling while still preventing two
      * simultaneously confirmed bookings.
      */
     @Column(name = "active_marker")

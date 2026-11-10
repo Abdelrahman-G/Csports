@@ -23,9 +23,9 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import com.csports.location.Region;
 import com.csports.location.RegionRepository;
 import com.csports.security.JwtService;
-import com.csports.session.TrainingSession;
-import com.csports.session.TrainingSessionRepository;
-import com.csports.session.TrainingSessionStatus;
+import com.csports.course.TrainingCourse;
+import com.csports.course.TrainingCourseRepository;
+import com.csports.course.TrainingCourseStatus;
 import com.csports.sport.Sport;
 import com.csports.sport.SportRepository;
 import com.csports.user.Role;
@@ -49,7 +49,7 @@ class BookingLifecycleApiTest {
     private RegionRepository regionRepository;
 
     @Autowired
-    private TrainingSessionRepository sessionRepository;
+    private TrainingCourseRepository courseRepository;
 
     @Autowired
     private BookingRepository bookingRepository;
@@ -61,7 +61,7 @@ class BookingLifecycleApiTest {
     private RedisTemplate<String, Object> redisTemplate;
 
     private User user;
-    private TrainingSession session;
+    private TrainingCourse course;
     private String accessToken;
 
     @BeforeEach
@@ -79,21 +79,21 @@ class BookingLifecycleApiTest {
                 .latitude(30.05)
                 .longitude(31.25)
                 .build());
-        LocalDate sessionDate = LocalDate.now().plusDays(10);
-        session = sessionRepository.saveAndFlush(TrainingSession.builder()
+        LocalDate courseDate = LocalDate.now().plusDays(10);
+        course = courseRepository.saveAndFlush(TrainingCourse.builder()
                 .trainer(trainer)
                 .sport(sport)
                 .region(region)
-                .title("Booking lifecycle session")
+                .title("Booking lifecycle course")
                 .description("Tests booking history")
                 .locationName("Cairo Club")
                 .latitude(30.05)
                 .longitude(31.25)
-                .startDate(sessionDate)
-                .endDate(sessionDate)
+                .startDate(courseDate)
+                .endDate(courseDate)
                 .startTime(LocalTime.of(18, 0))
                 .durationMinutes(60)
-                .days(Set.of(sessionDate.getDayOfWeek()))
+                .days(Set.of(courseDate.getDayOfWeek()))
                 .maxParticipants(2)
                 .currentParticipants(0)
                 .price(250.0)
@@ -106,19 +106,19 @@ class BookingLifecycleApiTest {
             throws Exception {
         HttpResponse<String> created = request(
                 "POST",
-                "/api/v1/bookings/" + session.getId());
+                "/api/v1/bookings/" + course.getId());
 
         assertThat(created.statusCode()).isEqualTo(201);
         assertThat(created.body())
                 .contains("\"bookingStatus\":\"CONFIRMED\"")
-                .contains("\"sessionId\":" + session.getId())
+                .contains("\"courseId\":" + course.getId())
                 .contains("\"bookingOpen\":true")
                 .contains("\"googleMapsUrl\":")
                 .contains("\"remainingSeats\":1");
 
         HttpResponse<String> duplicate = request(
                 "POST",
-                "/api/v1/bookings/" + session.getId());
+                "/api/v1/bookings/" + course.getId());
         assertThat(duplicate.statusCode()).isEqualTo(409);
         assertThat(duplicate.body()).contains("\"code\":\"RESOURCE_CONFLICT\"");
 
@@ -130,24 +130,24 @@ class BookingLifecycleApiTest {
                 .contains("\"bookingStatus\":\"CONFIRMED\"")
                 .contains("\"totalElements\":1");
 
-        HttpResponse<String> bookingForSession = request(
+        HttpResponse<String> bookingForCourse = request(
                 "GET",
-                "/api/v1/bookings/me?view=ALL&status=CONFIRMED&sessionId="
-                        + session.getId());
-        assertThat(bookingForSession.statusCode()).isEqualTo(200);
-        assertThat(bookingForSession.body())
-                .contains("\"sessionId\":" + session.getId())
+                "/api/v1/bookings/me?view=ALL&status=CONFIRMED&courseId="
+                        + course.getId());
+        assertThat(bookingForCourse.statusCode()).isEqualTo(200);
+        assertThat(bookingForCourse.body())
+                .contains("\"courseId\":" + course.getId())
                 .contains("\"totalElements\":1");
 
-        HttpResponse<String> bookingForAnotherSession = request(
+        HttpResponse<String> bookingForAnotherCourse = request(
                 "GET",
-                "/api/v1/bookings/me?view=ALL&status=CONFIRMED&sessionId=999999");
-        assertThat(bookingForAnotherSession.statusCode()).isEqualTo(200);
-        assertThat(bookingForAnotherSession.body()).contains("\"totalElements\":0");
+                "/api/v1/bookings/me?view=ALL&status=CONFIRMED&courseId=999999");
+        assertThat(bookingForAnotherCourse.statusCode()).isEqualTo(200);
+        assertThat(bookingForAnotherCourse.body()).contains("\"totalElements\":0");
 
         HttpResponse<String> cancelled = request(
                 "DELETE",
-                "/api/v1/bookings/" + session.getId());
+                "/api/v1/bookings/" + course.getId());
         assertThat(cancelled.statusCode()).isEqualTo(200);
         assertThat(cancelled.body())
                 .contains("\"bookingStatus\":\"CANCELLED_BY_USER\"")
@@ -170,40 +170,40 @@ class BookingLifecycleApiTest {
 
         HttpResponse<String> rebooked = request(
                 "POST",
-                "/api/v1/bookings/" + session.getId());
+                "/api/v1/bookings/" + course.getId());
         assertThat(rebooked.statusCode()).isEqualTo(201);
 
-        TrainingSession updatedSession =
-                sessionRepository.findById(session.getId()).orElseThrow();
-        assertThat(updatedSession.getCurrentParticipants()).isEqualTo(1);
-        assertThat(bookingRepository.findAllBySessionAndStatus(
-                updatedSession,
+        TrainingCourse updatedCourse =
+                courseRepository.findById(course.getId()).orElseThrow();
+        assertThat(updatedCourse.getCurrentParticipants()).isEqualTo(1);
+        assertThat(bookingRepository.findAllByCourseAndStatus(
+                updatedCourse,
                 BookingStatus.CONFIRMED)).hasSize(1);
-        assertThat(bookingRepository.findAllBySessionAndStatus(
-                updatedSession,
+        assertThat(bookingRepository.findAllByCourseAndStatus(
+                updatedCourse,
                 BookingStatus.CANCELLED_BY_USER)).hasSize(1);
     }
 
     @Test
-    void completedSessionBookingCannotChangeHistoricalParticipantCount()
+    void completedCourseBookingCannotChangeHistoricalParticipantCount()
             throws Exception {
-        assertThat(request("POST", "/api/v1/bookings/" + session.getId()).statusCode())
+        assertThat(request("POST", "/api/v1/bookings/" + course.getId()).statusCode())
                 .isEqualTo(201);
 
-        TrainingSession completed =
-                sessionRepository.findById(session.getId()).orElseThrow();
-        completed.setStatus(TrainingSessionStatus.COMPLETED);
-        sessionRepository.saveAndFlush(completed);
+        TrainingCourse completed =
+                courseRepository.findById(course.getId()).orElseThrow();
+        completed.setStatus(TrainingCourseStatus.COMPLETED);
+        courseRepository.saveAndFlush(completed);
 
         HttpResponse<String> response = request(
                 "DELETE",
-                "/api/v1/bookings/" + session.getId());
+                "/api/v1/bookings/" + course.getId());
 
         assertThat(response.statusCode()).isEqualTo(409);
         assertThat(response.body()).contains(
                 "\"code\":\"RESOURCE_CONFLICT\"",
-                "cannot be cancelled after the session series is complete");
-        assertThat(sessionRepository.findById(session.getId())
+                "cannot be cancelled after the course series is complete");
+        assertThat(courseRepository.findById(course.getId())
                 .orElseThrow()
                 .getCurrentParticipants()).isEqualTo(1);
     }

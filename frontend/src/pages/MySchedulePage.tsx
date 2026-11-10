@@ -111,7 +111,7 @@ export default function MySchedulePage() {
                     const time = `${continues ? 'Continues until ' : clockTime.format(new Date(entry.startsAt)) + '–'}${clockTime.format(new Date(entry.endsAt))}`
                     return <Link
                       key={`${entry.bookingId}-${entry.startsAt}`}
-                      to={`/user/sessions/${entry.courseId}`}
+                      to={`/user/courses/${entry.courseId}`}
                       data-sport={entry.sport.toLowerCase()}
                       className={`schedule-event${status === 'Past' ? ' is-past' : ''}${status === 'In progress' ? ' is-live' : ''}`}
                       style={{ gridRow: `${Math.floor(start - firstHour * 60) + 1} / span ${Math.max(45, Math.ceil(end - start))}` }}

@@ -1,0 +1,6 @@
+ALTER FUNCTION sync_training_session_location() RENAME TO sync_training_course_location;
+ALTER TRIGGER trg_training_session_location ON training_course RENAME TO trg_training_course_location;
+ALTER INDEX idx_training_session_location_gist RENAME TO idx_training_course_location_gist;
+ALTER TABLE training_course RENAME CONSTRAINT training_session_pkey TO training_course_pkey;
+ALTER TABLE training_course_days RENAME CONSTRAINT training_session_days_pkey TO training_course_days_pkey;
+ALTER SEQUENCE training_session_id_seq RENAME TO training_course_id_seq;

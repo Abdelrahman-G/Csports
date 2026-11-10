@@ -25,9 +25,9 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import com.csports.location.Region;
 import com.csports.location.RegionRepository;
 import com.csports.security.JwtService;
-import com.csports.session.TrainingSession;
-import com.csports.session.TrainingSessionRepository;
-import com.csports.session.TrainingSessionStatus;
+import com.csports.course.TrainingCourse;
+import com.csports.course.TrainingCourseRepository;
+import com.csports.course.TrainingCourseStatus;
 import com.csports.sport.Sport;
 import com.csports.sport.SportRepository;
 import com.csports.user.Role;
@@ -41,14 +41,14 @@ class BookingScheduleApiTest {
     @Autowired private UserRepository users;
     @Autowired private SportRepository sports;
     @Autowired private RegionRepository regions;
-    @Autowired private TrainingSessionRepository courses;
+    @Autowired private TrainingCourseRepository courses;
     @Autowired private BookingRepository bookings;
     @Autowired private JwtService jwt;
     @MockitoBean private RedisTemplate<String, Object> redisTemplate;
 
     private User trainee;
     private User trainer;
-    private TrainingSession course;
+    private TrainingCourse course;
 
     @BeforeEach
     void setUp() {
@@ -60,8 +60,8 @@ class BookingScheduleApiTest {
         course = createCourse(sport, region);
     }
 
-    private TrainingSession createCourse(Sport sport, Region region) {
-        return courses.saveAndFlush(TrainingSession.builder().trainer(trainer).sport(sport).region(region)
+    private TrainingCourse createCourse(Sport sport, Region region) {
+        return courses.saveAndFlush(TrainingCourse.builder().trainer(trainer).sport(sport).region(region)
                 .title("Schedule test course").locationName("Test venue").latitude(30.05).longitude(31.25)
                 .startDate(LocalDate.of(2026, 11, 1)).endDate(LocalDate.of(2026, 11, 30))
                 .startTime(LocalTime.of(18, 0)).durationMinutes(90)
@@ -77,7 +77,7 @@ class BookingScheduleApiTest {
         assertThat(response.body()).contains("\"locationName\":\"Test venue\"")
                 .doesNotContain("\"trainerName\"", "\"regionName\"");
         assertThat(response.body()).contains("2026-11-09T18:00:00", "Africa/Cairo").doesNotContain("2026-11-12T18:00:00");
-        var booking = bookings.findAllBySessionAndStatus(course, BookingStatus.CANCELLED_BY_USER).getFirst();
+        var booking = bookings.findAllByCourseAndStatus(course, BookingStatus.CANCELLED_BY_USER).getFirst();
         booking.setCancelledAt(LocalDateTime.of(2026, 11, 9, 18, 0));
         bookings.saveAndFlush(booking);
         assertThat(get(trainee, "from=2026-11-07&to=2026-11-14").body()).contains("\"entries\":[]");
@@ -100,12 +100,12 @@ class BookingScheduleApiTest {
     @Test
     void trainerCancellationAndCompletedCoursesPreserveEarlierTraining() throws Exception {
         booking(trainee, null);
-        course.setStatus(TrainingSessionStatus.CANCELLED);
+        course.setStatus(TrainingCourseStatus.CANCELLED);
         course.setCancelledAt(LocalDateTime.of(2026, 11, 10, 12, 0));
         course = courses.saveAndFlush(course);
         assertThat(get(trainee, "from=2026-11-07&to=2026-11-14").body())
                 .contains("2026-11-09T18:00:00").doesNotContain("2026-11-12T18:00:00");
-        course.setStatus(TrainingSessionStatus.COMPLETED);
+        course.setStatus(TrainingCourseStatus.COMPLETED);
         course.setCancelledAt(null);
         course = courses.saveAndFlush(course);
         assertThat(get(trainee, "from=2026-11-07&to=2026-11-14").body()).contains("2026-11-12T18:00:00");
@@ -147,7 +147,7 @@ class BookingScheduleApiTest {
     }
 
     private Booking booking(User user, LocalDateTime cancelledAt) {
-        var booking = Booking.builder().user(user).session(course)
+        var booking = Booking.builder().user(user).course(course)
                 .status(cancelledAt == null ? BookingStatus.CONFIRMED : BookingStatus.CANCELLED_BY_USER)
                 .cancelledAt(cancelledAt).build();
         // Fixed fixture timestamps make historical-window tests independent of the wall clock.

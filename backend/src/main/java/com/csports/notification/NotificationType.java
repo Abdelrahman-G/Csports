@@ -1,6 +1,6 @@
 package com.csports.notification;
 
 public enum NotificationType {
-    SESSION_UPDATED,
-    SESSION_CANCELLED
+    COURSE_UPDATED,
+    COURSE_CANCELLED
 }

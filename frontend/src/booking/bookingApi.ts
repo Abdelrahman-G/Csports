@@ -1,7 +1,7 @@
 import { ApiError } from '../auth/authApi'
 import type { AuthenticatedFetch } from '../auth/authContext'
 import type { ApiErrorResponse } from '../auth/types'
-import type { BookedSession, BookingPage, BookingSearch } from './types'
+import type { BookedCourse, BookingPage, BookingSearch } from './types'
 
 async function readBookingJson<T>(
   response: Response,
@@ -22,15 +22,15 @@ async function readBookingJson<T>(
   return body as T
 }
 
-export async function getConfirmedBookingForSession(
+export async function getConfirmedBookingForCourse(
   authenticatedFetch: AuthenticatedFetch,
-  sessionId: number,
+  courseId: number,
   signal?: AbortSignal,
-): Promise<BookedSession | null> {
+): Promise<BookedCourse | null> {
   const parameters = new URLSearchParams({
     view: 'ALL',
     status: 'CONFIRMED',
-    sessionId: String(sessionId),
+    courseId: String(courseId),
     page: '0',
     size: '1',
   })
@@ -47,27 +47,27 @@ export async function getConfirmedBookingForSession(
   return (
     bookingPage.content.find(
       (booking) =>
-        booking.sessionId === sessionId &&
+        booking.courseId === courseId &&
         booking.bookingStatus === 'CONFIRMED',
     ) ?? null
   )
 }
 
-export async function bookSession(
+export async function bookCourse(
   authenticatedFetch: AuthenticatedFetch,
-  sessionId: number,
-): Promise<BookedSession> {
-  const response = await authenticatedFetch(`/api/v1/bookings/${sessionId}`, {
+  courseId: number,
+): Promise<BookedCourse> {
+  const response = await authenticatedFetch(`/api/v1/bookings/${courseId}`, {
     method: 'POST',
   })
 
-  const booking = await readBookingJson<BookedSession>(
+  const booking = await readBookingJson<BookedCourse>(
     response,
-    'This session could not be booked.',
+    'This course could not be booked.',
   )
 
   if (
-    booking.sessionId !== sessionId ||
+    booking.courseId !== courseId ||
     booking.bookingStatus !== 'CONFIRMED'
   ) {
     throw new Error('The server returned an unexpected booking response.')
@@ -100,19 +100,19 @@ export async function getMyBookings(
 
 export async function cancelBooking(
   authenticatedFetch: AuthenticatedFetch,
-  sessionId: number,
-): Promise<BookedSession> {
-  const response = await authenticatedFetch(`/api/v1/bookings/${sessionId}`, {
+  courseId: number,
+): Promise<BookedCourse> {
+  const response = await authenticatedFetch(`/api/v1/bookings/${courseId}`, {
     method: 'DELETE',
   })
 
-  const booking = await readBookingJson<BookedSession>(
+  const booking = await readBookingJson<BookedCourse>(
     response,
     'This booking could not be cancelled.',
   )
 
   if (
-    booking.sessionId !== sessionId ||
+    booking.courseId !== courseId ||
     booking.bookingStatus !== 'CANCELLED_BY_USER'
   ) {
     throw new Error('The server returned an unexpected cancellation response.')

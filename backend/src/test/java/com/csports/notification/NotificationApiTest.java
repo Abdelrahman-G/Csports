@@ -59,7 +59,7 @@ class NotificationApiTest {
     @Test
     void participantCanListCountAndReadOnlyTheirNotifications() throws Exception {
         UserNotification first = saveNotification(user, 10L, "Location changed");
-        saveNotification(user, 11L, "Session cancelled");
+        saveNotification(user, 11L, "Course cancelled");
         UserNotification someoneElses = saveNotification(otherUser, 12L, "Private update");
 
         HttpResponse<String> countBefore = request(
@@ -71,7 +71,7 @@ class NotificationApiTest {
                 "GET", "/api/v1/notifications?page=0&size=10", userToken);
         assertThat(list.statusCode()).isEqualTo(200);
         assertThat(list.body())
-                .contains("Location changed", "Session cancelled", "\"totalElements\":2")
+                .contains("Location changed", "Course cancelled", "\"totalElements\":2")
                 .doesNotContain("Private update");
 
         HttpResponse<String> markedRead = request(
@@ -98,13 +98,13 @@ class NotificationApiTest {
         assertThat(response.statusCode()).isEqualTo(403);
     }
 
-    private UserNotification saveNotification(User recipient, Long sessionId, String title) {
+    private UserNotification saveNotification(User recipient, Long courseId, String title) {
         return notificationRepository.saveAndFlush(UserNotification.builder()
                 .recipient(recipient)
-                .sessionId(sessionId)
-                .type(NotificationType.SESSION_UPDATED)
+                .courseId(courseId)
+                .type(NotificationType.COURSE_UPDATED)
                 .title(title)
-                .message("A booked session changed.")
+                .message("A booked course changed.")
                 .build());
     }
 

@@ -32,8 +32,8 @@ class ApiVersioningTest {
                 "/auth/login",
                 "/api/v1/sports/list",
                 "/sports/list",
-                "/api/v1/sessions",
-                "/sessions",
+                "/api/v1/courses",
+                "/courses",
                 "/api/v1/users/me",
                 "/users/me",
                 "/api/v1/trainers/{trainerId}",
@@ -42,14 +42,14 @@ class ApiVersioningTest {
     }
 
     @Test
-    void sessionUpdateUsesPatchInsteadOfPut() {
+    void courseUpdateUsesPatchInsteadOfPut() {
         boolean patchExists = handlerMapping.getHandlerMethods().keySet().stream()
                 .anyMatch(mapping ->
-                        mapping.getPatternValues().contains("/api/v1/sessions/{sessionId}")
+                        mapping.getPatternValues().contains("/api/v1/courses/{courseId}")
                         && mapping.getMethodsCondition().getMethods().contains(RequestMethod.PATCH));
         boolean putExists = handlerMapping.getHandlerMethods().keySet().stream()
                 .anyMatch(mapping ->
-                        mapping.getPatternValues().contains("/api/v1/sessions/{sessionId}")
+                        mapping.getPatternValues().contains("/api/v1/courses/{courseId}")
                         && mapping.getMethodsCondition().getMethods().contains(RequestMethod.PUT));
 
         assertThat(patchExists).isTrue();

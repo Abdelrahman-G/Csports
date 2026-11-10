@@ -5,17 +5,17 @@ import { getMyUserProfile, type UserProfile } from '../auth/profileApi'
 import {
   getRegions,
   getSports,
-  searchSessions,
-  type SessionSearch,
+  searchCourses,
+  type CourseSearch,
 } from '../discovery/discoveryApi'
 import type {
   NearbyCoordinates,
   Region,
-  SessionPage,
+  CoursePage,
   Sport,
-  TrainingSession,
+  TrainingCourse,
 } from '../discovery/types'
-import { orderedDayLabels } from '../discovery/sessionFormatting'
+import { orderedDayLabels } from '../discovery/courseFormatting'
 import UserNavigation from '../components/UserNavigation'
 
 const REGION_STORAGE_KEY = 'csports.discovery.regionId'
@@ -39,14 +39,14 @@ const EMPTY_FILTERS: DiscoveryFilters = {
   sportId: '',
 }
 
-const sessionDateFormatter = new Intl.DateTimeFormat('en-EG', {
+const courseDateFormatter = new Intl.DateTimeFormat('en-EG', {
   weekday: 'short',
   day: 'numeric',
   month: 'short',
   year: 'numeric',
 })
 
-const sessionTimeFormatter = new Intl.DateTimeFormat('en-EG', {
+const courseTimeFormatter = new Intl.DateTimeFormat('en-EG', {
   hour: 'numeric',
   minute: '2-digit',
 })
@@ -74,63 +74,63 @@ function formatDistance(distanceMeters: number | null) {
   return `${(distanceMeters / 1000).toFixed(1)} km away`
 }
 
-function SessionCard({ session }: { session: TrainingSession }) {
-  const distance = formatDistance(session.distanceMeters)
-  const firstTraining = new Date(session.bookingClosesAt)
-  const trainingDays = orderedDayLabels(session.days)
+function CourseCard({ course }: { course: TrainingCourse }) {
+  const distance = formatDistance(course.distanceMeters)
+  const firstTraining = new Date(course.bookingClosesAt)
+  const trainingDays = orderedDayLabels(course.days)
   const availability =
-    session.remainingSeats === 0
+    course.remainingSeats === 0
       ? 'Fully booked'
-      : session.bookingOpen
-        ? `${session.remainingSeats} places left`
+      : course.bookingOpen
+        ? `${course.remainingSeats} places left`
         : 'Booking closed'
 
   return (
-    <Link className="session-card-link" to={`/user/sessions/${session.id}`}>
-      <article className="session-card">
-      <div className="session-card-heading">
-        <span className="session-sport">{session.sport}</span>
+    <Link className="course-card-link" to={`/user/courses/${course.id}`}>
+      <article className="course-card">
+      <div className="course-card-heading">
+        <span className="course-sport">{course.sport}</span>
         <span
           className={
-            session.bookingOpen
-              ? 'session-availability open'
-              : 'session-availability closed'
+            course.bookingOpen
+              ? 'course-availability open'
+              : 'course-availability closed'
           }
         >
           {availability}
         </span>
       </div>
 
-      <h2>{session.title}</h2>
-      <p className="session-trainer">with {session.trainerName}</p>
+      <h2>{course.title}</h2>
+      <p className="course-trainer">with {course.trainerName}</p>
 
-      <div className="session-start">
-        <span className="session-start-label">First session</span>
-        <strong>{sessionDateFormatter.format(firstTraining)}</strong>
-        <span className="session-time">
-          {sessionTimeFormatter.format(firstTraining)} for{' '}
-          {session.durationMinutes} minutes
+      <div className="course-start">
+        <span className="course-start-label">First session</span>
+        <strong>{courseDateFormatter.format(firstTraining)}</strong>
+        <span className="course-time">
+          {courseTimeFormatter.format(firstTraining)} for{' '}
+          {course.durationMinutes} minutes
         </span>
       </div>
 
-      <div className="session-days" aria-label="Training days">
+      <div className="course-days" aria-label="Training days">
         {trainingDays.map((day) => (
           <span key={day}>{day}</span>
         ))}
       </div>
 
-      <dl className="session-summary">
+      <dl className="course-summary">
         <div>
           <dt>Location</dt>
           <dd>
-            {session.locationName}, {session.regionName}
+            {course.locationName}, {course.regionName}
           </dd>
         </div>
       </dl>
 
-      <div className="session-card-footer">
-        {distance && <span className="session-distance">{distance}</span>}
-        <span className="session-details-link">View details</span>
+      <div className="course-card-footer">
+        {distance && <span className="course-distance">{distance}</span>}
+        <span className="course-details-link">View details</span>
       </div>
       </article>
     </Link>
@@ -148,8 +148,8 @@ function UserHomePage() {
   const [mode, setMode] = useState<DiscoveryMode>('region')
   const [coordinates, setCoordinates] = useState<NearbyCoordinates | null>(null)
   const [pageNumber, setPageNumber] = useState(0)
-  const [sessionPage, setSessionPage] = useState<SessionPage | null>(null)
-  const [isLoadingSessions, setIsLoadingSessions] = useState(false)
+  const [coursePage, setCoursePage] = useState<CoursePage | null>(null)
+  const [isLoadingCourses, setIsLoadingCourses] = useState(false)
   const [isLocating, setIsLocating] = useState(false)
   const [error, setError] = useState('')
 
@@ -194,7 +194,7 @@ function UserHomePage() {
   }, [authenticatedFetch])
 
   useEffect(() => {
-    let search: SessionSearch
+    let search: CourseSearch
 
     if (mode === 'region') {
       search = {
@@ -218,34 +218,34 @@ function UserHomePage() {
 
     const controller = new AbortController()
 
-    async function loadSessions() {
-      setIsLoadingSessions(true)
+    async function loadCourses() {
+      setIsLoadingCourses(true)
       setError('')
 
       try {
-        const loadedPage = await searchSessions(
+        const loadedPage = await searchCourses(
           search,
           pageNumber,
           controller.signal,
         )
-        setSessionPage(loadedPage)
+        setCoursePage(loadedPage)
       } catch (requestError) {
         if (!controller.signal.aborted) {
-          setSessionPage(null)
+          setCoursePage(null)
           setError(
             requestError instanceof Error
               ? requestError.message
-              : 'Sessions could not be loaded.',
+              : 'Courses could not be loaded.',
           )
         }
       } finally {
         if (!controller.signal.aborted) {
-          setIsLoadingSessions(false)
+          setIsLoadingCourses(false)
         }
       }
     }
 
-    void loadSessions()
+    void loadCourses()
 
     return () => controller.abort()
   }, [appliedFilters, coordinates, mode, pageNumber])
@@ -340,28 +340,28 @@ function UserHomePage() {
   const selectedSport = sports.find(
     (sport) => String(sport.id) === appliedFilters.sportId,
   )
-  const sessions = sessionPage?.content ?? []
+  const courses = coursePage?.content ?? []
 
   return (
     <>
       <UserNavigation />
       <main className="discovery-page">
       <header className="discovery-header">
-        <p className="eyebrow">Find your next session</p>
+        <p className="eyebrow">Find your next course</p>
         <h1>{profile ? `Welcome, ${profile.name}` : 'Welcome'}</h1>
-        <p>Explore coaches and sessions across Cairo and Giza.</p>
+        <p>Explore coaches and courses across Cairo and Giza.</p>
       </header>
 
       <form className="discovery-catalogue" onSubmit={applyFilters}>
         <div className="discovery-search-bar">
-          <label htmlFor="session-search">Search sessions</label>
+          <label htmlFor="course-search">Search courses</label>
           <div>
             <input
-              id="session-search"
+              id="course-search"
               type="search"
               value={filters.query}
               onChange={(event) => updateFilter('query', event.target.value)}
-              placeholder="Search sessions or training locations"
+              placeholder="Search courses or training locations"
               maxLength={100}
             />
             <button type="submit">Search</button>
@@ -445,16 +445,16 @@ function UserHomePage() {
               <div>
                 <p className="active-search-label">
                   {mode === 'nearby' && coordinates
-                    ? 'Nearest sessions'
+                    ? 'Nearest courses'
                     : selectedRegion || selectedSport || appliedFilters.query
-                      ? `${selectedSport?.name ?? 'Sessions'}${selectedRegion ? ` in ${selectedRegion.name}` : ''}`
-                      : 'All upcoming sessions'}
+                      ? `${selectedSport?.name ?? 'Courses'}${selectedRegion ? ` in ${selectedRegion.name}` : ''}`
+                      : 'All upcoming courses'}
                 </p>
                 {appliedFilters.query && (
                   <span>Matching "{appliedFilters.query}"</span>
                 )}
               </div>
-              {sessionPage && <strong>{sessionPage.totalElements} results</strong>}
+              {coursePage && <strong>{coursePage.totalElements} results</strong>}
             </div>
 
             {error && (
@@ -463,43 +463,43 @@ function UserHomePage() {
               </p>
             )}
 
-            <div className="session-results" aria-live="polite" aria-busy={isLoadingSessions}>
-              {isLoadingSessions ? (
+            <div className="course-results" aria-live="polite" aria-busy={isLoadingCourses}>
+              {isLoadingCourses ? (
                 <>
-                  <span className="motion-sr-only" role="status">Finding available sessions...</span>
+                  <span className="motion-sr-only" role="status">Finding available courses...</span>
                   {Array.from({ length: 4 }, (_, index) => (
-                    <div className="session-skeleton" key={index} aria-hidden="true">
+                    <div className="course-skeleton" key={index} aria-hidden="true">
                       <span /><span /><span /><span />
                     </div>
                   ))}
                 </>
-              ) : sessions.length === 0 ? (
-                <p className="session-empty-state">
-                  No sessions match these filters yet. Try clearing one of them.
+              ) : courses.length === 0 ? (
+                <p className="course-empty-state">
+                  No courses match these filters yet. Try clearing one of them.
                 </p>
               ) : (
-                sessions.map((session) => (
-                  <SessionCard key={session.id} session={session} />
+                courses.map((course) => (
+                  <CourseCard key={course.id} course={course} />
                 ))
               )}
             </div>
 
-            {sessionPage && sessionPage.totalPages > 1 && (
-              <nav className="session-pagination" aria-label="Session result pages">
+            {coursePage && coursePage.totalPages > 1 && (
+              <nav className="course-pagination" aria-label="Course result pages">
                 <button
                   type="button"
                   onClick={() => setPageNumber((current) => current - 1)}
-                  disabled={sessionPage.first || isLoadingSessions}
+                  disabled={coursePage.first || isLoadingCourses}
                 >
                   Previous
                 </button>
                 <span>
-                  Page {sessionPage.page + 1} of {sessionPage.totalPages}
+                  Page {coursePage.page + 1} of {coursePage.totalPages}
                 </span>
                 <button
                   type="button"
                   onClick={() => setPageNumber((current) => current + 1)}
-                  disabled={sessionPage.last || isLoadingSessions}
+                  disabled={coursePage.last || isLoadingCourses}
                 >
                   Next
                 </button>
