@@ -107,6 +107,7 @@ export default function SportWheel({ sports, value, onChange, loading }: Props) 
       gsap.killTweensOf(motion)
       window.clearTimeout(scrollTimer)
       window.clearTimeout(releaseTimer)
+      dragged.current = false
       element.removeEventListener('pointerdown', down)
       element.removeEventListener('pointermove', move)
       element.removeEventListener('pointerup', up)
