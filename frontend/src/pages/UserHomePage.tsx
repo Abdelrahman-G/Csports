@@ -1,4 +1,3 @@
-import AppNavigation from '../components/AppNavigation'
 import { useEffect, useState, type FormEvent } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../auth/authContext'
@@ -17,6 +16,7 @@ import type {
   TrainingCourse,
 } from '../discovery/types'
 import { orderedDayLabels } from '../discovery/courseFormatting'
+import UserNavigation from '../components/UserNavigation'
 
 const REGION_STORAGE_KEY = 'csports.discovery.regionId'
 const MIN_LATITUDE = 29.75
@@ -344,7 +344,7 @@ function UserHomePage() {
 
   return (
     <>
-      <AppNavigation />
+      <UserNavigation />
       <main className="discovery-page">
       <header className="discovery-header">
         <p className="eyebrow">Find your next course</p>
