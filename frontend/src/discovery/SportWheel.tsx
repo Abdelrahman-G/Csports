@@ -1,7 +1,7 @@
 import { useLayoutEffect, useMemo, useRef, useState } from 'react'
 import gsap from 'gsap'
 import type { Sport } from './types'
-import { clampWheelPosition, settleWheel, wheelPose, WHEEL_STEP } from './wheel'
+import { clampWheelPosition, scrollWheelPosition, settleWheel, wheelPose, WHEEL_STEP } from './wheel'
 import SportArtwork from './SportArtwork'
 
 type Props = { sports: Sport[]; value: string; onChange: (id: string) => void; loading: boolean }
@@ -39,7 +39,7 @@ export default function SportWheel({ sports, value, onChange, loading }: Props) 
     }
     function animate(index: number) {
       gsap.killTweensOf(motion)
-      gsap.to(motion, { index, duration: preference.matches ? 0 : .55, ease: 'power3.out', onUpdate: paint,
+      gsap.to(motion, { index, duration: preference.matches ? 0 : .22, ease: 'power2.out', onUpdate: paint,
         onComplete: () => {
           if (pendingFocus.current) { buttons[index]?.focus(); pendingFocus.current = false }
         },
@@ -83,15 +83,14 @@ export default function SportWheel({ sports, value, onChange, loading }: Props) 
     function cancel() { gesture = null; dragged.current = false; animate(selected) }
     function scroll(event: WheelEvent) {
       if (loading || Math.abs(event.deltaX) > Math.abs(event.deltaY)) return
-      const delta = event.deltaY * (event.deltaMode === 1 ? 16 : event.deltaMode === 2 ? 300 : 1)
-      const next = clampWheelPosition(motion.index + delta / 160, options.length)
+      const next = scrollWheelPosition(motion.index, event.deltaY, event.deltaMode, options.length)
       if (next === motion.index) return
       event.preventDefault()
       gsap.killTweensOf(motion)
       motion.index = next
       paint()
       window.clearTimeout(scrollTimer)
-      scrollTimer = window.setTimeout(() => commit(Math.round(motion.index)), 140)
+      scrollTimer = window.setTimeout(() => commit(Math.round(motion.index)), 70)
     }
     function preferenceChanged() { animate(selected) }
     paint()
@@ -135,7 +134,7 @@ export default function SportWheel({ sports, value, onChange, loading }: Props) 
         {options.map((sport, index) => <button type="button" className={`sport-wheel-item${index === preview ? ' is-focused' : ''}`} key={sport.id}
           aria-pressed={index === selected} disabled={loading} title={sport.name}
           onClick={() => { if (!dragged.current) choose(index) }}>
-          <span className="sport-wheel-number" aria-hidden="true">{String(index).padStart(2, '0')}</span>{sport.name}
+          {sport.name}
         </button>)}
       </div>
       <div className="sport-wheel-controls"><span>{loading ? 'Loading sports…' : 'Scroll or drag to explore'}</span><div>

@@ -159,6 +159,18 @@ function UserHomePage() {
   useEffect(() => () => { locationAttempt.current += 1 }, [])
 
   useEffect(() => {
+    const query = filters.query.trim()
+    if (query === appliedFilters.query) return
+
+    const timer = window.setTimeout(() => {
+      setAppliedFilters(current => ({ ...current, query }))
+      setPageNumber(0)
+    }, 250)
+
+    return () => window.clearTimeout(timer)
+  }, [filters.query, appliedFilters.query])
+
+  useEffect(() => {
     const controller = new AbortController()
 
     async function loadPageData() {
@@ -379,7 +391,6 @@ function UserHomePage() {
         <AreaSelector regions={regions} value={filters.regionId} onChange={selectArea} onNearby={useCurrentLocation} locating={isLocating} nearby={mode === 'nearby'} />
         <form className="discovery-query" onSubmit={applyFilters}>
           <label htmlFor="course-search">Looking for something specific?<input id="course-search" type="search" value={filters.query} onChange={event => updateFilter('query', event.target.value)} placeholder="Search course titles or venues" maxLength={100} /></label>
-          <button type="submit">Find courses ↗</button>
           <button className="discovery-reset" type="button" onClick={clearFilters}>Reset</button>
         </form>
           <section className="discovery-results-column">

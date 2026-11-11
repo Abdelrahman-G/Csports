@@ -10,6 +10,11 @@ export function settleWheel(position: number, velocity: number, count: number, r
   return Math.round(clampWheelPosition(position + momentum, count))
 }
 
+export function scrollWheelPosition(position: number, delta: number, deltaMode: number, count: number): number {
+  const pixels = delta * (deltaMode === 1 ? 16 : deltaMode === 2 ? 300 : 1)
+  return clampWheelPosition(position + pixels / 120, count)
+}
+
 export function wheelPose(distance: number) {
   const angle = distance * 0.19
   return { x: 360 * (Math.cos(angle) - 1), y: 360 * Math.sin(angle), rotation: angle * 180 / Math.PI }
