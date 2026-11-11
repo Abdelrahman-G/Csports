@@ -1,7 +1,7 @@
+import AppNavigation from '../components/AppNavigation'
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../auth/authContext'
-import UserNavigation from '../components/UserNavigation'
 import {
   getNotifications,
   markNotificationAsRead,
@@ -110,7 +110,7 @@ function NotificationsPage() {
 
   return (
     <>
-      <UserNavigation />
+      <AppNavigation />
       <main className="notifications-page">
         <header className="notifications-header">
           <p className="eyebrow">Course updates</p>
