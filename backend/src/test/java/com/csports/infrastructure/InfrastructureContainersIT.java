@@ -33,16 +33,16 @@ import com.csports.booking.Booking;
 import com.csports.booking.BookingRepository;
 import com.csports.booking.BookingService;
 import com.csports.booking.BookingStatus;
-import com.csports.booking.exception.SessionFullException;
+import com.csports.booking.exception.CourseFullException;
 import com.csports.infrastructure.redis.CacheNames;
 import com.csports.infrastructure.redis.RedisKeys;
 import com.csports.location.Region;
 import com.csports.location.RegionRepository;
-import com.csports.session.TrainingSession;
-import com.csports.session.TrainingSessionRepository;
-import com.csports.session.TrainingSessionService;
-import com.csports.session.dto.SessionSearchRequest;
-import com.csports.session.dto.TrainingSessionResponse;
+import com.csports.course.TrainingCourse;
+import com.csports.course.TrainingCourseRepository;
+import com.csports.course.TrainingCourseService;
+import com.csports.course.dto.CourseSearchRequest;
+import com.csports.course.dto.TrainingCourseResponse;
 import com.csports.sport.Sport;
 import com.csports.sport.SportRepository;
 import com.csports.user.Role;
@@ -97,10 +97,10 @@ class InfrastructureContainersIT {
     private BookingRepository bookingRepository;
 
     @Autowired
-    private TrainingSessionRepository trainingSessionRepository;
+    private TrainingCourseRepository trainingCourseRepository;
 
     @Autowired
-    private TrainingSessionService trainingSessionService;
+    private TrainingCourseService trainingCourseService;
 
     @Autowired
     private UserRepository userRepository;
@@ -134,10 +134,10 @@ class InfrastructureContainersIT {
     }
 
     @Test
-    void sessionSearchCacheRoundTripsThroughRealRedis() {
-        Cache cache = cacheManager.getCache(CacheNames.SESSION_SEARCH);
+    void courseSearchCacheRoundTripsThroughRealRedis() {
+        Cache cache = cacheManager.getCache(CacheNames.COURSE_SEARCH);
         assertThat(cache).isNotNull();
-        PageResponse<TrainingSessionResponse> expected = new PageResponse<>(
+        PageResponse<TrainingCourseResponse> expected = new PageResponse<>(
                 List.of(),
                 0,
                 10,
@@ -154,7 +154,7 @@ class InfrastructureContainersIT {
     }
 
     @Test
-    void postgisNearbySearchReturnsSessionsInDistanceOrder() {
+    void postgisNearbySearchReturnsCoursesInDistanceOrder() {
         String unique = UUID.randomUUID().toString();
         User trainer = saveUser("Nearby Trainer", "nearby-" + unique, Role.TRAINER);
         Sport sport = sportRepository.saveAndFlush(Sport.builder()
@@ -168,13 +168,13 @@ class InfrastructureContainersIT {
                 .longitude(31.25)
                 .build());
 
-        TrainingSession nearest = saveSearchSession(
+        TrainingCourse nearest = saveSearchCourse(
                 trainer, sport, region, "Nearby Search " + unique + " A", 30.051, 31.251);
-        TrainingSession farther = saveSearchSession(
+        TrainingCourse farther = saveSearchCourse(
                 trainer, sport, region, "Nearby Search " + unique + " B", 30.10, 31.30);
 
-        PageResponse<TrainingSessionResponse> result = trainingSessionService.searchSessions(
-                new SessionSearchRequest(
+        PageResponse<TrainingCourseResponse> result = trainingCourseService.searchCourses(
+                new CourseSearchRequest(
                         "Nearby Search " + unique,
                         null,
                         null,
@@ -192,10 +192,10 @@ class InfrastructureContainersIT {
                         0,
                         10));
 
-        assertThat(result.content()).extracting(TrainingSessionResponse::id)
+        assertThat(result.content()).extracting(TrainingCourseResponse::id)
                 .containsExactly(nearest.getId(), farther.getId());
         assertThat(result.content()).allSatisfy(
-                session -> assertThat(session.distanceMeters()).isNotNull().isPositive());
+                course -> assertThat(course.distanceMeters()).isNotNull().isPositive());
         assertThat(result.content().getFirst().distanceMeters())
                 .isLessThan(result.content().getLast().distanceMeters());
     }
@@ -217,9 +217,9 @@ class InfrastructureContainersIT {
                 .latitude(30.05)
                 .longitude(31.25)
                 .build());
-        LocalDate sessionDate = LocalDate.now().plusDays(14);
-        TrainingSession session = trainingSessionRepository.saveAndFlush(
-                TrainingSession.builder()
+        LocalDate courseDate = LocalDate.now().plusDays(14);
+        TrainingCourse course = trainingCourseRepository.saveAndFlush(
+                TrainingCourse.builder()
                         .trainer(trainer)
                         .sport(sport)
                         .region(region)
@@ -228,11 +228,11 @@ class InfrastructureContainersIT {
                         .locationName("Cairo Club")
                         .latitude(30.05)
                         .longitude(31.25)
-                        .startDate(sessionDate)
-                        .endDate(sessionDate)
+                        .startDate(courseDate)
+                        .endDate(courseDate)
                         .startTime(LocalTime.of(18, 0))
                         .durationMinutes(60)
-                        .days(Set.of(sessionDate.getDayOfWeek()))
+                        .days(Set.of(courseDate.getDayOfWeek()))
                         .maxParticipants(1)
                         .currentParticipants(0)
                         .price(300.0)
@@ -243,9 +243,9 @@ class InfrastructureContainersIT {
         List<String> outcomes = new ArrayList<>();
         try {
             var first = executor.submit(
-                    () -> concurrentBookingOutcome(firstUser, session.getId(), start));
+                    () -> concurrentBookingOutcome(firstUser, course.getId(), start));
             var second = executor.submit(
-                    () -> concurrentBookingOutcome(secondUser, session.getId(), start));
+                    () -> concurrentBookingOutcome(secondUser, course.getId(), start));
             start.countDown();
             outcomes.add(first.get());
             outcomes.add(second.get());
@@ -255,22 +255,22 @@ class InfrastructureContainersIT {
 
         assertThat(outcomes).containsExactlyInAnyOrder("BOOKED", "FULL");
 
-        TrainingSession persisted =
-                trainingSessionRepository.findById(session.getId()).orElseThrow();
+        TrainingCourse persisted =
+                trainingCourseRepository.findById(course.getId()).orElseThrow();
         List<Booking> confirmed =
-                bookingRepository.findAllBySessionAndStatus(
+                bookingRepository.findAllByCourseAndStatus(
                         persisted,
                         BookingStatus.CONFIRMED);
         assertThat(persisted.getCurrentParticipants()).isEqualTo(1);
         assertThat(confirmed).hasSize(1);
         assertThat(stringRedisTemplate.hasKey(
-                RedisKeys.BOOKING_LOCK_PREFIX + "{" + session.getId() + "}"))
+                RedisKeys.BOOKING_LOCK_PREFIX + "{" + course.getId() + "}"))
                 .isFalse();
 
         User bookedUser = confirmed.getFirst().getUser();
         assertThatThrownBy(() -> bookingRepository.saveAndFlush(Booking.builder()
                 .user(bookedUser)
-                .session(persisted)
+                .course(persisted)
                 .status(BookingStatus.CONFIRMED)
                 .build()))
                 .isInstanceOf(DataIntegrityViolationException.class);
@@ -278,7 +278,7 @@ class InfrastructureContainersIT {
 
     private String concurrentBookingOutcome(
             User user,
-            Long sessionId,
+            Long courseId,
             CountDownLatch start) throws Exception {
         start.await();
         SecurityContextHolder.getContext().setAuthentication(
@@ -287,9 +287,9 @@ class InfrastructureContainersIT {
                         null,
                         user.getAuthorities()));
         try {
-            bookingService.bookSession(sessionId);
+            bookingService.bookCourse(courseId);
             return "BOOKED";
-        } catch (SessionFullException exception) {
+        } catch (CourseFullException exception) {
             return "FULL";
         } finally {
             SecurityContextHolder.clearContext();
@@ -307,15 +307,15 @@ class InfrastructureContainersIT {
                 .build());
     }
 
-    private TrainingSession saveSearchSession(
+    private TrainingCourse saveSearchCourse(
             User trainer,
             Sport sport,
             Region region,
             String title,
             double latitude,
             double longitude) {
-        LocalDate sessionDate = LocalDate.now().plusDays(20);
-        return trainingSessionRepository.saveAndFlush(TrainingSession.builder()
+        LocalDate courseDate = LocalDate.now().plusDays(20);
+        return trainingCourseRepository.saveAndFlush(TrainingCourse.builder()
                 .trainer(trainer)
                 .sport(sport)
                 .region(region)
@@ -324,11 +324,11 @@ class InfrastructureContainersIT {
                 .locationName(region.getName())
                 .latitude(latitude)
                 .longitude(longitude)
-                .startDate(sessionDate)
-                .endDate(sessionDate.plusDays(30))
+                .startDate(courseDate)
+                .endDate(courseDate.plusDays(30))
                 .startTime(LocalTime.of(18, 0))
                 .durationMinutes(60)
-                .days(Set.of(sessionDate.getDayOfWeek()))
+                .days(Set.of(courseDate.getDayOfWeek()))
                 .maxParticipants(10)
                 .currentParticipants(0)
                 .price(300.0)

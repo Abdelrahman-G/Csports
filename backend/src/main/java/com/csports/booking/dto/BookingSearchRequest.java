@@ -11,8 +11,8 @@ public record BookingSearchRequest(
         BookingStatus status,
         BookingView view,
 
-        @Positive(message = "Session id must be positive")
-        Long sessionId,
+        @Positive(message = "Course id must be positive")
+        Long courseId,
 
         @Min(value = 0, message = "Page must be zero or greater")
         Integer page,

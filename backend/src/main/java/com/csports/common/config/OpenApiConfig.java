@@ -14,7 +14,7 @@ import org.springframework.context.annotation.Configuration;
         info = @Info(
                 title = "Csports API",
                 version = "v1",
-                description = "API for sports, trainers, training sessions, and bookings.",
+                description = "API for sports, trainers, training courses, and bookings.",
                 contact = @Contact(name = "Csports")
         ),
         security = @SecurityRequirement(name = OpenApiConfig.BEARER_AUTH)

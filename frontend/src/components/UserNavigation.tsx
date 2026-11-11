@@ -26,7 +26,7 @@ function UserNavigation() {
         <NavLink
           className="user-navigation-brand"
           to="/user/home"
-          aria-label="Csports session discovery"
+          aria-label="Csports course discovery"
         >
           <img src={csportsLogo} alt="" />
         </NavLink>

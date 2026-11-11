@@ -16,7 +16,7 @@
   <artifactId>csports-backend</artifactId>
   <version>0.0.1-SNAPSHOT</version>
   <name>Csports Backend</name>
-  <description>Backend API for discovering, creating, and booking sports training sessions.</description>
+  <description>Backend API for discovering, creating, and booking sports training courses.</description>
   <url>https://github.com/Abdelrahman-G/Csports</url>
   <licenses>
     <license>

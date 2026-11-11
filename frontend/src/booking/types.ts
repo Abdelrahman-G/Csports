@@ -3,7 +3,7 @@ export type BookingStatus =
   | 'CANCELLED_BY_USER'
   | 'CANCELLED_BY_TRAINER'
 
-export type SessionStatus = 'SCHEDULED' | 'CANCELLED' | 'COMPLETED'
+export type CourseStatus = 'SCHEDULED' | 'CANCELLED' | 'COMPLETED'
 
 export type BookingView = 'UPCOMING' | 'HISTORY'
 
@@ -13,12 +13,12 @@ export type BookingSearch = {
   size: number
 }
 
-export type BookedSession = {
+export type BookedCourse = {
   bookingId: number
   bookingStatus: BookingStatus
   bookedAt: string
   cancelledAt: string | null
-  sessionId: number
+  courseId: number
   title: string
   trainerId: number
   trainerName: string
@@ -41,12 +41,12 @@ export type BookedSession = {
   remainingSeats: number
   bookingClosesAt: string
   bookingOpen: boolean
-  sessionStatus: SessionStatus
-  sessionCancellationReason: string | null
+  courseStatus: CourseStatus
+  courseCancellationReason: string | null
 }
 
 export type BookingPage = {
-  content: BookedSession[]
+  content: BookedCourse[]
   page: number
   size: number
   totalElements: number

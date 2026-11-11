@@ -45,26 +45,26 @@
 .training-answer { height: 0; overflow: hidden; }
 .training-answer p { margin: 0; padding-bottom: 24px; color: #53685c; line-height: 1.7; }
 
-.session-skeleton {
+.course-skeleton {
   padding: 24px;
   border: 1px solid #d5e8dc;
   border-radius: 14px;
   background: #fff;
   min-height: 290px;
 }
-.session-skeleton span {
+.course-skeleton span {
   display: block;
   height: 14px;
   border-radius: 6px;
   background: #e5eee9;
   margin-bottom: 22px;
 }
-.session-skeleton span:first-child { width: 32%; }
-.session-skeleton span:nth-child(2) { width: 75%; height: 24px; }
-.session-skeleton span:nth-child(3) { height: 72px; }
-.session-skeleton span:last-child { width: 56%; }
+.course-skeleton span:first-child { width: 32%; }
+.course-skeleton span:nth-child(2) { width: 75%; height: 24px; }
+.course-skeleton span:nth-child(3) { height: 72px; }
+.course-skeleton span:last-child { width: 56%; }
 
-.session-capacity { margin-bottom: 22px; color: #53685c; font-size: 0.85rem; }
+.course-capacity { margin-bottom: 22px; color: #53685c; font-size: 0.85rem; }
 .capacity-track { height: 6px; margin-top: 10px; background: #e3eee7; border-radius: 8px; overflow: hidden; }
 .capacity-track > span { display: block; height: 100%; background: #238654; border-radius: inherit; transform-origin: left; }
 .booking-check {
@@ -98,7 +98,7 @@
   .capacity-track > span { animation: capacity-fill 700ms ease-out both; transition: width 300ms ease; }
   .booking-check { animation: check-arrive 450ms cubic-bezier(.2,1.5,.5,1) both; }
   .booking-spinner { animation: booking-spin 700ms linear infinite; }
-  .session-skeleton span {
+  .course-skeleton span {
     background: linear-gradient(100deg, #e5eee9 25%, #f5faf7 45%, #e5eee9 65%);
     background-size: 250% 100%;
     animation: skeleton-sweep 1.4s linear infinite;
@@ -823,7 +823,7 @@
 }
 
 .apply-filters-button,
-.session-pagination button {
+.course-pagination button {
   min-height: 44px;
   padding: 10px 16px;
   border-radius: 8px;
@@ -913,21 +913,21 @@
   background: #fbe9eb;
 }
 
-.session-results {
+.course-results {
   margin-top: 16px;
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 18px;
 }
 
-.session-card-link {
+.course-card-link {
   height: 100%;
   border-radius: 14px;
   color: inherit;
   text-decoration: none;
 }
 
-.session-card {
+.course-card {
   height: 100%;
   padding: 22px;
   display: flex;
@@ -942,26 +942,26 @@
     transform 160ms ease;
 }
 
-.session-card-link:hover .session-card {
+.course-card-link:hover .course-card {
   border-color: #8ac6a6;
   box-shadow: 0 15px 32px rgba(24, 89, 56, 0.12);
   transform: translateY(-3px);
 }
 
-.session-card-heading {
+.course-card-heading {
   display: flex;
   justify-content: space-between;
   gap: 12px;
 }
 
-.session-sport,
-.session-distance {
+.course-sport,
+.course-distance {
   color: #238654;
   font-size: 0.82rem;
   font-weight: 750;
 }
 
-.session-availability {
+.course-availability {
   padding: 5px 9px;
   border-radius: 999px;
   font-size: 0.78rem;
@@ -969,28 +969,28 @@
   white-space: nowrap;
 }
 
-.session-availability.open {
+.course-availability.open {
   color: #196d43;
   background: #e4f4eb;
 }
 
-.session-availability.closed {
+.course-availability.closed {
   color: #7d3f16;
   background: #fff0e5;
 }
 
-.session-card h2 {
+.course-card h2 {
   margin: 12px 0 4px;
   color: #16251d;
   font-size: 1.3rem;
 }
 
-.session-trainer {
+.course-trainer {
   margin: 0;
   color: #6a7d72;
 }
 
-.session-start {
+.course-start {
   margin-top: 20px;
   padding: 14px 16px;
   display: grid;
@@ -1000,7 +1000,7 @@
   background: linear-gradient(135deg, #eef8f2, #ffffff);
 }
 
-.session-start-label {
+.course-start-label {
   color: #238654;
   font-size: 0.72rem;
   font-weight: 800;
@@ -1008,25 +1008,25 @@
   text-transform: uppercase;
 }
 
-.session-start strong {
+.course-start strong {
   color: #16251d;
   font-size: 1.08rem;
   font-weight: 800;
 }
 
-.session-time {
+.course-time {
   color: #5d7166;
   font-size: 0.88rem;
 }
 
-.session-days {
+.course-days {
   margin-top: 12px;
   display: flex;
   flex-wrap: wrap;
   gap: 7px;
 }
 
-.session-days span {
+.course-days span {
   padding: 5px 9px;
   border-radius: 999px;
   color: #365446;
@@ -1035,31 +1035,31 @@
   font-weight: 700;
 }
 
-.session-summary {
+.course-summary {
   margin: 18px 0;
   display: grid;
   gap: 12px;
 }
 
-.session-summary div {
+.course-summary div {
   display: grid;
   grid-template-columns: 85px 1fr;
   gap: 8px;
 }
 
-.session-summary dt {
+.course-summary dt {
   color: #6a7d72;
   font-size: 0.85rem;
 }
 
-.session-summary dd {
+.course-summary dd {
   margin: 0;
   color: #263c30;
   font-size: 0.9rem;
   font-weight: 650;
 }
 
-.session-empty-state {
+.course-empty-state {
   grid-column: 1 / -1;
   padding: 48px 24px;
   border: 1px dashed #b9d8c6;
@@ -1069,7 +1069,7 @@
   text-align: center;
 }
 
-.session-card-footer {
+.course-card-footer {
   margin-top: auto;
   display: flex;
   align-items: center;
@@ -1077,24 +1077,24 @@
   gap: 12px;
 }
 
-.session-card-footer .session-distance {
+.course-card-footer .course-distance {
   margin-right: auto;
 }
 
-.session-details-link {
+.course-details-link {
   color: #176f45;
   font-size: 0.86rem;
   font-weight: 800;
 }
 
-.session-details-page {
+.course-details-page {
   width: min(1120px, calc(100% - 40px));
   min-height: 100vh;
   margin: 0 auto;
   padding: 42px 0 72px;
 }
 
-.session-details-back {
+.course-details-back {
   display: inline-block;
   margin-bottom: 24px;
   color: #238654;
@@ -1102,12 +1102,12 @@
   text-decoration: none;
 }
 
-.session-details-back::before {
+.course-details-back::before {
   content: "←";
   margin-right: 8px;
 }
 
-.session-details-hero {
+.course-details-hero {
   padding: 30px;
   display: flex;
   align-items: flex-start;
@@ -1119,19 +1119,19 @@
   box-shadow: 0 12px 32px rgba(24, 89, 56, 0.07);
 }
 
-.session-details-hero h1 {
+.course-details-hero h1 {
   margin: 10px 0 6px;
   color: #16251d;
   font-size: clamp(1.8rem, 4vw, 2.7rem);
   line-height: 1.1;
 }
 
-.session-details-hero p {
+.course-details-hero p {
   margin: 0;
   color: #607369;
 }
 
-.session-cancellation-notice {
+.course-cancellation-notice {
   margin-top: 18px;
   padding: 16px 18px;
   border: 1px solid #e5aaaa;
@@ -1141,17 +1141,17 @@
   background: #fff3f3;
 }
 
-.session-cancellation-notice strong {
+.course-cancellation-notice strong {
   display: block;
   font-size: 1rem;
 }
 
-.session-cancellation-notice p {
+.course-cancellation-notice p {
   margin: 5px 0 0;
   line-height: 1.5;
 }
 
-.session-details-layout {
+.course-details-layout {
   margin-top: 24px;
   display: grid;
   grid-template-columns: minmax(0, 1fr) 360px;
@@ -1159,14 +1159,14 @@
   gap: 24px;
 }
 
-.session-details-main {
+.course-details-main {
   display: grid;
   gap: 18px;
 }
 
 .details-section,
-.session-booking-summary,
-.session-details-state {
+.course-booking-summary,
+.course-details-state {
   padding: 26px;
   border: 1px solid #d5e8dc;
   border-radius: 16px;
@@ -1192,19 +1192,19 @@
   text-transform: uppercase;
 }
 
-.session-booking-summary {
+.course-booking-summary {
   position: sticky;
   top: 24px;
 }
 
-.details-first-session {
+.details-first-course {
   padding: 16px;
   border-radius: 12px;
   background: #eef8f2;
 }
 
-.details-first-session span,
-.session-detail-price span {
+.details-first-course span,
+.course-detail-price span {
   display: block;
   color: #238654;
   font-size: 0.75rem;
@@ -1213,52 +1213,52 @@
   text-transform: uppercase;
 }
 
-.details-first-session strong {
+.details-first-course strong {
   display: block;
   margin-top: 5px;
   font-size: 1.05rem;
 }
 
-.details-first-session p {
+.details-first-course p {
   margin: 4px 0 0;
   color: #53685c;
 }
 
-.session-booking-summary dl {
+.course-booking-summary dl {
   margin: 20px 0;
   display: grid;
   gap: 15px;
 }
 
-.session-booking-summary dl div {
+.course-booking-summary dl div {
   display: grid;
   gap: 3px;
 }
 
-.session-booking-summary dt {
+.course-booking-summary dt {
   color: #718278;
   font-size: 0.78rem;
 }
 
-.session-booking-summary dd {
+.course-booking-summary dd {
   margin: 0;
   color: #263c30;
   font-weight: 700;
 }
 
-.session-detail-price {
+.course-detail-price {
   padding-top: 18px;
   border-top: 1px solid #dce9e1;
 }
 
-.session-detail-price strong {
+.course-detail-price strong {
   display: block;
   margin-top: 4px;
   color: #16251d;
   font-size: 1.55rem;
 }
 
-.session-booking-status {
+.course-booking-status {
   margin: 18px 0 0;
   padding: 12px 14px;
   border: 1px solid #dce9e1;
@@ -1269,7 +1269,7 @@
   line-height: 1.4;
 }
 
-.session-booking-status.confirmed {
+.course-booking-status.confirmed {
   border-color: #a9d3ba;
   color: #196d43;
   background: #edf8f1;
@@ -1277,28 +1277,28 @@
 }
 
 @media (prefers-reduced-motion: no-preference) {
-  .session-details-hero,
-  .session-details-main,
-  .session-booking-summary,
-  .session-results > .session-card-link {
-    animation: session-enter 420ms ease-out backwards;
+  .course-details-hero,
+  .course-details-main,
+  .course-booking-summary,
+  .course-results > .course-card-link {
+    animation: course-enter 420ms ease-out backwards;
   }
 
-  .session-details-main,
-  .session-results > .session-card-link:nth-child(even) {
+  .course-details-main,
+  .course-results > .course-card-link:nth-child(even) {
     animation-delay: 70ms;
   }
 
-  .session-booking-summary {
+  .course-booking-summary {
     animation-delay: 140ms;
   }
 
-  @keyframes session-enter {
+  @keyframes course-enter {
     from { opacity: 0; transform: translateY(16px); }
     to { opacity: 1; transform: translateY(0); }
   }
 
-  .session-booking-status.confirmed {
+  .course-booking-status.confirmed {
     animation: confirm-place 320ms ease-out;
   }
   @keyframes confirm-place {
@@ -1307,20 +1307,20 @@
   }
 }
 
-.session-booking-status.error {
+.course-booking-status.error {
   border-color: #e7b8b8;
   color: #9a3030;
   background: #fff4f4;
 }
 
-.session-booking-status.cancelled {
+.course-booking-status.cancelled {
   border-color: #e5aaaa;
   color: #8d2d2d;
   background: #fff3f3;
   font-weight: 700;
 }
 
-.session-booking-button {
+.course-booking-button {
   width: 100%;
   min-height: 46px;
   margin-top: 12px;
@@ -1334,30 +1334,30 @@
   cursor: pointer;
 }
 
-.session-booking-button:hover:not(:disabled) {
+.course-booking-button:hover:not(:disabled) {
   background: #196d43;
 }
 
-.session-booking-button:focus-visible {
+.course-booking-button:focus-visible {
   outline: 3px solid #bfe4ce;
   outline-offset: 2px;
 }
 
-.session-booking-button:disabled {
+.course-booking-button:disabled {
   border-color: #aac0b3;
   color: #61736a;
   background: #e7eee9;
   cursor: not-allowed;
 }
 
-.session-booking-action-error {
+.course-booking-action-error {
   margin: 10px 0 0;
   color: #9a3030;
   font-size: 0.84rem;
   line-height: 1.4;
 }
 
-.session-booked-location {
+.course-booked-location {
   margin-top: 14px;
   padding-top: 14px;
   display: grid;
@@ -1365,28 +1365,28 @@
   border-top: 1px solid #dce9e1;
 }
 
-.session-booked-location span {
+.course-booked-location span {
   color: #718278;
   font-size: 0.78rem;
 }
 
-.session-booked-location a {
+.course-booked-location a {
   width: fit-content;
   color: #196d43;
   font-weight: 750;
 }
 
-.session-booked-location a:hover {
+.course-booked-location a:hover {
   text-decoration-thickness: 2px;
 }
 
-.session-details-state {
+.course-details-state {
   max-width: 680px;
   margin: 80px auto;
   text-align: center;
 }
 
-.session-pagination {
+.course-pagination {
   margin-top: 24px;
   display: flex;
   align-items: center;
@@ -1396,17 +1396,17 @@
   font-weight: 700;
 }
 
-.session-pagination button {
+.course-pagination button {
   border: 1px solid #8ac6a6;
   color: #238654;
   background: #ffffff;
 }
 
-.session-pagination button:hover:not(:disabled) {
+.course-pagination button:hover:not(:disabled) {
   background: #eaf5ef;
 }
 
-.session-pagination button:disabled {
+.course-pagination button:disabled {
   cursor: not-allowed;
   opacity: 0.45;
 }
@@ -1930,7 +1930,7 @@
     margin-top: 4px;
   }
 
-  .session-results {
+  .course-results {
     grid-template-columns: 1fr;
   }
 
@@ -1999,25 +1999,25 @@
 }
 
 @media (min-width: 761px) and (max-width: 1000px) {
-  .session-results {
+  .course-results {
     grid-template-columns: 1fr;
   }
 
-  .session-details-page {
+  .course-details-page {
     width: min(100% - 32px, 1120px);
     padding-top: 28px;
   }
 
-  .session-details-hero {
+  .course-details-hero {
     padding: 24px;
     flex-direction: column;
   }
 
-  .session-details-layout {
+  .course-details-layout {
     grid-template-columns: 1fr;
   }
 
-  .session-booking-summary {
+  .course-booking-summary {
     position: static;
   }
 }
@@ -2359,13 +2359,13 @@
   opacity: 0.65;
 }
 
-.trainer-session-grid {
+.trainer-course-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 20px;
 }
 
-.trainer-session-card,
+.trainer-course-card,
 .trainer-form-card,
 .trainer-details-card,
 .trainer-participants-card,
@@ -2379,7 +2379,7 @@
   box-shadow: 0 10px 28px rgba(24, 89, 56, 0.06);
 }
 
-.trainer-session-card-heading {
+.trainer-course-card-heading {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -2409,40 +2409,40 @@
   background: #edf1ef;
 }
 
-.trainer-session-card h2 {
+.trainer-course-card h2 {
   margin: 20px 0 6px;
   color: #16251d;
 }
 
-.trainer-session-card > p {
+.trainer-course-card > p {
   margin: 0;
   color: #667a6f;
 }
 
-.trainer-session-card dl {
+.trainer-course-card dl {
   margin: 22px 0;
   display: grid;
   gap: 12px;
 }
 
-.trainer-session-card dl div {
+.trainer-course-card dl div {
   display: flex;
   justify-content: space-between;
   gap: 12px;
 }
 
-.trainer-session-card dt {
+.trainer-course-card dt {
   color: #76887e;
 }
 
-.trainer-session-card dd {
+.trainer-course-card dd {
   margin: 0;
   color: #263c30;
   font-weight: 650;
   text-align: right;
 }
 
-.trainer-session-card > a,
+.trainer-course-card > a,
 .trainer-empty-state a,
 .trainer-back-link {
   color: #1c7147;
@@ -2474,7 +2474,7 @@
   margin: 0 auto;
 }
 
-.trainer-session-form {
+.trainer-course-form {
   margin-top: 28px;
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -2636,7 +2636,7 @@
   margin-top: 0;
 }
 
-.trainer-session-description {
+.trainer-course-description {
   margin: -6px 0 24px;
   color: #607369;
   line-height: 1.65;
@@ -2883,7 +2883,7 @@
 }
 
 @media (max-width: 900px) {
-  .trainer-session-grid {
+  .trainer-course-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
@@ -2913,8 +2913,8 @@
     flex-wrap: wrap;
   }
 
-  .trainer-session-grid,
-  .trainer-session-form,
+  .trainer-course-grid,
+  .trainer-course-form,
   .trainer-editor-grid {
     grid-template-columns: 1fr;
   }

@@ -1,6 +1,6 @@
 package com.csports.user;
 
-import com.csports.booking.dto.BookedSessionResponse;
+import com.csports.booking.dto.BookedCourseResponse;
 import com.csports.booking.BookingService;
 import com.csports.common.pagination.PageResponse;
 import com.csports.common.web.ApiPaths;
@@ -41,12 +41,12 @@ public class UserController {
     }
 
     @PreAuthorize("hasRole('USER')")
-    @GetMapping("/sessions")
+    @GetMapping("/courses")
     @Deprecated
-    public PageResponse<BookedSessionResponse> getMySessions(
+    public PageResponse<BookedCourseResponse> getMyCourses(
             @RequestParam(defaultValue = "0") @Min(0) int page,
             @RequestParam(defaultValue = "10") @Min(1) @Max(100) int size) {
 
-        return bookingService.getMySessions(page, size);
+        return bookingService.getMyCourses(page, size);
     }
 }

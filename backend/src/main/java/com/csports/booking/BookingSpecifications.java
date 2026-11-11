@@ -7,7 +7,7 @@ import java.util.List;
 import org.springframework.data.jpa.domain.Specification;
 
 import com.csports.booking.dto.BookingSearchRequest;
-import com.csports.session.TrainingSessionStatus;
+import com.csports.course.TrainingCourseStatus;
 
 import jakarta.persistence.criteria.Predicate;
 
@@ -27,10 +27,10 @@ final class BookingSpecifications {
             if (request.status() != null) {
                 predicates.add(criteriaBuilder.equal(root.get("status"), request.status()));
             }
-            if (request.sessionId() != null) {
+            if (request.courseId() != null) {
                 predicates.add(criteriaBuilder.equal(
-                        root.get("session").get("id"),
-                        request.sessionId()));
+                        root.get("course").get("id"),
+                        request.courseId()));
             }
 
             switch (request.view()) {
@@ -39,10 +39,10 @@ final class BookingSpecifications {
                             root.get("status"),
                             BookingStatus.CONFIRMED));
                     predicates.add(criteriaBuilder.equal(
-                            root.get("session").get("status"),
-                            TrainingSessionStatus.SCHEDULED));
+                            root.get("course").get("status"),
+                            TrainingCourseStatus.SCHEDULED));
                     predicates.add(criteriaBuilder.greaterThanOrEqualTo(
-                            root.get("session").get("endDate"),
+                            root.get("course").get("endDate"),
                             today));
                 }
                 case HISTORY -> predicates.add(criteriaBuilder.or(
@@ -50,10 +50,10 @@ final class BookingSpecifications {
                                 root.get("status"),
                                 BookingStatus.CONFIRMED),
                         criteriaBuilder.notEqual(
-                                root.get("session").get("status"),
-                                TrainingSessionStatus.SCHEDULED),
+                                root.get("course").get("status"),
+                                TrainingCourseStatus.SCHEDULED),
                         criteriaBuilder.lessThan(
-                                root.get("session").get("endDate"),
+                                root.get("course").get("endDate"),
                                 today)));
                 case ALL -> {
                     // No additional lifecycle predicate.

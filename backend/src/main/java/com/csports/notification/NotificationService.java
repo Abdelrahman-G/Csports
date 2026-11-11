@@ -66,7 +66,7 @@ public class NotificationService {
     private NotificationResponse toResponse(UserNotification notification) {
         return new NotificationResponse(
                 notification.getId(),
-                notification.getSessionId(),
+                notification.getCourseId(),
                 notification.getType(),
                 notification.getTitle(),
                 notification.getMessage(),

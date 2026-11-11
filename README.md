@@ -1,7 +1,7 @@
 # Csports
 
 Csports is a full-stack platform for discovering and managing sports training
-sessions. Trainers can publish recurring sessions, while participants can
+courses. Trainers can publish recurring courses, while participants can
 search, book, cancel, and receive in-app notifications.
 
 ## Architecture
@@ -19,9 +19,9 @@ Browser -> Nginx (React SPA + /api reverse proxy) -> Spring Boot
   **Spring Security**.
 - Short-lived **JWT** access tokens, atomic one-time refresh-token rotation, and
   Redis-backed access-token revocation.
-- Filtered session discovery using JPA specifications, database indexes,
+- Filtered course discovery using JPA specifications, database indexes,
   **PostGIS** distance queries, and **Redis-cached** search results.
-- Concurrency-safe booking using a per-session **Redis distributed lock**, JPA
+- Concurrency-safe booking using a per-course **Redis distributed lock**, JPA
   optimistic locking, PostgreSQL constraints, and transactional fallback.
 - A **React and TypeScript** single-page application with protected routes,
   shared authentication state, automatic token refresh, and an **Nginx** API

@@ -5,25 +5,25 @@ import java.time.LocalDateTime;
 
 import org.springframework.stereotype.Component;
 
-import com.csports.booking.dto.BookedSessionResponse;
-import com.csports.session.dto.SessionParticipantResponse;
-import com.csports.session.SessionSchedule;
-import com.csports.session.TrainingSessionStatus;
+import com.csports.booking.dto.BookedCourseResponse;
+import com.csports.course.dto.CourseParticipantResponse;
+import com.csports.course.CourseSchedule;
+import com.csports.course.TrainingCourseStatus;
 import com.csports.user.User;
-import com.csports.session.TrainingSession;
+import com.csports.course.TrainingCourse;
 
 @Component
 public class BookingMapper {
 
-    public BookedSessionResponse toResponse(Booking booking) {
+    public BookedCourseResponse toResponse(Booking booking) {
 
-        TrainingSession session = booking.getSession();
-        LocalDateTime bookingClosesAt = SessionSchedule.firstStart(session);
-        boolean bookingOpen = session.getStatus() == TrainingSessionStatus.SCHEDULED
-                && session.getCurrentParticipants() < session.getMaxParticipants()
+        TrainingCourse course = booking.getCourse();
+        LocalDateTime bookingClosesAt = CourseSchedule.firstStart(course);
+        boolean bookingOpen = course.getStatus() == TrainingCourseStatus.SCHEDULED
+                && course.getCurrentParticipants() < course.getMaxParticipants()
                 && bookingClosesAt.isAfter(LocalDateTime.now());
 
-        return new BookedSessionResponse(
+        return new BookedCourseResponse(
 
                 booking.getId(),
 
@@ -33,64 +33,64 @@ public class BookingMapper {
 
                 booking.getCancelledAt(),
 
-                session.getId(),
+                course.getId(),
 
-                session.getTitle(),
+                course.getTitle(),
 
-                session.getTrainer().getId(),
+                course.getTrainer().getId(),
 
-                session.getTrainer().getName(),
+                course.getTrainer().getName(),
 
-                session.getSport().getId(),
+                course.getSport().getId(),
 
-                session.getSport().getName(),
+                course.getSport().getName(),
 
-                session.getLocationName(),
+                course.getLocationName(),
 
-                session.getRegion().getId(),
+                course.getRegion().getId(),
 
-                session.getRegion().getName(),
+                course.getRegion().getName(),
 
-                session.getRegion().getCity(),
+                course.getRegion().getCity(),
 
-                session.getRegion().getCountry(),
+                course.getRegion().getCountry(),
 
                 booking.getStatus() == BookingStatus.CONFIRMED
-                        ? session.getGoogleMapsUrl()
+                        ? course.getGoogleMapsUrl()
                         : null,
 
-                session.getStartDate(),
+                course.getStartDate(),
 
-                session.getEndDate(),
+                course.getEndDate(),
 
-                session.getStartTime(),
+                course.getStartTime(),
 
-                session.getDurationMinutes(),
+                course.getDurationMinutes(),
 
-                Set.copyOf(session.getDays()),
+                Set.copyOf(course.getDays()),
 
-                session.getPrice(),
+                course.getPrice(),
 
-                session.getCurrentParticipants(),
+                course.getCurrentParticipants(),
 
-                session.getMaxParticipants(),
+                course.getMaxParticipants(),
 
-                session.getMaxParticipants() - session.getCurrentParticipants(),
+                course.getMaxParticipants() - course.getCurrentParticipants(),
 
                 bookingClosesAt,
 
                 bookingOpen,
 
-                session.getStatus(),
+                course.getStatus(),
 
-                session.getCancellationReason());
+                course.getCancellationReason());
     }
 
-    public SessionParticipantResponse toParticipantResponse(Booking booking) {
+    public CourseParticipantResponse toParticipantResponse(Booking booking) {
 
         User user = booking.getUser();
 
-        return new SessionParticipantResponse(
+        return new CourseParticipantResponse(
 
                 user.getId(),
 

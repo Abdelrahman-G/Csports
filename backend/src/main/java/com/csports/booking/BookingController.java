@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.csports.booking.dto.BookedSessionResponse;
+import com.csports.booking.dto.BookedCourseResponse;
 import com.csports.booking.dto.BookingSearchRequest;
 import com.csports.booking.dto.ScheduleRequest;
 import com.csports.booking.dto.ScheduleResponse;
@@ -37,17 +37,17 @@ public class BookingController {
     }
 
     @PreAuthorize("hasRole('USER')")
-    @PostMapping("/{sessionId}")
-    public ResponseEntity<BookedSessionResponse> bookSession(
-            @PathVariable @Positive Long sessionId) {
+    @PostMapping("/{courseId}")
+    public ResponseEntity<BookedCourseResponse> bookCourse(
+            @PathVariable @Positive Long courseId) {
 
-        BookedSessionResponse booking = bookingService.bookSession(sessionId);
+        BookedCourseResponse booking = bookingService.bookCourse(courseId);
         return ResponseEntity.status(HttpStatus.CREATED).body(booking);
     }
 
     @PreAuthorize("hasRole('USER')")
     @GetMapping("/me")
-    public PageResponse<BookedSessionResponse> getMyBookings(
+    public PageResponse<BookedCourseResponse> getMyBookings(
             @Valid @ModelAttribute BookingSearchRequest request) {
 
         return bookingService.getMyBookings(request);
@@ -60,10 +60,10 @@ public class BookingController {
     }
 
     @PreAuthorize("hasRole('USER')")
-    @DeleteMapping("/{sessionId}")
-    public BookedSessionResponse cancelBooking(
-            @PathVariable @Positive Long sessionId) {
+    @DeleteMapping("/{courseId}")
+    public BookedCourseResponse cancelBooking(
+            @PathVariable @Positive Long courseId) {
 
-        return bookingService.cancelBooking(sessionId);
+        return bookingService.cancelBooking(courseId);
     }
 }

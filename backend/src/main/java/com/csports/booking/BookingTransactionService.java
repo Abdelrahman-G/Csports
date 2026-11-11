@@ -5,74 +5,74 @@ import java.time.LocalDateTime;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.csports.booking.dto.BookedSessionResponse;
+import com.csports.booking.dto.BookedCourseResponse;
 import com.csports.booking.exception.AlreadyBookedException;
-import com.csports.booking.exception.CannotBookOwnSessionException;
-import com.csports.booking.exception.SessionFullException;
+import com.csports.booking.exception.CannotBookOwnCourseException;
+import com.csports.booking.exception.CourseFullException;
 import com.csports.common.exception.ResourceNotFoundException;
-import com.csports.session.SessionSchedule;
-import com.csports.session.TrainingSession;
-import com.csports.session.TrainingSessionRepository;
-import com.csports.session.TrainingSessionStatus;
-import com.csports.session.exception.SessionStateConflictException;
-import com.csports.session.exception.TrainingSessionNotFoundException;
+import com.csports.course.CourseSchedule;
+import com.csports.course.TrainingCourse;
+import com.csports.course.TrainingCourseRepository;
+import com.csports.course.TrainingCourseStatus;
+import com.csports.course.exception.CourseStateConflictException;
+import com.csports.course.exception.TrainingCourseNotFoundException;
 import com.csports.user.User;
 import com.csports.user.UserRepository;
 
 /**
  * Owns the PostgreSQL transaction executed while the outer service holds the
- * Redis session lock. Because this is a separate Spring bean, the transaction
+ * Redis course lock. Because this is a separate Spring bean, the transaction
  * commits before control returns to the lock and releases it.
  */
 @Service
 public class BookingTransactionService {
 
     private final BookingRepository bookingRepository;
-    private final TrainingSessionRepository trainingSessionRepository;
+    private final TrainingCourseRepository trainingCourseRepository;
     private final UserRepository userRepository;
     private final BookingMapper bookingMapper;
 
     public BookingTransactionService(
             BookingRepository bookingRepository,
-            TrainingSessionRepository trainingSessionRepository,
+            TrainingCourseRepository trainingCourseRepository,
             UserRepository userRepository,
             BookingMapper bookingMapper) {
         this.bookingRepository = bookingRepository;
-        this.trainingSessionRepository = trainingSessionRepository;
+        this.trainingCourseRepository = trainingCourseRepository;
         this.userRepository = userRepository;
         this.bookingMapper = bookingMapper;
     }
 
     @Transactional
-    public BookedSessionResponse bookSession(Long sessionId, Long userId) {
+    public BookedCourseResponse bookCourse(Long courseId, Long userId) {
         User user = getUser(userId);
-        TrainingSession session = getSession(sessionId);
+        TrainingCourse course = getCourse(courseId);
 
-        if (session.getTrainer().getId().equals(user.getId())) {
-            throw new CannotBookOwnSessionException();
+        if (course.getTrainer().getId().equals(user.getId())) {
+            throw new CannotBookOwnCourseException();
         }
-        if (session.getStatus() != TrainingSessionStatus.SCHEDULED) {
-            throw new SessionStateConflictException(
-                    "Only scheduled training sessions can be booked.");
+        if (course.getStatus() != TrainingCourseStatus.SCHEDULED) {
+            throw new CourseStateConflictException(
+                    "Only scheduled training courses can be booked.");
         }
-        if (!SessionSchedule.firstStart(session).isAfter(LocalDateTime.now())) {
-            throw new SessionStateConflictException(
+        if (!CourseSchedule.firstStart(course).isAfter(LocalDateTime.now())) {
+            throw new CourseStateConflictException(
                     "Booking closes when the first training occurrence starts.");
         }
-        if (bookingRepository.existsByUserAndSessionAndStatus(
+        if (bookingRepository.existsByUserAndCourseAndStatus(
                 user,
-                session,
+                course,
                 BookingStatus.CONFIRMED)) {
             throw new AlreadyBookedException();
         }
-        if (session.getCurrentParticipants() >= session.getMaxParticipants()) {
-            throw new SessionFullException();
+        if (course.getCurrentParticipants() >= course.getMaxParticipants()) {
+            throw new CourseFullException();
         }
 
-        session.setCurrentParticipants(session.getCurrentParticipants() + 1);
+        course.setCurrentParticipants(course.getCurrentParticipants() + 1);
         Booking booking = Booking.builder()
                 .user(user)
-                .session(session)
+                .course(course)
                 .status(BookingStatus.CONFIRMED)
                 .build();
 
@@ -83,33 +83,33 @@ public class BookingTransactionService {
     }
 
     @Transactional
-    public BookedSessionResponse cancelBooking(Long sessionId, Long userId) {
+    public BookedCourseResponse cancelBooking(Long courseId, Long userId) {
         User user = getUser(userId);
-        TrainingSession session = getSession(sessionId);
-        Booking booking = bookingRepository.findByUserAndSessionAndStatus(
+        TrainingCourse course = getCourse(courseId);
+        Booking booking = bookingRepository.findByUserAndCourseAndStatus(
                         user,
-                        session,
+                        course,
                         BookingStatus.CONFIRMED)
                 .orElseThrow(() -> new ResourceNotFoundException("Booking not found."));
 
         LocalDateTime now = LocalDateTime.now();
-        if (session.getStatus() == TrainingSessionStatus.COMPLETED
-                || !SessionSchedule.finalEnd(session).isAfter(now)) {
-            throw new SessionStateConflictException(
-                    "A booking cannot be cancelled after the session series is complete.");
+        if (course.getStatus() == TrainingCourseStatus.COMPLETED
+                || !CourseSchedule.finalEnd(course).isAfter(now)) {
+            throw new CourseStateConflictException(
+                    "A booking cannot be cancelled after the course series is complete.");
         }
-        if (session.getStatus() != TrainingSessionStatus.SCHEDULED) {
-            throw new SessionStateConflictException(
-                    "Only a booking for a scheduled session can be cancelled.");
+        if (course.getStatus() != TrainingCourseStatus.SCHEDULED) {
+            throw new CourseStateConflictException(
+                    "Only a booking for a scheduled course can be cancelled.");
         }
-        if (session.getCurrentParticipants() <= 0) {
-            throw new SessionStateConflictException(
+        if (course.getCurrentParticipants() <= 0) {
+            throw new CourseStateConflictException(
                     "The stored participant count is inconsistent with this booking.");
         }
 
         booking.setStatus(BookingStatus.CANCELLED_BY_USER);
         booking.setCancelledAt(now);
-        session.setCurrentParticipants(session.getCurrentParticipants() - 1);
+        course.setCurrentParticipants(course.getCurrentParticipants() - 1);
 
         bookingRepository.flush();
         return bookingMapper.toResponse(booking);
@@ -120,8 +120,8 @@ public class BookingTransactionService {
                 .orElseThrow(() -> new ResourceNotFoundException("User account not found."));
     }
 
-    private TrainingSession getSession(Long sessionId) {
-        return trainingSessionRepository.findById(sessionId)
-                .orElseThrow(TrainingSessionNotFoundException::new);
+    private TrainingCourse getCourse(Long courseId) {
+        return trainingCourseRepository.findById(courseId)
+                .orElseThrow(TrainingCourseNotFoundException::new);
     }
 }
