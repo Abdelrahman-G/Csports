@@ -1,4 +1,4 @@
-import { Route, Routes } from 'react-router-dom'
+import { Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import './App.css'
 import LandingPage from './pages/LandingPage'
 import LoginPage from './pages/LoginPage'
@@ -7,18 +7,26 @@ import SignupPage from './pages/SignupPage'
 import RegistrationPage from './pages/RegistrationPage'
 import TrainerHomePage from './pages/TrainerHomePage'
 import UserHomePage from './pages/UserHomePage'
-import SessionDetailsPage from './pages/SessionDetailsPage'
+import CourseDetailsPage from './pages/CourseDetailsPage'
 import MyBookingsPage from './pages/MyBookingsPage'
 import NotificationsPage from './pages/NotificationsPage'
 import RequireRole from './auth/RequireRole'
-import CreateTrainerSessionPage from './pages/CreateTrainerSessionPage'
-import ManageTrainerSessionPage from './pages/ManageTrainerSessionPage'
+import CreateTrainerCoursePage from './pages/CreateTrainerCoursePage'
+import ManageTrainerCoursePage from './pages/ManageTrainerCoursePage'
 import ProfilePage from './pages/ProfilePage'
 import MySchedulePage from './pages/MySchedulePage'
+
+function LegacyCourseLink() {
+  const { pathname, search, hash } = useLocation()
+  return <Navigate to={`${pathname.replace('/sessions/', '/courses/')}${search}${hash}`} replace />
+}
 
 function App() {
   return (
     <Routes>
+      <Route path="/user/sessions/:courseId" element={<LegacyCourseLink />} />
+      <Route path="/trainer/sessions/new" element={<LegacyCourseLink />} />
+      <Route path="/trainer/sessions/:courseId/manage" element={<LegacyCourseLink />} />
       <Route path="/" element={<LandingPage />} />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/signup" element={<SignupPage />} />
@@ -39,10 +47,10 @@ function App() {
         }
       />
       <Route
-        path="/user/sessions/:sessionId"
+        path="/user/courses/:courseId"
         element={
           <RequireRole allowedRole="USER">
-            <SessionDetailsPage />
+            <CourseDetailsPage />
           </RequireRole>
         }
       />
@@ -83,18 +91,18 @@ function App() {
         }
       />
       <Route
-        path="/trainer/sessions/new"
+        path="/trainer/courses/new"
         element={
           <RequireRole allowedRole="TRAINER">
-            <CreateTrainerSessionPage />
+            <CreateTrainerCoursePage />
           </RequireRole>
         }
       />
       <Route
-        path="/trainer/sessions/:sessionId/manage"
+        path="/trainer/courses/:courseId/manage"
         element={
           <RequireRole allowedRole="TRAINER">
-            <ManageTrainerSessionPage />
+            <ManageTrainerCoursePage />
           </RequireRole>
         }
       />

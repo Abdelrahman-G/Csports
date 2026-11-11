@@ -65,9 +65,9 @@ function NotificationsPage() {
     return () => controller.abort()
   }, [authenticatedFetch, pageNumber])
 
-  async function openSession(
+  async function openCourse(
     notificationId: number,
-    sessionId: number,
+    courseId: number,
     isRead: boolean,
   ) {
     if (openingNotificationId !== null) {
@@ -94,7 +94,7 @@ function NotificationsPage() {
         )
       }
 
-      navigate(`/user/sessions/${sessionId}`)
+      navigate(`/user/courses/${courseId}`)
     } catch (requestError) {
       setError(
         requestError instanceof Error
@@ -112,9 +112,9 @@ function NotificationsPage() {
       <UserNavigation />
       <main className="notifications-page">
         <header className="notifications-header">
-          <p className="eyebrow">Session updates</p>
+          <p className="eyebrow">Course updates</p>
           <h1>Notifications</h1>
-          <p>Important changes to sessions you have booked appear here.</p>
+          <p>Important changes to courses you have booked appear here.</p>
         </header>
 
         {error && (
@@ -129,7 +129,7 @@ function NotificationsPage() {
           ) : notifications.length === 0 ? (
             <div className="booking-list-state">
               <h2>No notifications yet</h2>
-              <p>Updates to your booked sessions will appear here.</p>
+              <p>Updates to your booked courses will appear here.</p>
             </div>
           ) : (
             notifications.map((notification) => (
@@ -153,9 +153,9 @@ function NotificationsPage() {
                 <button
                   type="button"
                   onClick={() =>
-                    void openSession(
+                    void openCourse(
                       notification.id,
-                      notification.sessionId,
+                      notification.courseId,
                       notification.read,
                     )
                   }
@@ -163,7 +163,7 @@ function NotificationsPage() {
                 >
                   {openingNotificationId === notification.id
                     ? 'Opening...'
-                    : 'View session'}
+                    : 'View course'}
                 </button>
               </article>
             ))
@@ -171,7 +171,7 @@ function NotificationsPage() {
         </section>
 
         {notificationPage && notificationPage.totalPages > 1 && (
-          <nav className="session-pagination" aria-label="Notification pages">
+          <nav className="course-pagination" aria-label="Notification pages">
             <button
               type="button"
               onClick={() => setPageNumber((current) => current - 1)}

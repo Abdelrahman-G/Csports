@@ -13,21 +13,21 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
-import com.csports.session.TrainingSession;
+import com.csports.course.TrainingCourse;
 import com.csports.user.User;
 
 @Repository
 public interface BookingRepository
         extends JpaRepository<Booking, Long>, JpaSpecificationExecutor<Booking> {
 
-    boolean existsByUserAndSessionAndStatus(
+    boolean existsByUserAndCourseAndStatus(
             User user,
-            TrainingSession session,
+            TrainingCourse course,
             BookingStatus status);
 
-    Optional<Booking> findByUserAndSessionAndStatus(
+    Optional<Booking> findByUserAndCourseAndStatus(
             User user,
-            TrainingSession session,
+            TrainingCourse course,
             BookingStatus status);
 
     Page<Booking> findByUserAndStatus(
@@ -37,26 +37,26 @@ public interface BookingRepository
 
     @Override
     @EntityGraph(attributePaths = {
-            "session",
-            "session.trainer",
-            "session.sport",
-            "session.region"
+            "course",
+            "course.trainer",
+            "course.sport",
+            "course.region"
     })
     Page<Booking> findAll(Specification<Booking> specification, Pageable pageable);
 
-    Page<Booking> findBySessionAndStatus(
-            TrainingSession session,
+    Page<Booking> findByCourseAndStatus(
+            TrainingCourse course,
             BookingStatus status,
             Pageable pageable);
 
-    List<Booking> findAllBySessionAndStatus(
-            TrainingSession session,
+    List<Booking> findAllByCourseAndStatus(
+            TrainingCourse course,
             BookingStatus status);
 
     // shortcut: loads historical candidates; add an interval prefilter if large booking histories make this slow.
     @Query("""
             select distinct b from Booking b
-            join fetch b.session s
+            join fetch b.course s
             join fetch s.sport
             join fetch s.days
             where b.user.id = :userId and s.startDate < :to
@@ -66,8 +66,8 @@ public interface BookingRepository
     @Query("""
             select b.user.id
             from Booking b
-            where b.session.id = :sessionId
+            where b.course.id = :courseId
               and b.status = com.csports.booking.BookingStatus.CONFIRMED
             """)
-    List<Long> findBookedUserIdsBySessionId(@Param("sessionId") Long sessionId);
+    List<Long> findBookedUserIdsByCourseId(@Param("courseId") Long courseId);
 }

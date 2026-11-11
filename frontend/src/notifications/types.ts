@@ -1,8 +1,8 @@
-export type NotificationType = 'SESSION_UPDATED' | 'SESSION_CANCELLED'
+export type NotificationType = 'COURSE_UPDATED' | 'COURSE_CANCELLED'
 
 export type UserNotification = {
   id: number
-  sessionId: number
+  courseId: number
   type: NotificationType
   title: string
   message: string

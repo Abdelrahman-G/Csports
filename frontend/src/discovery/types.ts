@@ -10,7 +10,7 @@ export type Sport = {
   name: string
 }
 
-export type TrainingSession = {
+export type TrainingCourse = {
   id: number
   title: string
   trainerId: number
@@ -37,7 +37,7 @@ export type TrainingSession = {
   distanceMeters: number | null
 }
 
-export type TrainingSessionDetails = Omit<TrainingSession, 'distanceMeters'> & {
+export type TrainingCourseDetails = Omit<TrainingCourse, 'distanceMeters'> & {
   description: string | null
   trainerBio: string | null
   trainerExperienceYears: number | null
@@ -46,8 +46,8 @@ export type TrainingSessionDetails = Omit<TrainingSession, 'distanceMeters'> & {
   cancellationReason: string | null
 }
 
-export type SessionPage = {
-  content: TrainingSession[]
+export type CoursePage = {
+  content: TrainingCourse[]
   page: number
   size: number
   totalElements: number

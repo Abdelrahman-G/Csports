@@ -8,8 +8,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.csports.booking.dto.ScheduleRequest;
 import com.csports.booking.dto.ScheduleResponse;
-import com.csports.session.SessionSchedule;
-import com.csports.session.TrainingSessionStatus;
+import com.csports.course.CourseSchedule;
+import com.csports.course.TrainingCourseStatus;
 import com.csports.user.UserService;
 
 @Service
@@ -27,8 +27,8 @@ public class BookingScheduleService {
         Long userId = userService.getCurrentUser().getId();
         var entries = new ArrayList<ScheduleResponse.Entry>();
         for (Booking booking : bookingRepository.findScheduleCandidates(userId, request.to())) {
-            var course = booking.getSession();
-            var enrolledAt = booking.getBookedAt().atZone(SessionSchedule.TIME_ZONE);
+            var course = booking.getCourse();
+            var enrolledAt = booking.getBookedAt().atZone(CourseSchedule.TIME_ZONE);
             var cancelledAt = booking.getCancelledAt();
             if (course.getCancelledAt() != null
                     && (cancelledAt == null || course.getCancelledAt().isBefore(cancelledAt))) {
@@ -36,11 +36,11 @@ public class BookingScheduleService {
             }
             // Older cancelled records can lack a timestamp; do not invent active commitments or history.
             if (cancelledAt == null && (booking.getStatus() != BookingStatus.CONFIRMED
-                    || course.getStatus() == TrainingSessionStatus.CANCELLED)) continue;
-            for (var occurrence : SessionSchedule.occurrencesBetween(course, request.from(), request.to())) {
+                    || course.getStatus() == TrainingCourseStatus.CANCELLED)) continue;
+            for (var occurrence : CourseSchedule.occurrencesBetween(course, request.from(), request.to())) {
                 if (occurrence.startsAt().isBefore(enrolledAt)) continue;
                 if (cancelledAt != null
-                        && !occurrence.startsAt().isBefore(cancelledAt.atZone(SessionSchedule.TIME_ZONE))) continue;
+                        && !occurrence.startsAt().isBefore(cancelledAt.atZone(CourseSchedule.TIME_ZONE))) continue;
                 entries.add(new ScheduleResponse.Entry(
                         booking.getId(), course.getId(), course.getTitle(), course.getSport().getName(),
                         course.getLocationName(),
@@ -49,7 +49,7 @@ public class BookingScheduleService {
         }
         entries.sort(Comparator.comparing(ScheduleResponse.Entry::startsAt)
                 .thenComparing(ScheduleResponse.Entry::bookingId));
-        return new ScheduleResponse(request.from(), request.to(), SessionSchedule.TIME_ZONE.getId(),
+        return new ScheduleResponse(request.from(), request.to(), CourseSchedule.TIME_ZONE.getId(),
                 java.time.Instant.now(), java.util.List.copyOf(entries));
     }
 }

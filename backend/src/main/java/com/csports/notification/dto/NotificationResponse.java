@@ -6,7 +6,7 @@ import com.csports.notification.NotificationType;
 
 public record NotificationResponse(
         Long id,
-        Long sessionId,
+        Long courseId,
         NotificationType type,
         String title,
         String message,

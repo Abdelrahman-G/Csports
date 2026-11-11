@@ -22,7 +22,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.csports.common.pagination.PageResponse;
-import com.csports.session.dto.TrainingSessionResponse;
+import com.csports.course.dto.TrainingCourseResponse;
 import com.csports.sport.dto.SportResponse;
 import tools.jackson.databind.JavaType;
 import tools.jackson.databind.ObjectMapper;
@@ -54,11 +54,11 @@ public class RedisConfig implements CachingConfigurer {
         return new JacksonJsonRedisSerializer<>(objectMapper, sportsListType);
     }
 
-    @Bean("sessionSearchCacheValueSerializer")
-    public RedisSerializer<PageResponse<TrainingSessionResponse>>
-            sessionSearchCacheValueSerializer(ObjectMapper objectMapper) {
+    @Bean("courseSearchCacheValueSerializer")
+    public RedisSerializer<PageResponse<TrainingCourseResponse>>
+            courseSearchCacheValueSerializer(ObjectMapper objectMapper) {
         JavaType pageType = objectMapper.getTypeFactory()
-                .constructParametricType(PageResponse.class, TrainingSessionResponse.class);
+                .constructParametricType(PageResponse.class, TrainingCourseResponse.class);
         return new JacksonJsonRedisSerializer<>(objectMapper, pageType);
     }
 
@@ -82,9 +82,9 @@ public class RedisConfig implements CachingConfigurer {
             @Qualifier("redisValueSerializer") RedisSerializer<Object> redisValueSerializer,
             @Qualifier("sportsCacheValueSerializer")
             RedisSerializer<List<SportResponse>> sportsCacheValueSerializer,
-            @Qualifier("sessionSearchCacheValueSerializer")
-            RedisSerializer<PageResponse<TrainingSessionResponse>>
-                    sessionSearchCacheValueSerializer) {
+            @Qualifier("courseSearchCacheValueSerializer")
+            RedisSerializer<PageResponse<TrainingCourseResponse>>
+                    courseSearchCacheValueSerializer) {
         RedisCacheConfiguration defaultConfiguration = RedisCacheConfiguration.defaultCacheConfig()
                 .entryTtl(Duration.ofHours(1))
                 .disableCachingNullValues()
@@ -105,12 +105,12 @@ public class RedisConfig implements CachingConfigurer {
                                         sportsCacheValueSerializer
                                 )
                         ),
-                CacheNames.SESSION_SEARCH,
+                CacheNames.COURSE_SEARCH,
                 defaultConfiguration
                         .entryTtl(Duration.ofMinutes(5))
                         .serializeValuesWith(
                                 RedisSerializationContext.SerializationPair.fromSerializer(
-                                        sessionSearchCacheValueSerializer
+                                        courseSearchCacheValueSerializer
                                 )
                         )
         );

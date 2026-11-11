@@ -1,6 +1,6 @@
-import type { Region, SessionPage, TrainingSession } from '../discovery/types'
+import type { Region, CoursePage, TrainingCourse } from '../discovery/types'
 
-export type { Region, SessionPage, TrainingSession }
+export type { Region, CoursePage, TrainingCourse }
 
 export type ResolvedGoogleMapsLocation = {
   latitude: number
@@ -12,7 +12,7 @@ export type VerifiedVenueLocation = ResolvedGoogleMapsLocation & {
   locationName: string
 }
 
-export type CreateTrainingSessionRequest = {
+export type CreateTrainingCourseRequest = {
   title: string
   description: string
   locationName: string
@@ -28,13 +28,13 @@ export type CreateTrainingSessionRequest = {
   price: number
 }
 
-export type UpdateTrainingSessionRequest = Partial<
-  Omit<CreateTrainingSessionRequest, 'price'>
+export type UpdateTrainingCourseRequest = Partial<
+  Omit<CreateTrainingCourseRequest, 'price'>
 > & {
   reason: string
 }
 
-export type SessionParticipant = {
+export type CourseParticipant = {
   userId: number
   name: string
   email: string
@@ -42,7 +42,7 @@ export type SessionParticipant = {
 }
 
 export type ParticipantPage = {
-  content: SessionParticipant[]
+  content: CourseParticipant[]
   page: number
   size: number
   totalElements: number

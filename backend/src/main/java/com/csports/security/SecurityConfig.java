@@ -60,16 +60,16 @@ public class SecurityConfig {
                             "/actuator/health",
                             "/actuator/health/**"
                     ).permitAll()
-                    // Public discovery: reference data and session catalogue/details.
+                    // Public discovery: reference data and course catalogue/details.
                     .requestMatchers(HttpMethod.GET,
                             "/api/v1/sports/**",
                             "/sports/**",
                             "/api/v1/regions",
                             "/regions",
-                            "/api/v1/sessions",
-                            "/sessions",
-                            "/api/v1/sessions/*",
-                            "/sessions/*",
+                            "/api/v1/courses",
+                            "/courses",
+                            "/api/v1/courses/*",
+                            "/courses/*",
                             "/api/v1/trainers/{trainerId:[0-9]+}",
                             "/trainers/{trainerId:[0-9]+}"
                     ).permitAll()

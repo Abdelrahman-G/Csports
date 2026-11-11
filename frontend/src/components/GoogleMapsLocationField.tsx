@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import type { AuthenticatedFetch } from '../auth/authContext'
-import { resolveGoogleMapsLocation } from '../trainer/trainerSessionApi'
+import { resolveGoogleMapsLocation } from '../trainer/trainerCourseApi'
 import type { VerifiedVenueLocation } from '../trainer/types'
 
 type GoogleMapsLocationFieldProps = {

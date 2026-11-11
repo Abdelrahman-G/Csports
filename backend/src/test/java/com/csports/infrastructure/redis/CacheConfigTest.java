@@ -13,8 +13,8 @@ import org.springframework.test.context.ActiveProfiles;
 
 import com.csports.sport.dto.SportResponse;
 import com.csports.common.pagination.PageResponse;
-import com.csports.session.TrainingSessionStatus;
-import com.csports.session.dto.TrainingSessionResponse;
+import com.csports.course.TrainingCourseStatus;
+import com.csports.course.dto.TrainingCourseResponse;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
@@ -34,15 +34,15 @@ class CacheConfigTest {
     private RedisSerializer<List<SportResponse>> sportsCacheValueSerializer;
 
     @Autowired
-    @Qualifier("sessionSearchCacheValueSerializer")
-    private RedisSerializer<PageResponse<TrainingSessionResponse>>
-            sessionSearchCacheValueSerializer;
+    @Qualifier("courseSearchCacheValueSerializer")
+    private RedisSerializer<PageResponse<TrainingCourseResponse>>
+            courseSearchCacheValueSerializer;
 
     @Test
     void cacheManagerShouldExposeExpectedCaches() {
         assertThat(cacheManager).isInstanceOf(RedisCacheManager.class);
         assertThat(cacheManager.getCache("sports")).isNotNull();
-        assertThat(cacheManager.getCache("session-search")).isNotNull();
+        assertThat(cacheManager.getCache("course-search")).isNotNull();
     }
 
     @Test
@@ -60,8 +60,8 @@ class CacheConfigTest {
     }
 
     @Test
-    void sessionSearchSerializerPreservesNestedResponseTypes() {
-        TrainingSessionResponse session = new TrainingSessionResponse(
+    void courseSearchSerializerPreservesNestedResponseTypes() {
+        TrainingCourseResponse course = new TrainingCourseResponse(
                 5L,
                 "Cached swimming",
                 7L,
@@ -84,12 +84,12 @@ class CacheConfigTest {
                 4,
                 LocalDate.of(2026, 10, 5).atTime(9, 0),
                 true,
-                TrainingSessionStatus.SCHEDULED,
+                TrainingCourseStatus.SCHEDULED,
                 null,
                 null,
                 null);
-        PageResponse<TrainingSessionResponse> page = new PageResponse<>(
-                List.of(session),
+        PageResponse<TrainingCourseResponse> page = new PageResponse<>(
+                List.of(course),
                 0,
                 10,
                 1,
@@ -97,14 +97,14 @@ class CacheConfigTest {
                 true,
                 true);
 
-        byte[] serialized = sessionSearchCacheValueSerializer.serialize(page);
-        PageResponse<TrainingSessionResponse> deserialized =
-                sessionSearchCacheValueSerializer.deserialize(serialized);
+        byte[] serialized = courseSearchCacheValueSerializer.serialize(page);
+        PageResponse<TrainingCourseResponse> deserialized =
+                courseSearchCacheValueSerializer.deserialize(serialized);
 
         assertThat(deserialized).isNotNull();
         assertThat(deserialized.content())
                 .singleElement()
-                .isInstanceOf(TrainingSessionResponse.class)
-                .isEqualTo(session);
+                .isInstanceOf(TrainingCourseResponse.class)
+                .isEqualTo(course);
     }
 }
