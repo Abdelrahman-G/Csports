@@ -19,12 +19,14 @@ public class NotificationService {
 
     private final UserNotificationRepository notificationRepository;
     private final UserService userService;
+    private final com.csports.user.UserRepository userRepository;
 
     public NotificationService(
             UserNotificationRepository notificationRepository,
-            UserService userService) {
+            UserService userService, com.csports.user.UserRepository userRepository) {
         this.notificationRepository = notificationRepository;
         this.userService = userService;
+        this.userRepository = userRepository;
     }
 
     @Transactional(readOnly = true)
@@ -67,10 +69,21 @@ public class NotificationService {
         return new NotificationResponse(
                 notification.getId(),
                 notification.getCourseId(),
+                notification.getAnnouncementId(),
                 notification.getType(),
                 notification.getTitle(),
                 notification.getMessage(),
                 notification.isRead(),
                 notification.getCreatedAt());
+    }
+
+    @Transactional(propagation = org.springframework.transaction.annotation.Propagation.MANDATORY)
+    public void createCourseNotifications(Long courseId, Long announcementId, NotificationType type,
+            String title, String content, java.util.List<Long> recipients) {
+        int end = content.offsetByCodePoints(0, Math.min(240, content.codePointCount(0, content.length())));
+        String preview = end < content.length() ? content.substring(0, end) + "…" : content;
+        notificationRepository.saveAll(recipients.stream().distinct().map(id -> UserNotification.builder()
+                .recipient(userRepository.getReferenceById(id)).courseId(courseId).announcementId(announcementId)
+                .type(type).title(title).message(preview).build()).toList());
     }
 }

@@ -5,9 +5,9 @@ import java.util.List;
 
 public record CourseChangedEvent(
         Long courseId,
-        String courseTitle,
         NotificationType type,
-        String reason,
+        String title,
+        String content,
         List<Long> recipientIds,
         Instant occurredAt
 ) {}

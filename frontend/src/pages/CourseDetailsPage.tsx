@@ -10,6 +10,7 @@ import { getCourseDetails } from '../discovery/discoveryApi'
 import { orderedDayLabels } from '../discovery/courseFormatting'
 import type { TrainingCourseDetails } from '../discovery/types'
 import UserNavigation from '../components/UserNavigation'
+import CourseNoticeboard from '../announcements/CourseNoticeboard'
 
 const longDateFormatter = new Intl.DateTimeFormat('en-EG', {
   weekday: 'long',
@@ -259,7 +260,7 @@ function CourseDetailsPage() {
 
       {isCancelled && (
         <section className="course-cancellation-notice" role="status">
-          <strong>This course has been cancelled.</strong>
+          <strong>This course was cancelled by its trainer.</strong>
           <p>
             Reason: {course.cancellationReason || 'No reason was provided.'}
           </p>
@@ -283,6 +284,7 @@ function CourseDetailsPage() {
             </p>
             <p>{course.trainerBio || 'This trainer has not added a coaching story yet.'}</p>
           </div>
+          <CourseNoticeboard key={`${course.id}-${booking?.bookingId ?? 'visitor'}`} courseId={course.id} />
         </section>
 
         <aside className="course-booking-summary">

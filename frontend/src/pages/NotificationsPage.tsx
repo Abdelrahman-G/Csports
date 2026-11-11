@@ -69,6 +69,7 @@ function NotificationsPage() {
     notificationId: number,
     courseId: number,
     isRead: boolean,
+    announcementId: number | null,
   ) {
     if (openingNotificationId !== null) {
       return
@@ -94,7 +95,7 @@ function NotificationsPage() {
         )
       }
 
-      navigate(`/user/courses/${courseId}`)
+      navigate(`/user/courses/${courseId}${announcementId ? `?announcement=${announcementId}#announcement-${announcementId}` : ''}`)
     } catch (requestError) {
       setError(
         requestError instanceof Error
@@ -157,6 +158,7 @@ function NotificationsPage() {
                       notification.id,
                       notification.courseId,
                       notification.read,
+                      notification.type === 'COURSE_CANCELLED' ? null : notification.announcementId,
                     )
                   }
                   disabled={openingNotificationId !== null}

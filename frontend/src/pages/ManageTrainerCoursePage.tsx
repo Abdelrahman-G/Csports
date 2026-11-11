@@ -3,6 +3,7 @@ import { Link, useLocation, useParams } from 'react-router-dom'
 import { ApiError } from '../auth/authApi'
 import { useAuth } from '../auth/authContext'
 import TrainerNavigation from '../components/TrainerNavigation'
+import CourseNoticeboard from '../announcements/CourseNoticeboard'
 import GoogleMapsLocationField from '../components/GoogleMapsLocationField'
 import { getCourseDetails } from '../discovery/discoveryApi'
 import type { TrainingCourseDetails } from '../discovery/types'
@@ -299,7 +300,7 @@ function ManageTrainerCoursePage() {
               </form>
             </section>
           ) : (
-            <CourseOverview course={course} />
+            <div><CourseOverview course={course} /><CourseNoticeboard key={`${course.id}-${reloadVersion}`} courseId={course.id} /></div>
           )}
 
           <aside className="trainer-participants-card">

@@ -36,6 +36,10 @@ public interface TrainingCourseRepository
 
     Optional<TrainingCourse> findById(Long id);
 
+    @org.springframework.data.jpa.repository.Lock(jakarta.persistence.LockModeType.PESSIMISTIC_WRITE)
+    @Query("select c from TrainingCourse c where c.id = :id")
+    Optional<TrainingCourse> findForAnnouncement(Long id);
+
     Page<TrainingCourse> findByTrainer(User trainer, Pageable pageable);
 
     List<TrainingCourse> findByStatusAndEndDateLessThanEqual(
