@@ -1,5 +1,7 @@
+import AppNavigation from '../components/AppNavigation'
+import BackLink from '../components/BackLink'
 import { useEffect, useState } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { useParams } from 'react-router-dom'
 import { useAuth } from '../auth/authContext'
 import {
   bookCourse,
@@ -9,7 +11,7 @@ import type { BookedCourse } from '../booking/types'
 import { getCourseDetails } from '../discovery/discoveryApi'
 import { orderedDayLabels } from '../discovery/courseFormatting'
 import type { TrainingCourseDetails } from '../discovery/types'
-import UserNavigation from '../components/UserNavigation'
+import CourseNoticeboard from '../announcements/CourseNoticeboard'
 
 const longDateFormatter = new Intl.DateTimeFormat('en-EG', {
   weekday: 'long',
@@ -120,33 +122,36 @@ function CourseDetailsPage() {
 
   if (!hasValidCourseId) {
     return (
+      <><AppNavigation />
       <main className="course-details-page">
         <section className="course-details-state">
           <h1>We could not open this course.</h1>
           <p>This course address is invalid.</p>
-          <Link to="/user/home">Back to course discovery</Link>
+          <BackLink to="/user/home">Back to courses</BackLink>
         </section>
-      </main>
+      </main></>
     )
   }
 
   if (isLoading) {
     return (
+      <><AppNavigation />
       <main className="course-details-page">
         <p className="course-details-state">Loading course details...</p>
-      </main>
+      </main></>
     )
   }
 
   if (error || !course) {
     return (
+      <><AppNavigation />
       <main className="course-details-page">
         <section className="course-details-state">
           <h1>We could not open this course.</h1>
           <p>{error}</p>
-          <Link to="/user/home">Back to course discovery</Link>
+          <BackLink to="/user/home">Back to courses</BackLink>
         </section>
-      </main>
+      </main></>
     )
   }
 
@@ -234,11 +239,11 @@ function CourseDetailsPage() {
 
   return (
     <>
-      <UserNavigation />
+      <AppNavigation />
       <main className="course-details-page">
-      <Link className="course-details-back" to="/user/home">
+      <BackLink to="/user/home">
         Back to courses
-      </Link>
+      </BackLink>
 
       <section className="course-details-hero">
         <div>
@@ -259,7 +264,7 @@ function CourseDetailsPage() {
 
       {isCancelled && (
         <section className="course-cancellation-notice" role="status">
-          <strong>This course has been cancelled.</strong>
+          <strong>This course was cancelled by its trainer.</strong>
           <p>
             Reason: {course.cancellationReason || 'No reason was provided.'}
           </p>
@@ -283,6 +288,7 @@ function CourseDetailsPage() {
             </p>
             <p>{course.trainerBio || 'This trainer has not added a coaching story yet.'}</p>
           </div>
+          <CourseNoticeboard key={`${course.id}-${booking?.bookingId ?? 'visitor'}`} courseId={course.id} />
         </section>
 
         <aside className="course-booking-summary">

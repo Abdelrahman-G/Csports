@@ -1,8 +1,11 @@
+import AppNavigation from '../components/AppNavigation'
 import { useEffect, useState, type FormEvent } from 'react'
-import { Link, useLocation, useParams } from 'react-router-dom'
+import { useLocation, useParams } from 'react-router-dom'
+import BackLink from '../components/BackLink'
+import CancellationConfirmation from '../components/CancellationConfirmation'
 import { ApiError } from '../auth/authApi'
 import { useAuth } from '../auth/authContext'
-import TrainerNavigation from '../components/TrainerNavigation'
+import CourseNoticeboard from '../announcements/CourseNoticeboard'
 import GoogleMapsLocationField from '../components/GoogleMapsLocationField'
 import { getCourseDetails } from '../discovery/discoveryApi'
 import type { TrainingCourseDetails } from '../discovery/types'
@@ -219,15 +222,15 @@ function ManageTrainerCoursePage() {
   const scheduled = course.status === 'SCHEDULED'
   return (
     <>
-      <TrainerNavigation />
+      <AppNavigation />
       <main className="trainer-page">
-        <Link className="trainer-back-link" to="/trainer/home">Back to my courses</Link>
+        <BackLink to="/trainer/home">Back to my courses</BackLink>
         <section className="trainer-manage-heading">
           <div><span className={`trainer-status ${course.status.toLowerCase()}`}>{course.status}</span><h1>{course.title}</h1><p>{course.locationName}, {course.regionName}</p></div>
           <div className="trainer-status-actions">
-            {scheduled && !isEditing && <button className="trainer-primary-action" type="button" onClick={startEditing}>Update course</button>}
-            {scheduled ? <button className="danger-action" type="button" onClick={() => setShowCancellation(true)}>Cancel course</button>
-              : course.status === 'CANCELLED' ? <button className="trainer-primary-action" type="button" onClick={handleRestore} disabled={isChangingStatus}>Restore course</button> : null}
+            {scheduled && !isEditing && <button className="action-button action-button-primary" type="button" onClick={startEditing} disabled={showCancellation || isChangingStatus}>Update course</button>}
+            {scheduled ? !isEditing && <button className="action-button action-button-danger" type="button" onClick={() => setShowCancellation(true)} aria-expanded={showCancellation} disabled={isChangingStatus}>Cancel course</button>
+              : course.status === 'CANCELLED' ? <button className="action-button action-button-primary" type="button" onClick={handleRestore} disabled={isChangingStatus}>Restore course</button> : null}
           </div>
         </section>
 
@@ -241,24 +244,24 @@ function ManageTrainerCoursePage() {
         {course.status === 'CANCELLED' && <p className="trainer-cancelled-note"><strong>Cancellation reason:</strong> {course.cancellationReason}</p>}
 
         {showCancellation && (
-          <section className="trainer-cancel-panel">
-            <h2>Cancel this course?</h2>
-            <p>All confirmed bookings will be cancelled and participants will receive your reason.</p>
+          <CancellationConfirmation title="Cancel this course?"
+            description="All confirmed bookings will be cancelled and participants will receive your reason."
+            keepLabel="Keep course" busy={isChangingStatus} confirmDisabled={!cancelReason.trim()}
+            onKeep={() => setShowCancellation(false)} onConfirm={() => void handleCancellation()}>
             <label htmlFor="cancel-reason">Cancellation reason</label>
             <textarea id="cancel-reason" value={cancelReason} onChange={(event) => setCancelReason(event.target.value)} maxLength={500} />
-            <div><button type="button" onClick={() => setShowCancellation(false)} disabled={isChangingStatus}>Keep course</button><button className="danger-action" type="button" onClick={handleCancellation} disabled={!cancelReason.trim() || isChangingStatus}>{isChangingStatus ? 'Cancelling...' : 'Confirm cancellation'}</button></div>
-          </section>
+          </CancellationConfirmation>
         )}
 
         <div className="trainer-management-layout">
           {isEditing ? (
             <section className="trainer-form-card">
               <div className="trainer-editor-heading">
-                <div><p className="eyebrow">Update course</p><h2>What would you like to change?</h2><p>Only edit the information that needs updating.</p></div>
+                <div><p className="eyebrow">Course settings</p><h2>Update course</h2><p>Keep your course information up to date.</p></div>
               </div>
               <form className="trainer-update-form" onSubmit={handleUpdate} noValidate>
                 <section className="trainer-editor-section">
-                  <div className="trainer-editor-section-heading"><span>1</span><div><h3>Basics</h3><p>How athletes recognize this course.</p></div></div>
+                  <div className="trainer-editor-section-heading"><div><h3>Course information</h3><p>How athletes recognize this course.</p></div></div>
                   <div className="trainer-editor-grid">
                     <EditTextField id="manage-title" label="Title" value={form.title} error={errors.title} disabled={!scheduled || isSaving} onChange={(value) => updateField('title', value)} />
                     <div className="form-field full-width"><label htmlFor="manage-description">Description</label><textarea id="manage-description" value={form.description} onChange={(event) => updateField('description', event.target.value)} disabled={!scheduled || isSaving} /></div>
@@ -266,7 +269,7 @@ function ManageTrainerCoursePage() {
                 </section>
 
                 <section className="trainer-editor-section">
-                  <div className="trainer-editor-section-heading"><span>2</span><div><h3>Venue</h3><p>Where athletes should attend.</p></div></div>
+                  <div className="trainer-editor-section-heading"><div><h3>Venue</h3><p>Where athletes should attend.</p></div></div>
                   <div className="trainer-editor-grid">
                     <div className="form-field full-width"><label htmlFor="manage-region">Area</label><select id="manage-region" value={form.regionId} onChange={(event) => updateField('regionId', event.target.value)} disabled={!scheduled || isSaving}>{regions.map((region) => <option key={region.id} value={region.id}>{region.name}, {region.city}</option>)}</select></div>
                     <div className="current-venue full-width"><span>Current venue</span><strong>{course.locationName}</strong><p>Enter another venue only when the location is changing.</p></div>
@@ -275,7 +278,7 @@ function ManageTrainerCoursePage() {
                 </section>
 
                 <section className="trainer-editor-section">
-                  <div className="trainer-editor-section-heading"><span>3</span><div><h3>Schedule and capacity</h3><p>When the course runs and how many athletes can join.</p></div></div>
+                  <div className="trainer-editor-section-heading"><div><h3>Schedule and capacity</h3><p>When the course runs and how many athletes can join.</p></div></div>
                   <div className="trainer-editor-grid">
                     <EditTextField id="manage-start-date" label="Start date" type="date" value={form.startDate} disabled={!scheduled || isSaving} onChange={(value) => updateField('startDate', value)} />
                     <EditTextField id="manage-end-date" label="End date" type="date" value={form.endDate} disabled={!scheduled || isSaving} onChange={(value) => updateField('endDate', value)} />
@@ -288,18 +291,18 @@ function ManageTrainerCoursePage() {
                 </section>
 
                 <section className="trainer-editor-section trainer-reason-section">
-                  <div className="trainer-editor-section-heading"><span>4</span><div><h3>Reason for update</h3><p>Give athletes clear context for the change.</p></div></div>
+                  <div className="trainer-editor-section-heading"><div><h3>Reason for update</h3><p>Give athletes clear context for the change.</p></div></div>
                   <div className="form-field"><textarea id="update-reason" aria-label="Reason for update" value={form.reason} onChange={(event) => updateField('reason', event.target.value)} disabled={!scheduled || isSaving} maxLength={500} placeholder="For example: The venue is unavailable, so training has moved nearby." />{errors.reason && <span className="field-error">{errors.reason}</span>}</div>
                 </section>
 
                 <div className="trainer-editor-actions">
-                  <button type="button" onClick={stopEditing} disabled={isSaving}>Discard changes</button>
-                  <button className="trainer-primary-action" type="submit" disabled={isSaving}>{isSaving ? 'Saving changes...' : 'Save changes'}</button>
+                  <button className="action-button action-button-secondary" type="button" onClick={stopEditing} disabled={isSaving}>Discard changes</button>
+                  <button className="action-button action-button-primary" type="submit" disabled={isSaving}>{isSaving ? 'Saving changes...' : 'Save changes'}</button>
                 </div>
               </form>
             </section>
           ) : (
-            <CourseOverview course={course} />
+            <div><CourseOverview course={course} /><CourseNoticeboard key={`${course.id}-${reloadVersion}`} courseId={course.id} /></div>
           )}
 
           <aside className="trainer-participants-card">
@@ -353,7 +356,7 @@ function EditTextField({ id, label, type = 'text', value, error, disabled, onCha
 }
 
 function TrainerState({ message }: { message: string }) {
-  return <><TrainerNavigation /><main className="trainer-page"><section className="trainer-state"><p>{message}</p><Link to="/trainer/home">Back to my courses</Link></section></main></>
+  return <><AppNavigation /><main className="trainer-page"><section className="trainer-state"><p>{message}</p><BackLink to="/trainer/home">Back to my courses</BackLink></section></main></>
 }
 
 export default ManageTrainerCoursePage

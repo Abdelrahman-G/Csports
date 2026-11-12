@@ -103,8 +103,8 @@
     background-size: 250% 100%;
     animation: skeleton-sweep 1.4s linear infinite;
   }
-  .user-navigation-link { position: relative; }
-  .user-navigation-link::after {
+  .app-navigation-link { position: relative; }
+  .app-navigation-link::after {
     content: '';
     position: absolute;
     left: 12px;
@@ -115,9 +115,9 @@
     transform: scaleX(0);
     transition: transform 180ms ease;
   }
-  .user-navigation-link:hover::after,
-  .user-navigation-link.active::after { transform: scaleX(1); }
-  .user-notification-link:hover svg { animation: bell-wave 450ms ease-in-out; transform-origin: 50% 15%; }
+  .app-navigation-link:hover::after,
+  .app-navigation-link.active::after { transform: scaleX(1); }
+  .app-notification-link:hover svg { animation: bell-wave 450ms ease-in-out; transform-origin: 50% 15%; }
   @keyframes capacity-fill { from { transform: scaleX(0); } to { transform: scaleX(1); } }
   @keyframes check-arrive { from { transform: scale(0.3) rotate(-25deg); opacity: 0; } to { transform: scale(1) rotate(0); opacity: 1; } }
   @keyframes booking-spin { to { transform: rotate(360deg); } }
@@ -623,206 +623,6 @@
   color: #6a7d72;
 }
 
-.discovery-catalogue {
-  display: block;
-}
-
-.discovery-search-bar {
-  margin-bottom: 24px;
-  padding: 18px;
-  border: 1px solid #c9ddd1;
-  border-radius: 14px;
-  background: #ffffff;
-  box-shadow: 0 10px 28px rgba(24, 89, 56, 0.07);
-}
-
-.discovery-search-bar > label {
-  display: inline-block;
-  margin-bottom: 8px;
-  color: #263c30;
-  font-size: 0.9rem;
-  font-weight: 750;
-}
-
-.discovery-search-bar > div {
-  display: flex;
-}
-
-.discovery-search-bar input {
-  min-width: 0;
-  min-height: 52px;
-  flex: 1;
-  padding: 12px 16px;
-  border: 2px solid #238654;
-  border-right: 0;
-  border-radius: 10px 0 0 10px;
-  color: #16251d;
-  background: #ffffff;
-  font: inherit;
-  font-size: 1rem;
-}
-
-.discovery-search-bar input:focus {
-  outline: 3px solid #d7eee1;
-  outline-offset: 1px;
-}
-
-.discovery-search-bar button {
-  min-width: 120px;
-  padding: 0 22px;
-  border: 2px solid #238654;
-  border-radius: 0 10px 10px 0;
-  color: #ffffff;
-  background: #238654;
-  font: inherit;
-  font-weight: 750;
-  cursor: pointer;
-}
-
-.discovery-search-bar button:hover {
-  background: #196d43;
-}
-
-.discovery-catalogue-layout {
-  display: grid;
-  grid-template-columns: 260px minmax(0, 1fr);
-  align-items: start;
-  gap: 26px;
-}
-
-.discovery-sidebar {
-  position: sticky;
-  top: 20px;
-  padding: 20px;
-  border: 1px solid #d5e5dc;
-  border-radius: 14px;
-  background: #ffffff;
-}
-
-.sidebar-heading {
-  padding-bottom: 16px;
-  display: flex;
-  align-items: end;
-  justify-content: space-between;
-  gap: 12px;
-  border-bottom: 1px solid #e3ece7;
-}
-
-.sidebar-heading h2 {
-  margin: 2px 0 0;
-  color: #16251d;
-  font-size: 1.25rem;
-}
-
-.sidebar-kicker {
-  margin: 0;
-  color: #718279;
-  font-size: 0.78rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-}
-
-.clear-filters-link {
-  padding: 0;
-  border: 0;
-  color: #238654;
-  background: transparent;
-  font: inherit;
-  font-size: 0.85rem;
-  font-weight: 750;
-  cursor: pointer;
-}
-
-.clear-filters-link:hover {
-  text-decoration: underline;
-}
-
-.sidebar-filter-group {
-  margin: 0;
-  padding: 18px 0;
-  border: 0;
-  border-bottom: 1px solid #e3ece7;
-}
-
-.sidebar-filter-group > label,
-.sidebar-filter-group > legend {
-  display: block;
-  margin-bottom: 8px;
-  color: #263c30;
-  font-size: 0.88rem;
-  font-weight: 750;
-}
-
-.sidebar-filter-group select,
-.sidebar-filter-group input {
-  width: 100%;
-  min-height: 42px;
-  padding: 9px 10px;
-  border: 1px solid #a9bdb1;
-  border-radius: 8px;
-  color: #16251d;
-  background: #ffffff;
-  box-sizing: border-box;
-  font: inherit;
-}
-
-.filter-select-control {
-  position: relative;
-}
-
-.filter-select-control::after {
-  content: '';
-  position: absolute;
-  top: 50%;
-  right: 14px;
-  width: 7px;
-  height: 7px;
-  border-right: 2px solid #263c30;
-  border-bottom: 2px solid #263c30;
-  pointer-events: none;
-  transform: translateY(-65%) rotate(45deg);
-}
-
-.filter-select-control:focus-within::after {
-  border-color: #238654;
-}
-
-.sidebar-filter-group select {
-  appearance: none;
-  padding-right: 42px;
-  cursor: pointer;
-}
-
-.sidebar-filter-group select:disabled {
-  cursor: not-allowed;
-  opacity: 0.65;
-}
-
-.sidebar-filter-group select:focus,
-.sidebar-filter-group input:focus {
-  border-color: #238654;
-  outline: 3px solid #d7eee1;
-}
-
-.location-choice-divider {
-  margin: 12px 0;
-  display: flex;
-  align-items: center;
-  gap: 9px;
-  color: #809087;
-  font-size: 0.75rem;
-}
-
-.location-choice-divider::before,
-.location-choice-divider::after {
-  content: '';
-  height: 1px;
-  flex: 1;
-  background: #e3ece7;
-}
-
-.apply-filters-button,
 .course-pagination button {
   min-height: 44px;
   padding: 10px 16px;
@@ -830,47 +630,6 @@
   font: inherit;
   font-weight: 700;
   cursor: pointer;
-}
-
-.apply-filters-button {
-  width: 100%;
-  margin-top: 18px;
-  border: 1px solid #238654;
-  color: #ffffff;
-  background: #238654;
-}
-
-.apply-filters-button:hover {
-  background: #196d43;
-}
-
-.nearby-button {
-  width: 100%;
-  min-height: 44px;
-  padding: 10px 15px;
-  border: 1px solid #238654;
-  border-radius: 8px;
-  color: #238654;
-  background: #ffffff;
-  font: inherit;
-  font-weight: 700;
-  cursor: pointer;
-}
-
-.nearby-button:hover,
-.nearby-button.active {
-  color: #196d43;
-  border-color: #7eb697;
-  background: #edf8f1;
-}
-
-.nearby-button.active {
-  box-shadow: inset 0 0 0 1px rgba(35, 134, 84, 0.08);
-}
-
-.nearby-button:disabled {
-  cursor: wait;
-  opacity: 0.65;
 }
 
 .discovery-results-column {
@@ -1094,17 +853,20 @@
   padding: 42px 0 72px;
 }
 
-.course-details-back {
-  display: inline-block;
+.page-back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
   margin-bottom: 24px;
   color: #238654;
   font-weight: 750;
   text-decoration: none;
 }
 
-.course-details-back::before {
-  content: "←";
-  margin-right: 8px;
+.page-back-link:focus-visible {
+  outline: 3px solid #8ac6a6;
+  outline-offset: 4px;
+  border-radius: 4px;
 }
 
 .course-details-hero {
@@ -1411,12 +1173,12 @@
   opacity: 0.45;
 }
 
-.user-navigation {
+.app-navigation {
   border-bottom: 1px solid #d8e7de;
   background: rgba(255, 255, 255, 0.96);
 }
 
-.user-navigation-inner {
+.app-navigation-inner {
   width: min(1120px, calc(100% - 40px));
   min-height: 72px;
   margin: 0 auto;
@@ -1426,24 +1188,24 @@
   gap: 24px;
 }
 
-.user-navigation-brand {
+.app-navigation-brand {
   width: fit-content;
   display: inline-flex;
 }
 
-.user-navigation-brand img {
+.app-navigation-brand img {
   width: 48px;
   height: 48px;
   object-fit: contain;
 }
 
-.user-navigation nav {
+.app-navigation nav {
   display: flex;
   align-items: center;
   gap: 8px;
 }
 
-.user-navigation-link {
+.app-navigation-link {
   padding: 9px 13px;
   border-radius: 8px;
   color: #53685c;
@@ -1452,20 +1214,20 @@
   text-decoration: none;
 }
 
-.user-navigation-link:hover,
-.user-navigation-link.active {
+.app-navigation-link:hover,
+.app-navigation-link.active {
   color: #196d43;
   background: #eaf5ef;
 }
 
-.user-navigation-actions {
+.app-navigation-actions {
   justify-self: end;
   display: flex;
   align-items: center;
   gap: 10px;
 }
 
-.user-notification-link {
+.app-notification-link {
   width: 40px;
   height: 40px;
   position: relative;
@@ -1477,13 +1239,13 @@
   text-decoration: none;
 }
 
-.user-notification-link:hover,
-.user-notification-link.active {
+.app-notification-link:hover,
+.app-notification-link.active {
   color: #196d43;
   background: #eaf5ef;
 }
 
-.user-notification-link svg {
+.app-notification-link svg {
   width: 23px;
   height: 23px;
   fill: none;
@@ -1493,7 +1255,7 @@
   stroke-linejoin: round;
 }
 
-.user-notification-badge {
+.app-notification-badge {
   min-width: 18px;
   height: 18px;
   padding: 0 4px;
@@ -1512,7 +1274,7 @@
   line-height: 1;
 }
 
-.user-profile-link {
+.app-profile-link {
   padding: 9px 13px;
   border: 1px solid #b8cdc0;
   border-radius: 8px;
@@ -1523,8 +1285,8 @@
   text-decoration: none;
 }
 
-.user-profile-link:hover,
-.user-profile-link.active {
+.app-profile-link:hover,
+.app-profile-link.active {
   border-color: #8ac6a6;
   background: #f0f8f3;
 }
@@ -1804,66 +1566,6 @@
 
 .booking-cancel-button {
   margin-left: auto;
-  padding: 8px 12px;
-  border: 1px solid #d6a0a0;
-  border-radius: 7px;
-  color: #9a3030;
-  background: #ffffff;
-  font: inherit;
-  font-size: 0.85rem;
-  font-weight: 750;
-  cursor: pointer;
-}
-
-.booking-cancel-button:hover:not(:disabled) {
-  background: #fff1f1;
-}
-
-.booking-cancel-button:disabled {
-  cursor: not-allowed;
-  opacity: 0.55;
-}
-
-.booking-cancel-confirmation {
-  margin-left: auto;
-  display: flex;
-  align-items: center;
-  gap: 14px;
-}
-
-.booking-cancel-confirmation p {
-  margin: 0;
-  color: #713333;
-  font-size: 0.86rem;
-  font-weight: 700;
-}
-
-.booking-cancel-confirmation > div {
-  display: flex;
-  gap: 8px;
-}
-
-.booking-cancel-confirmation button {
-  padding: 7px 10px;
-  border: 1px solid #b8cdc0;
-  border-radius: 7px;
-  color: #365446;
-  background: #ffffff;
-  font: inherit;
-  font-size: 0.8rem;
-  font-weight: 750;
-  cursor: pointer;
-}
-
-.booking-cancel-confirmation .confirm-cancellation-button {
-  border-color: #ad5555;
-  color: #ffffff;
-  background: #ad3f3f;
-}
-
-.booking-cancel-confirmation button:disabled {
-  cursor: wait;
-  opacity: 0.6;
 }
 
 @media (max-width: 760px) {
@@ -1918,13 +1620,7 @@
     padding: 28px 20px;
   }
 
-  .discovery-catalogue-layout {
-    grid-template-columns: 1fr;
-  }
 
-  .discovery-sidebar {
-    position: static;
-  }
 
   .results-heading {
     margin-top: 4px;
@@ -1934,24 +1630,24 @@
     grid-template-columns: 1fr;
   }
 
-  .user-navigation-inner {
+  .app-navigation-inner {
     padding: 12px 0;
     grid-template-columns: auto 1fr;
     gap: 10px;
   }
 
-  .user-navigation nav {
+  .app-navigation nav {
     grid-column: 1 / -1;
     grid-row: 2;
     justify-self: center;
   }
 
-  .user-navigation-link {
+  .app-navigation-link {
     padding: 8px 9px;
     font-size: 0.82rem;
   }
 
-  .user-navigation-actions {
+  .app-navigation-actions {
     grid-column: 2;
     grid-row: 1;
   }
@@ -1980,22 +1676,16 @@
     grid-template-columns: 1fr 1fr;
   }
 
-  .booking-card-actions,
-  .booking-cancel-confirmation {
+  .booking-card-actions {
     align-items: stretch;
     flex-direction: column;
   }
 
-  .booking-cancel-button,
-  .booking-cancel-confirmation {
+  .booking-cancel-button {
     width: 100%;
     margin-left: 0;
   }
 
-  .booking-cancel-confirmation > div,
-  .booking-cancel-confirmation button {
-    flex: 1;
-  }
 }
 
 @media (min-width: 761px) and (max-width: 1000px) {
@@ -2027,58 +1717,14 @@
     display: none;
   }
 
-  .discovery-search-bar > div {
-    display: grid;
-  }
 
-  .discovery-search-bar input {
-    border-right: 2px solid #238654;
-    border-radius: 9px 9px 0 0;
-  }
 
-  .discovery-search-bar button {
-    min-height: 46px;
-    border-radius: 0 0 9px 9px;
-  }
 
   .results-heading {
     align-items: flex-start;
     flex-direction: column;
     gap: 6px;
   }
-}
-
-.trainer-navigation {
-  min-height: 72px;
-  padding: 0 max(24px, calc((100vw - 1120px) / 2));
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 24px;
-  border-bottom: 1px solid #dce9e1;
-  background: #ffffff;
-}
-
-.trainer-brand {
-  color: #1c7147;
-  font-size: 1.3rem;
-  font-weight: 800;
-  text-decoration: none;
-}
-
-.trainer-navigation nav {
-  display: flex;
-  align-items: center;
-  gap: 18px;
-}
-
-.trainer-navigation nav a {
-  border: 0;
-  color: #365447;
-  background: transparent;
-  font-weight: 700;
-  text-decoration: none;
-  cursor: pointer;
 }
 
 .profile-page {
@@ -2300,13 +1946,6 @@
   }
 }
 
-.trainer-navigation nav .trainer-create-link {
-  padding: 10px 14px;
-  border-radius: 8px;
-  color: #ffffff;
-  background: #238654;
-}
-
 .trainer-page {
   min-height: calc(100vh - 72px);
   padding: 42px max(24px, calc((100vw - 1120px) / 2)) 72px;
@@ -2337,24 +1976,71 @@
   color: #63776c;
 }
 
-.trainer-primary-action {
-  padding: 12px 18px;
-  border: 0;
-  border-radius: 9px;
-  color: #ffffff;
-  background: #238654;
+.action-button {
+  min-height: 44px;
+  padding: 11px 18px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 1px solid transparent;
+  border-radius: 10px;
   font: inherit;
-  font-weight: 750;
+  font-size: .9rem;
+  font-weight: 700;
   text-align: center;
   text-decoration: none;
   cursor: pointer;
+  transition: background .2s, border-color .2s;
 }
 
-.trainer-primary-action:hover:not(:disabled) {
+.action-button-primary {
+  color: #ffffff;
   background: #196d43;
 }
 
-.trainer-primary-action:disabled {
+.action-button-primary:hover:not(:disabled) {
+  background: #145a37;
+}
+
+.action-button-secondary {
+  color: #365446;
+  border-color: #b8cdc0;
+  background: #ffffff;
+}
+
+.action-button-secondary:hover:not(:disabled) {
+  background: #eff7f2;
+}
+
+.action-button-danger {
+  color: #943b34;
+  border-color: #d9b9b5;
+  background: #ffffff;
+}
+
+.action-button-danger:hover:not(:disabled) {
+  background: #fff3f1;
+  border-color: #bb7770;
+}
+
+.action-button-danger-solid {
+  color: #ffffff;
+  border-color: #a9463d;
+  background: #a9463d;
+}
+
+.action-button-danger-solid:hover:not(:disabled) {
+  background: #90372f;
+}
+
+.action-button:focus-visible,
+.app-navigation a:focus-visible {
+  outline: 3px solid #8ac6a6;
+  outline-offset: 3px;
+}
+
+.action-button:disabled {
   cursor: wait;
   opacity: 0.65;
 }
@@ -2370,13 +2056,18 @@
 .trainer-details-card,
 .trainer-participants-card,
 .trainer-state,
-.trainer-empty-state,
-.trainer-cancel-panel {
+.trainer-empty-state {
   padding: 24px;
   border: 1px solid #d5e5dc;
   border-radius: 15px;
   background: #ffffff;
   box-shadow: 0 10px 28px rgba(24, 89, 56, 0.06);
+}
+
+.trainer-course-card {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
 }
 
 .trainer-course-card-heading {
@@ -2412,6 +2103,7 @@
 .trainer-course-card h2 {
   margin: 20px 0 6px;
   color: #16251d;
+  overflow-wrap: anywhere;
 }
 
 .trainer-course-card > p {
@@ -2443,10 +2135,21 @@
 }
 
 .trainer-course-card > a,
-.trainer-empty-state a,
-.trainer-back-link {
+.trainer-empty-state a {
   color: #1c7147;
   font-weight: 750;
+}
+
+.trainer-course-card > a {
+  margin-top: auto;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  border-top: 1px solid #e0eae3;
+  padding-top: 14px;
+  text-decoration: none;
 }
 
 .trainer-empty-state,
@@ -2462,11 +2165,6 @@
 .trainer-form-error {
   color: #842029;
   background: #fbe9eb;
-}
-
-.trainer-back-link {
-  display: inline-block;
-  margin-bottom: 20px;
 }
 
 .trainer-form-card {
@@ -2627,6 +2325,20 @@
   gap: 24px;
 }
 
+.trainer-manage-heading {
+  padding: 30px;
+  align-items: flex-start;
+  border: 1px solid #d5e8dc;
+  border-radius: 18px;
+  background: #ffffff;
+  box-shadow: 0 12px 32px rgba(24, 89, 56, .07);
+}
+
+.trainer-manage-heading h1 {
+  margin-top: 12px;
+  overflow-wrap: anywhere;
+}
+
 .trainer-management-layout .trainer-form-card,
 .trainer-management-layout .trainer-details-card {
   width: 100%;
@@ -2706,10 +2418,8 @@
 }
 
 .trainer-editor-section {
-  padding: 20px;
-  border: 1px solid #dce9e1;
-  border-radius: 12px;
-  background: #f8fbf9;
+  padding: 4px 0 24px;
+  border-bottom: 1px solid #e0eae3;
 }
 
 .trainer-editor-section-heading {
@@ -2717,19 +2427,6 @@
   display: flex;
   align-items: flex-start;
   gap: 12px;
-}
-
-.trainer-editor-section-heading > span {
-  width: 28px;
-  height: 28px;
-  display: grid;
-  flex: none;
-  place-items: center;
-  border-radius: 8px;
-  color: #ffffff;
-  background: #238654;
-  font-size: 0.82rem;
-  font-weight: 800;
 }
 
 .trainer-editor-section-heading h3,
@@ -2758,22 +2455,18 @@
   min-height: 96px;
 }
 
+.trainer-reason-section {
+  padding: 20px;
+  border: 1px solid #d5e8dc;
+  border-radius: 12px;
+  background: #f2f8f4;
+}
+
 .trainer-editor-actions {
   padding-top: 4px;
   display: flex;
   justify-content: flex-end;
   gap: 12px;
-}
-
-.trainer-editor-actions > button:first-child {
-  padding: 11px 16px;
-  border: 1px solid #b9cdc1;
-  border-radius: 9px;
-  color: #52675b;
-  background: #ffffff;
-  font: inherit;
-  font-weight: 700;
-  cursor: pointer;
 }
 
 .trainer-participants-card {
@@ -2809,62 +2502,79 @@
 .trainer-status-actions {
   display: flex;
   gap: 10px;
+  flex-wrap: wrap;
+  flex-shrink: 0;
 }
 
-.danger-action {
-  padding: 11px 16px;
-  border: 1px solid #c83f34;
-  border-radius: 8px;
-  color: #a42d24;
+.cancellation-confirmation {
+  min-width: 0;
+  margin-bottom: 24px;
+  padding: 24px;
+  border: 1px solid #e2c9c3;
+  border-radius: 18px;
   background: #ffffff;
-  font: inherit;
+}
+
+.cancellation-heading {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+}
+
+.cancellation-heading > span {
+  width: 36px;
+  height: 36px;
+  display: grid;
+  flex-shrink: 0;
+  place-items: center;
+  border-radius: 50%;
+  background: #fbefeb;
+  color: #943b34;
   font-weight: 750;
-  cursor: pointer;
 }
 
-.danger-action:hover:not(:disabled) {
-  color: #ffffff;
-  background: #b7352b;
+.cancellation-heading h2 {
+  margin: 0;
+  font-size: 1.2rem;
 }
 
-.trainer-cancel-panel {
-  max-width: 720px;
-  margin: 0 auto 24px;
+.cancellation-heading p {
+  margin: 6px 0 0;
+  color: #63776c;
+  line-height: 1.6;
 }
 
-.trainer-cancel-panel h2 {
-  margin-top: 0;
+.cancellation-confirmation:focus-visible {
+  outline: 3px solid #8ac6a6;
+  outline-offset: 3px;
 }
 
-.trainer-cancel-panel label {
+.cancellation-confirmation label {
   display: block;
-  margin-bottom: 8px;
+  margin: 20px 0 8px;
   font-weight: 700;
 }
 
-.trainer-cancel-panel textarea {
+.cancellation-confirmation textarea {
   width: 100%;
   min-height: 100px;
   padding: 12px;
   border: 1px solid #a9bdb1;
-  border-radius: 8px;
+  border-radius: 10px;
   font: inherit;
+  resize: vertical;
 }
 
-.trainer-cancel-panel > div {
-  margin-top: 12px;
+.cancellation-actions {
+  margin-top: 20px;
   display: flex;
   justify-content: flex-end;
   gap: 10px;
 }
 
-.trainer-cancel-panel > div > button:not(.danger-action) {
-  padding: 11px 16px;
-  border: 0;
-  color: #53685c;
-  background: transparent;
-  font-weight: 700;
-  cursor: pointer;
+.booking-card-actions .cancellation-confirmation {
+  flex: 1 0 100%;
+  margin-bottom: 0;
 }
 
 .current-venue {
@@ -2897,20 +2607,10 @@
 }
 
 @media (max-width: 650px) {
-  .trainer-navigation,
   .trainer-dashboard-header,
   .trainer-manage-heading {
     align-items: stretch;
     flex-direction: column;
-  }
-
-  .trainer-navigation {
-    padding-top: 16px;
-    padding-bottom: 16px;
-  }
-
-  .trainer-navigation nav {
-    flex-wrap: wrap;
   }
 
   .trainer-course-grid,
@@ -2919,15 +2619,20 @@
     grid-template-columns: 1fr;
   }
 
-  .trainer-editor-section {
-    padding: 16px;
+  .trainer-form-card,
+  .trainer-manage-heading,
+  .cancellation-confirmation {
+    padding: 20px;
   }
 
-  .trainer-editor-actions {
+  .trainer-editor-actions,
+  .cancellation-actions {
     flex-direction: column-reverse;
   }
 
-  .trainer-editor-actions button {
+  .trainer-editor-actions button,
+  .cancellation-actions button,
+  .trainer-status-actions .action-button {
     width: 100%;
   }
 
@@ -2951,4 +2656,8 @@
     align-items: flex-start;
     flex-direction: column;
   }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .action-button { transition: none; }
 }

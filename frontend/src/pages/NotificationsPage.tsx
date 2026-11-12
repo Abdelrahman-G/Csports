@@ -1,7 +1,7 @@
+import AppNavigation from '../components/AppNavigation'
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../auth/authContext'
-import UserNavigation from '../components/UserNavigation'
 import {
   getNotifications,
   markNotificationAsRead,
@@ -69,6 +69,7 @@ function NotificationsPage() {
     notificationId: number,
     courseId: number,
     isRead: boolean,
+    announcementId: number | null,
   ) {
     if (openingNotificationId !== null) {
       return
@@ -94,7 +95,7 @@ function NotificationsPage() {
         )
       }
 
-      navigate(`/user/courses/${courseId}`)
+      navigate(`/user/courses/${courseId}${announcementId ? `?announcement=${announcementId}#announcement-${announcementId}` : ''}`)
     } catch (requestError) {
       setError(
         requestError instanceof Error
@@ -109,7 +110,7 @@ function NotificationsPage() {
 
   return (
     <>
-      <UserNavigation />
+      <AppNavigation />
       <main className="notifications-page">
         <header className="notifications-header">
           <p className="eyebrow">Course updates</p>
@@ -157,6 +158,7 @@ function NotificationsPage() {
                       notification.id,
                       notification.courseId,
                       notification.read,
+                      notification.type === 'COURSE_CANCELLED' ? null : notification.announcementId,
                     )
                   }
                   disabled={openingNotificationId !== null}

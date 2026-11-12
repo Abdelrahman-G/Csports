@@ -1,3 +1,5 @@
+import AppNavigation from '../components/AppNavigation'
+import CancellationConfirmation from '../components/CancellationConfirmation'
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../auth/authContext'
@@ -7,7 +9,6 @@ import type {
   BookingPage,
   BookingView,
 } from '../booking/types'
-import UserNavigation from '../components/UserNavigation'
 import { orderedDayLabels } from '../discovery/courseFormatting'
 
 const PAGE_SIZE = 6
@@ -154,7 +155,7 @@ function MyBookingsPage() {
 
   return (
     <>
-      <UserNavigation />
+      <AppNavigation />
       <main className="bookings-page">
         <header className="bookings-header">
           <p className="eyebrow">Your training schedule</p>
@@ -278,10 +279,11 @@ function MyBookingsPage() {
                       </a>
                     )}
 
-                    {canCancel && !isAwaitingConfirmation && (
+                    {canCancel && (
                       <button
-                        className="booking-cancel-button"
+                        className="action-button action-button-danger booking-cancel-button"
                         type="button"
+                        aria-expanded={isAwaitingConfirmation}
                         onClick={() =>
                           setConfirmationCourseId(booking.courseId)
                         }
@@ -292,28 +294,11 @@ function MyBookingsPage() {
                     )}
 
                     {canCancel && isAwaitingConfirmation && (
-                      <div className="booking-cancel-confirmation">
-                        <p>Cancel your place in this course?</p>
-                        <div>
-                          <button
-                            className="confirm-cancellation-button"
-                            type="button"
-                            onClick={() =>
-                              void confirmCancellation(booking.courseId)
-                            }
-                            disabled={isCancelling}
-                          >
-                            {isCancelling ? 'Cancelling...' : 'Yes, cancel'}
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => setConfirmationCourseId(null)}
-                            disabled={isCancelling}
-                          >
-                            Keep booking
-                          </button>
-                        </div>
-                      </div>
+                      <CancellationConfirmation title="Cancel your booking?"
+                        description="Your place in this course will be cancelled."
+                        keepLabel="Keep booking" busy={isCancelling}
+                        onKeep={() => setConfirmationCourseId(null)}
+                        onConfirm={() => void confirmCancellation(booking.courseId)} />
                     )}
                   </footer>
                 </article>
