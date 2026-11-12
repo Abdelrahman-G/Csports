@@ -1,7 +1,7 @@
+import AppNavigation from '../components/AppNavigation'
 import { useEffect, useState, type CSSProperties } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../auth/authContext'
-import UserNavigation from '../components/UserNavigation'
 import { getMySchedule } from '../schedule/scheduleApi'
 import { addDays, dateInCairo, entriesOnDay, entryStatus, hasOverlap, startOfWeek, minutesInCairo, eventMinutesOnDay, SCHEDULE_TIME_ZONE, type ScheduleResponse } from '../schedule/schedule'
 import '../schedule/schedule.css'
@@ -76,7 +76,7 @@ export default function MySchedulePage() {
 
   return (
     <>
-      <UserNavigation />
+      <AppNavigation />
       <main className="schedule-page">
         <header className="schedule-heading">
           <h1>My schedule</h1>

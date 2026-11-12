@@ -1,3 +1,4 @@
+import AppNavigation from '../components/AppNavigation'
 import { useEffect, useState, type FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ApiError } from '../auth/authApi'
@@ -10,8 +11,6 @@ import {
   type TrainerProfile,
   type UserProfile,
 } from '../auth/profileApi'
-import TrainerNavigation from '../components/TrainerNavigation'
-import UserNavigation from '../components/UserNavigation'
 
 type AccountForm = {
   name: string
@@ -178,7 +177,7 @@ function ProfilePage() {
     }
   }
 
-  const navigation = isTrainer ? <TrainerNavigation /> : <UserNavigation />
+  const navigation = <AppNavigation />
   if (isLoading) return <>{navigation}<main className="profile-page"><p className="profile-state">Loading your profile...</p></main></>
   if (!profile || !accountForm) return <>{navigation}<main className="profile-page"><p className="profile-state profile-state-error">{pageError || 'Your profile could not be loaded.'}</p></main></>
 

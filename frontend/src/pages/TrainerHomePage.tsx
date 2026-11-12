@@ -1,8 +1,8 @@
+import AppNavigation from '../components/AppNavigation'
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../auth/authContext'
 import { getMyTrainerProfile, type TrainerProfile } from '../auth/profileApi'
-import TrainerNavigation from '../components/TrainerNavigation'
 import { orderedDayLabels } from '../discovery/courseFormatting'
 import { getMyCourses } from '../trainer/trainerCourseApi'
 import type { TrainingCourse } from '../trainer/types'
@@ -47,7 +47,7 @@ function TrainerHomePage() {
 
   return (
     <>
-      <TrainerNavigation />
+      <AppNavigation />
       <main className="trainer-page">
         <section className="trainer-dashboard-header">
           <div>
@@ -59,7 +59,7 @@ function TrainerHomePage() {
                 : 'Create and manage your training courses.'}
             </p>
           </div>
-          <Link className="trainer-primary-action" to="/trainer/courses/new">Create a course</Link>
+          <Link className="action-button action-button-primary" to="/trainer/courses/new">Create a course</Link>
         </section>
 
         {isLoading && <p className="trainer-state">Loading your courses...</p>}
@@ -87,7 +87,7 @@ function TrainerHomePage() {
                   <div><dt>Starts</dt><dd>{course.startDate}</dd></div>
                   <div><dt>Schedule</dt><dd>{orderedDayLabels(course.days).join(', ')}</dd></div>
                 </dl>
-                <Link to={`/trainer/courses/${course.id}/manage`}>Manage course</Link>
+                <Link to={`/trainer/courses/${course.id}/manage`}>Manage course<span aria-hidden="true">↗</span></Link>
               </article>
             ))}
           </section>

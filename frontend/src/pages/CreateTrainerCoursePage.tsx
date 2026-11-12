@@ -1,8 +1,9 @@
+import AppNavigation from '../components/AppNavigation'
+import BackLink from '../components/BackLink'
 import { useEffect, useState, type FormEvent } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { ApiError } from '../auth/authApi'
 import { useAuth } from '../auth/authContext'
-import TrainerNavigation from '../components/TrainerNavigation'
 import GoogleMapsLocationField from '../components/GoogleMapsLocationField'
 import { createCourse, getRegions } from '../trainer/trainerCourseApi'
 import type { Region, VerifiedVenueLocation } from '../trainer/types'
@@ -122,9 +123,9 @@ function CreateTrainerCoursePage() {
   const disabled = isSubmitting || isLoadingRegions
   return (
     <>
-      <TrainerNavigation />
+      <AppNavigation />
       <main className="trainer-page">
-        <Link className="trainer-back-link" to="/trainer/home">Back to my courses</Link>
+        <BackLink to="/trainer/home">Back to my courses</BackLink>
         <section className="trainer-form-card">
           <p className="eyebrow">Create a course</p>
           <h1>Plan your next training</h1>
@@ -167,7 +168,7 @@ function CreateTrainerCoursePage() {
             <CourseInput id="capacity" label="Maximum participants" type="number" value={form.maxParticipants} error={errors.maxParticipants} disabled={disabled} min="1" onChange={(value) => updateField('maxParticipants', value)} />
             <CourseInput id="price" label="Price in EGP" type="number" value={form.price} error={errors.price} disabled={disabled} min="0" step="0.01" onChange={(value) => updateField('price', value)} />
 
-            <button className="trainer-primary-action full-width" type="submit" disabled={disabled}>{isSubmitting ? 'Creating course...' : 'Create course'}</button>
+            <button className="action-button action-button-primary full-width" type="submit" disabled={disabled}>{isSubmitting ? 'Creating course...' : 'Create course'}</button>
           </form>
           {serverError && <p className="trainer-form-error" role="alert">{serverError}</p>}
         </section>
