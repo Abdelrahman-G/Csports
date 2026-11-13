@@ -38,8 +38,8 @@ jobs:
         with:
           node-version: "22"
 
-      - name: Validate staging configuration
-        run: node --test infrastructure/staging/compose.test.mjs
+      - name: Verify staging configuration and release references
+        run: node --test infrastructure/staging/compose.test.mjs infrastructure/staging/release.test.mjs
 
       - name: Build images and test the deployment
         run: node --test infrastructure/staging/database.test.mjs
@@ -67,10 +67,13 @@ jobs:
           docker push "$backend:$version"
           docker push "$frontend:$version"
 
-          backend_ref="$(docker image inspect "$backend:$version" \
-            --format '{{index .RepoDigests 0}}')"
-          frontend_ref="$(docker image inspect "$frontend:$version" \
-            --format '{{index .RepoDigests 0}}')"
+          backend_ref="$backend@$(docker buildx imagetools inspect "$backend:$version" \
+            --format '{{.Manifest.Digest}}')"
+          frontend_ref="$frontend@$(docker buildx imagetools inspect "$frontend:$version" \
+            --format '{{.Manifest.Digest}}')"
+
+          printf 'Backend reference: %s\nFrontend reference: %s\n' \
+            "$backend_ref" "$frontend_ref"
 
           [[ "$backend_ref" == "$backend"@sha256:* ]]
           [[ "$frontend_ref" == "$frontend"@sha256:* ]]

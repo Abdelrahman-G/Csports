@@ -94,8 +94,8 @@ jobs:
         with:
           node-version: "22"
 
-      - name: Verify staging isolation and required configuration
-        run: node --test infrastructure/staging/compose.test.mjs
+      - name: Verify staging isolation and release references
+        run: node --test infrastructure/staging/compose.test.mjs infrastructure/staging/release.test.mjs
 
       - name: Build staging images and verify deployment gates
         run: node --test infrastructure/staging/database.test.mjs
