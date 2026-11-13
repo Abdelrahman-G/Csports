@@ -1,22 +1,28 @@
 name: CI
 
 on:
+  workflow_call:
+    inputs:
+      skip_docker:
+        description: Release runs Docker checks before publishing its images
+        type: boolean
+        default: false
+
   push:
     paths:
       - "backend/**"
       - "frontend/**"
       - "infrastructure/**"
-      - ".github/workflows/backend-ci.yml"
+      - ".github/workflows/**"
+
   pull_request:
     paths:
       - "backend/**"
       - "frontend/**"
       - "infrastructure/**"
-      - ".github/workflows/backend-ci.yml"
-
+      - ".github/workflows/**"
 permissions:
   contents: read
-
 jobs:
   backend:
     runs-on: ubuntu-latest
@@ -70,6 +76,7 @@ jobs:
         run: npm test
 
   docker:
+    if: ${{ !inputs.skip_docker }}
     runs-on: ubuntu-latest
     timeout-minutes: 15
     env:

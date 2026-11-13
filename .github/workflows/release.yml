@@ -1,0 +1,101 @@
+name: Release
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: csports-release
+  cancel-in-progress: false
+
+jobs:
+  checks:
+    if: github.ref == 'refs/heads/main'
+    uses: ./.github/workflows/backend-ci.yml
+    with:
+      skip_docker: true
+
+  publish:
+    needs: checks
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Check out the release commit
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Validate staging configuration
+        run: node --test infrastructure/staging/compose.test.mjs
+
+      - name: Build images and test the deployment
+        run: node --test infrastructure/staging/database.test.mjs
+
+      - name: Sign in to GitHub Container Registry
+        env:
+          GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          printf '%s' "$GHCR_TOKEN" |
+            docker login ghcr.io --username "$GITHUB_ACTOR" --password-stdin
+
+      - name: Publish tested images and record their identifiers
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          owner="${GITHUB_REPOSITORY_OWNER,,}"
+          backend="ghcr.io/$owner/csports-backend"
+          frontend="ghcr.io/$owner/csports-frontend"
+          version="sha-$GITHUB_SHA"
+
+          docker tag csports-backend:staging-local "$backend:$version"
+          docker tag csports-frontend:staging-local "$frontend:$version"
+
+          docker push "$backend:$version"
+          docker push "$frontend:$version"
+
+          backend_ref="$(docker image inspect "$backend:$version" \
+            --format '{{index .RepoDigests 0}}')"
+          frontend_ref="$(docker image inspect "$frontend:$version" \
+            --format '{{index .RepoDigests 0}}')"
+
+          [[ "$backend_ref" == "$backend"@sha256:* ]]
+          [[ "$frontend_ref" == "$frontend"@sha256:* ]]
+          [[ "$backend_ref" =~ @sha256:[a-f0-9]{64}$ ]]
+          [[ "$frontend_ref" =~ @sha256:[a-f0-9]{64}$ ]]
+
+          printf 'RELEASE_COMMIT=%s\nBACKEND_IMAGE=%s\nFRONTEND_IMAGE=%s\n' \
+            "$GITHUB_SHA" "$backend_ref" "$frontend_ref" \
+            > release-images.env
+
+          {
+            echo '### Release images'
+            echo '```dotenv'
+            cat release-images.env
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Save the release image references
+        uses: actions/upload-artifact@v4
+        with:
+          name: csports-release-${{ github.sha }}
+          path: release-images.env
+          if-no-files-found: error
+          retention-days: 7
+
+      - name: Sign out of the registry
+        if: always()
+        run: docker logout ghcr.io
