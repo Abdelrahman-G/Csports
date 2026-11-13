@@ -82,5 +82,13 @@ jobs:
       - name: Validate Docker Compose
         run: docker compose -f infrastructure/docker-compose.yml config --quiet
 
-      - name: Build application images
-        run: docker compose -f infrastructure/docker-compose.yml build
+      - name: Set up Node.js 22 for staging configuration checks
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Verify staging isolation and required configuration
+        run: node --test infrastructure/staging/compose.test.mjs
+
+      - name: Build staging images and verify deployment gates
+        run: node --test infrastructure/staging/database.test.mjs

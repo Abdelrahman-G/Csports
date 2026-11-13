@@ -1,0 +1,121 @@
+name: csports-staging
+
+x-logging: &logging
+  driver: local
+  options:
+    max-size: "10m"
+    max-file: "3"
+
+services:
+  frontend:
+    extends:
+      file: ../docker-compose.yml
+      service: frontend
+    image: csports-frontend:staging-local
+    mem_limit: 64m
+    logging: *logging
+    # Replace the inherited port; ordinary list merging can retain both ports.
+    ports: !override
+      - "127.0.0.1:${STAGING_FRONTEND_PORT:-3100}:80"
+
+  backend:
+    extends:
+      file: ../docker-compose.yml
+      service: backend
+    image: csports-backend:staging-local
+    mem_limit: 1g
+    logging: *logging
+    environment:
+      DATABASE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:?Set POSTGRES_DB in staging/.env}
+      DATABASE_USERNAME: csports_app
+      DATABASE_PASSWORD: ${APP_DB_PASSWORD:?Set APP_DB_PASSWORD in staging/.env}
+      SPRING_FLYWAY_ENABLED: "false"
+    depends_on:
+      database-migrate:
+        condition: service_completed_successfully
+    ports: !reset []
+
+  database-migrate:
+    image: csports-backend:staging-local
+    mem_limit: 512m
+    logging: *logging
+    restart: "no"
+    depends_on:
+      database-setup:
+        condition: service_completed_successfully
+    environment:
+      DATABASE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:?Set POSTGRES_DB in staging/.env}
+      DATABASE_USERNAME: csports_migrator
+      DATABASE_PASSWORD: ${MIGRATION_DB_PASSWORD:?Set MIGRATION_DB_PASSWORD in staging/.env}
+    # Load the second main class and dependencies from the same executable backend JAR.
+    entrypoint:
+      - java
+      - -Dloader.main=com.csports.migration.DatabaseMigration
+      - -cp
+      - /app/csports.jar
+      - org.springframework.boot.loader.launch.PropertiesLauncher
+    healthcheck:
+      disable: true
+    read_only: true
+    tmpfs:
+      - /tmp:size=64m,mode=1777
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+
+  database-setup:
+    image: postgis/postgis:17-3.5
+    mem_limit: 128m
+    logging: *logging
+    restart: "no"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      PGHOST: postgres
+      PGDATABASE: ${POSTGRES_DB:?Set POSTGRES_DB in staging/.env}
+      PGUSER: ${POSTGRES_USER:?Set POSTGRES_USER in staging/.env}
+      PGPASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in staging/.env}
+      APP_DB_PASSWORD: ${APP_DB_PASSWORD:?Set APP_DB_PASSWORD in staging/.env}
+      MIGRATION_DB_PASSWORD: ${MIGRATION_DB_PASSWORD:?Set MIGRATION_DB_PASSWORD in staging/.env}
+    volumes:
+      - ./database:/setup:ro
+    # This client-only job does not need the image's default persistent PGDATA volume.
+    tmpfs:
+      - /var/lib/postgresql/data:size=1m
+    command:
+      - /bin/sh
+      - -ec
+      - |
+        exec psql -X --quiet --set=ON_ERROR_STOP=1 \
+          --set=app_password="$$APP_DB_PASSWORD" \
+          --set=migration_password="$$MIGRATION_DB_PASSWORD" \
+          --file=/setup/provision.sql
+
+  postgres:
+    extends:
+      file: ../docker-compose.yml
+      service: postgres
+    mem_limit: 512m
+    logging: *logging
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:?Set POSTGRES_DB in staging/.env}
+      POSTGRES_USER: ${POSTGRES_USER:?Set POSTGRES_USER in staging/.env}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in staging/.env}
+    ports: !reset []
+
+  redis:
+    extends:
+      file: ../docker-compose.yml
+      service: redis
+    mem_limit: 128m
+    logging: *logging
+    # Keep security/lock keys; memory exhaustion rejects new writes instead of evicting them.
+    command: ["redis-server", "--appendonly", "yes", "--maxmemory", "64mb", "--maxmemory-policy", "noeviction"]
+    ports: !reset []
+
+# Compose prefixes these and the default network with the project name.
+volumes:
+  postgres_data:
+  redis_data:
