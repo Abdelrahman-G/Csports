@@ -1,0 +1,11 @@
+services:
+  frontend:
+    image: ${FRONTEND_IMAGE:?Set FRONTEND_IMAGE}
+    build: !reset null
+
+  backend:
+    image: ${BACKEND_IMAGE:?Set BACKEND_IMAGE}
+    build: !reset null
+
+  database-migrate:
+    image: ${BACKEND_IMAGE:?Set BACKEND_IMAGE}
