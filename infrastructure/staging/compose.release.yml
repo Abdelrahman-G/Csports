@@ -8,4 +8,5 @@ services:
     build: !reset null
 
   database-migrate:
-    image: ${BACKEND_IMAGE:?Set BACKEND_IMAGE}
+    image: ${BACKEND_IMAGE:?Set BACKEND_IMAGE} 
+     
